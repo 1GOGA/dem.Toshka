@@ -366,8 +366,8 @@ export const InteractiveCrosshairPreview: React.FC<InteractiveCrosshairPreviewPr
               <span style={{ color: '#de9b35' }}>5 T</span>
             </div>
 
-            {/* Bottom Health/Ammo (if full HUD) */}
-            {config.hudMode === 'full' && (
+            {/* Bottom Health/Ammo (if full or real HUD) */}
+            {(config.hudMode === 'full' || config.hudMode === 'real' || config.hudMode === 'huge_esports') && (
               <div
                 style={{
                   position: 'absolute',

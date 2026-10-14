@@ -303,10 +303,16 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
                       🔥 Крупный HUD (115%)
                     </span>
                   )}
+                  {settings.hudMode === 'real' && (
+                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#38bdf8', backgroundColor: '#0284c722', padding: '2px 8px', borderRadius: '4px', border: '1px solid #0284c744' }}>
+                      🎥 REAL (OBS: Без X-Ray, без плашки спектатора, круглый радар)
+                    </span>
+                  )}
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '10px', marginBottom: '14px' }}>
                   {[
+                    { id: 'real', label: '🎥 REAL (OBS Запись)', desc: '1:1 как живая игра: без X-Ray, без плашки спектатора, круглый радар' },
                     { id: 'huge_esports', label: '🔥 Огромный киберспорт', desc: '115% фраги, HP, аватары команд' },
                     { id: 'huge_killfeed', label: '⚡ Огромный киллфид', desc: '115% увеличенные фраги (чистый низ)' },
                     { id: 'full', label: '📺 Spectator стандарт', desc: '95% размер: HP, патроны, счет' },
@@ -317,13 +323,15 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
                       key={h.id}
                       type="button"
                       className={`btn ${settings.hudMode === h.id ? 'btn-primary' : 'btn-secondary'}`}
-                      onClick={() =>
+                      onClick={() => {
+                        const isReal = h.id === 'real'
                         onUpdateSettings({
                           ...settings,
                           hudMode: h.id as any,
-                          hudScale: h.id.startsWith('huge') ? 1.15 : 0.95,
+                          hudScale: h.id.startsWith('huge') ? 1.15 : (isReal ? 1.0 : 0.95),
+                          ...(isReal ? { xray: false, radarMode: 'player_focus' } : {}),
                         })
-                      }
+                      }}
                       style={{ textAlign: 'left', padding: '10px 12px' }}
                     >
                       <div style={{ fontWeight: 700, fontSize: '12px' }}>{h.label}</div>

@@ -132,7 +132,7 @@ export interface ClipSettings {
   perspective: 'attacker' | 'victim' | 'specific_player' | 'dynamic_killcam'
   perspectiveSteamId?: string
   xray: boolean
-  hudMode: 'huge_esports' | 'huge_killfeed' | 'full' | 'killfeed_only' | 'none'
+  hudMode: 'real' | 'huge_esports' | 'huge_killfeed' | 'full' | 'killfeed_only' | 'none'
   hudScale?: number // 0.95, 1.05, 1.15, 1.25
   customCrosshair: boolean
   fov?: number // 68, 90, 95, 100, 105

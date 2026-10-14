@@ -1877,6 +1877,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
                       {[
+                        { mode: 'real', label: '🎥 REAL (OBS Запись)', sub: 'От первого лица, без X-Ray' },
                         { mode: 'huge_esports', label: '🔥 Огромный киберспорт', sub: '115% фраги, HP, аватары' },
                         { mode: 'huge_killfeed', label: '⚡ Огромный киллфид', sub: '115% увеличенные фраги' },
                         { mode: 'killfeed_only', label: '⚔️ Киллфид', sub: 'Только киллы (чисто)' },
@@ -1889,32 +1890,40 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                             key={h.mode}
                             type="button"
                             className="btn"
-                            onClick={() =>
-                              onUpdateSettings &&
-                              clipSettings &&
-                              onUpdateSettings({
-                                ...clipSettings,
-                                hudMode: h.mode as any,
-                                hudScale: h.mode.startsWith('huge') ? 1.15 : 0.95,
-                              })
-                            }
+                            onClick={() => {
+                              if (onUpdateSettings && clipSettings) {
+                                const isReal = h.mode === 'real'
+                                onUpdateSettings({
+                                  ...clipSettings,
+                                  hudMode: h.mode as any,
+                                  hudScale: h.mode.startsWith('huge') ? 1.15 : (isReal ? 1.0 : 0.95),
+                                  ...(isReal ? { xray: false, radarMode: 'player_focus' } : {}),
+                                })
+                              }
+                            }}
                             style={{
                               padding: '8px 6px',
                               textAlign: 'center',
-                              backgroundColor: isSelected ? '#6366f122' : '#16181f',
-                              borderColor: isSelected ? '#6366f1' : '#2b2e38',
+                              backgroundColor: isSelected ? (h.mode === 'real' ? '#0284c725' : '#6366f122') : '#16181f',
+                              borderColor: isSelected ? (h.mode === 'real' ? '#38bdf8' : '#6366f1') : '#2b2e38',
                               borderWidth: '1px',
                               borderStyle: 'solid',
                               borderRadius: '6px',
                               color: '#f1f5f9',
                             }}
                           >
-                            <div style={{ fontSize: '11px', fontWeight: 700, color: isSelected ? '#818cf8' : '#e2e8f0' }}>{h.label}</div>
+                            <div style={{ fontSize: '11px', fontWeight: 700, color: isSelected ? (h.mode === 'real' ? '#38bdf8' : '#818cf8') : '#e2e8f0' }}>{h.label}</div>
                             <div style={{ fontSize: '9px', color: '#64748b', marginTop: '2px' }}>{h.sub}</div>
                           </button>
                         )
                       })}
                     </div>
+                    {clipSettings?.hudMode === 'real' && (
+                      <div style={{ marginTop: '10px', padding: '10px 12px', backgroundColor: '#0284c715', border: '1px solid #0284c744', borderRadius: '6px', fontSize: '11px', color: '#bae6fd', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span>🎥</span>
+                        <span><strong>Режим REAL:</strong> Запись выглядит 1:1 как при живой игре через OBS. Скрыта спектаторская полоса внизу (аватар и ник игрока), X-Ray отключен, обычный центрированный круглый радар. Все патроны, здоровье, деньги и киллфид активны.</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* X-Ray toggle */}

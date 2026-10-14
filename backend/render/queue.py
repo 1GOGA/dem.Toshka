@@ -312,14 +312,19 @@ class RenderQueueManager:
             # Advanced recording settings
             xray = bool(settings.get("xray", True))
             hud_mode = str(settings.get("hud_mode", "full"))
-            if hud_mode not in ("full", "killfeed_only", "none"):
+            if hud_mode not in ("real", "huge_esports", "huge_killfeed", "full", "killfeed_only", "none"):
                 hud_mode = "full"
+            radar_mode = str(settings.get("radar_mode", "broadcast"))
+            if hud_mode == "real":
+                if "xray" not in settings:
+                    xray = False
+                if "radar_mode" not in settings:
+                    radar_mode = "player_focus"
             perspective = str(settings.get("perspective", "attacker"))
             custom_crosshair = bool(settings.get("custom_crosshair", True))
 
             # Determine tick ranges and perspective POV
             tickrate = max(1, demo.tickrate)
-            radar_mode = str(settings.get("radar_mode", "broadcast"))
             camera_switches: list[tuple[int, Optional[str], Optional[str]]] = []
             is_killcam_replay = False
             killcam_victim_steam_id = None

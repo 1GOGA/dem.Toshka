@@ -134,7 +134,7 @@ class RenderJobCreateRequest(BaseModel):
     perspective: str = "attacker"  # "attacker" | "victim" | "specific_player" | "dynamic_killcam"
     perspective_steam_id: Optional[str] = None
     xray: bool = True
-    hud_mode: str = "full"     # "huge_esports" | "huge_killfeed" | "full" | "killfeed_only" | "none"
+    hud_mode: str = "full"     # "real" | "huge_esports" | "huge_killfeed" | "full" | "killfeed_only" | "none"
     hud_scale: Optional[float] = None # 0.95 | 1.05 | 1.15 | 1.25
     custom_crosshair: bool = True
     fov: Optional[int] = None  # 68 | 90 | 95 | 100 | 105

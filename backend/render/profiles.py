@@ -17,6 +17,7 @@ from typing import Optional
 class RenderProfileType(str, Enum):
     CLEAN_COMPETITIVE = "clean_competitive"
     CINEMATIC = "cinematic"
+    REAL = "real"
     CUSTOM = "custom"
 
 
@@ -52,6 +53,17 @@ PROFILES: dict[RenderProfileType, RenderProfile] = {
         deathnotices_only=False,
         xray=False,
         custom_crosshair=False,
+        trueview_suppressed=True,
+        demo_ui_suppressed=True,
+        spec_bindings_suppressed=True,
+    ),
+    RenderProfileType.REAL: RenderProfile(
+        name=RenderProfileType.REAL,
+        description="Режим 'REAL (OBS)': вид как при реальной записи через OBS — обычный центрированный радар игрока, X-Ray выключен, спектатор-панель скрыта, всё оружие/деньги/хп на месте",
+        draw_hud=True,
+        deathnotices_only=False,
+        xray=False,
+        custom_crosshair=True,
         trueview_suppressed=True,
         demo_ui_suppressed=True,
         spec_bindings_suppressed=True,

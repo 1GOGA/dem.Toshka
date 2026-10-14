@@ -535,3 +535,46 @@ class TestRenderEngineValidation:
         assert executed_passes[1]["pov_name"] == "HeroAttacker"
         assert executed_passes[1]["pov_steam_id"] == "76561197960278074"
 
+    def test_real_obs_mode_cfg_generation(self, tmp_path):
+        from backend.render.cfg_generator import generate_render_cfg
+
+        out_dir = tmp_path / "renders"
+        content = generate_render_cfg(
+            start_tick=5000,
+            end_tick=5500,
+            pov_steam_id="76561197960278073",
+            pov_name="Alice",
+            output_dir=out_dir,
+            hud_mode="real",
+        )
+
+        # X-Ray must be suppressed
+        assert "spec_show_xray 0" in content
+        assert "mirv_fix selectedPlayerGlow 0" in content
+        assert "spec_show_xray 1" not in content
+
+        # Player vital HUD must be enabled
+        assert "cl_drawhud 1" in content
+        assert "cl_draw_only_deathnotices 0" in content
+
+        # Spectator clutter & avatars suppressed
+        assert "hud_showtargetid 0" in content
+        assert "cl_spec_show_bindings 0" in content
+        assert "cl_hide_avatar_images 1" in content
+        assert "cl_teamcounter_playercount_mode 1" in content
+
+        # Rotating centered radar enforced
+        assert "cl_radar_always_centered 1" in content
+        assert "cl_radar_rotate 1" in content
+        assert "cl_radar_square_with_scoreboard 0" in content
+
+    def test_real_profile_definition(self):
+        from backend.render.profiles import RenderProfileType, get_profile
+        real = get_profile(RenderProfileType.REAL)
+        assert real.name == RenderProfileType.REAL
+        assert real.draw_hud is True
+        assert real.deathnotices_only is False
+        assert real.xray is False
+        assert real.custom_crosshair is True
+
+

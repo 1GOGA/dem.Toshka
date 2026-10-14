@@ -24,7 +24,7 @@ class RenderTask:
         default_factory=lambda: pathlib.Path("renders") / "clip.mp4"
     )
     xray: bool = True
-    hud_mode: str = "full"  # "full" | "killfeed_only" | "none"
+    hud_mode: str = "full"  # "real" | "huge_esports" | "huge_killfeed" | "full" | "killfeed_only" | "none"
     perspective: str = "attacker"  # "attacker" | "victim" | "specific_player"
     custom_crosshair: bool = True
     fov: Optional[int] = None  # e.g. 68, 90, 95, 100, 105

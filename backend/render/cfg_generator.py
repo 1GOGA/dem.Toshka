@@ -229,7 +229,25 @@ def _build_fov_commands(fov: Optional[int] = None, viewmodel_fov: Optional[int] 
 def _build_hud_commands(hud_mode: str, hud_scale: Optional[float] = None) -> list[str]:
     """Build HUD commands based on mode and optional explicit scaling."""
     cmds: list[str] = []
-    if hud_mode == "huge_esports":
+    if hud_mode == "real":
+        # REAL OBS POV: Native match recording appearance
+        # Normal rotating radar, health/ammo/money/grenades visible, spectator target banner suppressed,
+        # player count numbers instead of spectator cards, no X-Ray wallhacks.
+        scale = hud_scale if hud_scale is not None else 1.0
+        cmds.extend([
+            "cl_drawhud 1",
+            "cl_draw_only_deathnotices 0",
+            f"hud_scaling {scale}",
+            "hud_showtargetid 0",
+            "cl_spec_show_bindings 0",
+            "cl_hide_avatar_images 1",
+            "cl_teamid_overhead_mode 0",
+            "cl_teamcounter_playercount_mode 1",
+            "cl_hud_telemetry_frametime_show 0",
+            "cl_hud_telemetry_net_misdelivery_show 0",
+            "cl_hud_telemetry_ping_show 0",
+        ])
+    elif hud_mode == "huge_esports":
         scale = hud_scale if hud_scale is not None else 1.15
         cmds.extend([
             "cl_drawhud 1",
@@ -294,6 +312,11 @@ def generate_render_cfg(
 
     If output_cfg_path is provided, writes the content to disk.
     """
+    if hud_mode == "real":
+        if radar_mode == "broadcast":
+            radar_mode = "player_focus"
+        xray = False
+
     account_id = steam64_to_account_id(pov_steam_id) if pov_steam_id else None
 
     lines = [
@@ -360,20 +383,28 @@ def generate_render_cfg(
             "mirv_cmd clear",
         ])
 
+        radar_tick5 = "cl_radar_square_with_scoreboard 0"
+        if radar_mode == "player_focus":
+            radar_tick5 += "; cl_radar_rotate 1; cl_radar_always_centered 1"
+
         # Schedule initial seek forward if starting past early ticks
         if start_tick > 60:
             jump_tick = max(10, start_tick - jump_lead_ticks)
             lines.append(f'mirv_cmd addAtTick 5 "demo_gototick {jump_tick}; demo_resume"')
-            lines.append('mirv_cmd addAtTick 5 "cl_radar_square_with_scoreboard 0"')
+            lines.append(f'mirv_cmd addAtTick 5 "{radar_tick5}"')
 
             if spec_cmds:
                 lines.append(f'mirv_cmd addAtTick {jump_tick + 20} "{"; ".join(spec_cmds)}; demo_resume"')
         else:
             if spec_cmds:
                 lines.append(f'mirv_cmd addAtTick 5 "{"; ".join(spec_cmds)}"')
-            lines.append('mirv_cmd addAtTick 5 "cl_radar_square_with_scoreboard 0"')
+            lines.append(f'mirv_cmd addAtTick 5 "{radar_tick5}"')
 
         # Schedule highlight recording start and end with guaranteed TrueView & demo UI suppression
+        if hud_mode == "real":
+            lines.append(f'mirv_cmd addAtTick {start_tick} "hud_showtargetid 0; cl_hide_avatar_images 1; cl_teamid_overhead_mode 0"')
+            lines.append(f'mirv_cmd addAtTick {start_tick} "cl_teamcounter_playercount_mode 1; cl_radar_square_with_scoreboard 0; cl_radar_rotate 1"')
+
         rec_start_parts = list(spec_cmds) + [
             "cl_trueview_show_status 0",
             "demo_ui_mode 0",
@@ -434,6 +465,12 @@ def generate_batch_render_cfg(
         ),
     )
 
+    for c in sorted_clips:
+        if c.hud_mode == "real":
+            if c.radar_mode == "broadcast":
+                c.radar_mode = "player_focus"
+            c.xray = False
+
     out_dir_str = str(output_dir.resolve()).replace("\\", "/")
 
     lines = [
@@ -488,6 +525,10 @@ def generate_batch_render_cfg(
 
     lines.extend(_build_hud_commands(first_clip.hud_mode, getattr(first_clip, "hud_scale", None)))
 
+    radar_tick5 = "cl_radar_square_with_scoreboard 0"
+    if first_clip.radar_mode == "player_focus":
+        radar_tick5 += "; cl_radar_rotate 1; cl_radar_always_centered 1"
+
     for idx, clip in enumerate(sorted_clips):
         acc_id = steam64_to_account_id(clip.pov_steam_id) if clip.pov_steam_id else None
         spec_cmds = _build_spec_commands(acc_id, clip.pov_name)
@@ -498,15 +539,19 @@ def generate_batch_render_cfg(
             # First clip: schedule initial seek at tick 5 with round radar enforced
             if clip.start_tick > 60:
                 lines.append(f'mirv_cmd addAtTick 5 "demo_gototick {jump_tick}; demo_resume"')
-                lines.append('mirv_cmd addAtTick 5 "cl_radar_square_with_scoreboard 0"')
+                lines.append(f'mirv_cmd addAtTick 5 "{radar_tick5}"')
                 if spec_cmds:
                     lines.append(f'mirv_cmd addAtTick {jump_tick + 20} "{"; ".join(spec_cmds)}; demo_resume"')
             else:
                 if spec_cmds:
                     lines.append(f'mirv_cmd addAtTick 5 "{"; ".join(spec_cmds)}"')
-                lines.append('mirv_cmd addAtTick 5 "cl_radar_square_with_scoreboard 0"')
+                lines.append(f'mirv_cmd addAtTick 5 "{radar_tick5}"')
 
         # Start recording this clip with clean HUD & camera lock
+        if clip.hud_mode == "real":
+            lines.append(f'mirv_cmd addAtTick {clip.start_tick} "hud_showtargetid 0; cl_hide_avatar_images 1; cl_teamid_overhead_mode 0"')
+            lines.append(f'mirv_cmd addAtTick {clip.start_tick} "cl_teamcounter_playercount_mode 1; cl_radar_square_with_scoreboard 0; cl_radar_rotate 1"')
+
         start_parts = list(spec_cmds) + ["mirv_streams record start"]
         lines.append(f'mirv_cmd addAtTick {clip.start_tick} "{"; ".join(start_parts)}"')
 
