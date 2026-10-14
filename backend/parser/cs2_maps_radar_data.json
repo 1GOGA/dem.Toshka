@@ -1,0 +1,132 @@
+{
+  "de_dust2": {
+    "pos_x": -2476,
+    "pos_y": 3239,
+    "scale": 4.4,
+    "verticalsections": {},
+    "radar_paths": [
+      "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_dust2_radar_psd.png"
+    ]
+  },
+  "de_mirage": {
+    "pos_x": -3230,
+    "pos_y": 1713,
+    "scale": 5,
+    "verticalsections": {},
+    "radar_paths": [
+      "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_mirage_radar_psd.png"
+    ]
+  },
+  "de_inferno": {
+    "pos_x": -2087,
+    "pos_y": 3870,
+    "scale": 4.9,
+    "verticalsections": {},
+    "radar_paths": [
+      "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_inferno_radar_psd.png"
+    ]
+  },
+  "de_nuke": {
+    "pos_x": -3453,
+    "pos_y": 2887,
+    "scale": 7,
+    "verticalsections": {
+      "default": {
+        "AltitudeMax": 10000,
+        "AltitudeMin": -495
+      },
+      "lower": {
+        "AltitudeMax": -495,
+        "AltitudeMin": -10000
+      }
+    },
+    "radar_paths": [
+      "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_nuke_lower_radar_psd.png",
+      "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_nuke_radar_psd.png"
+    ]
+  },
+  "de_ancient": {
+    "pos_x": -2953,
+    "pos_y": 2164,
+    "scale": 5,
+    "verticalsections": {},
+    "radar_paths": [
+      "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_ancient_radar_psd.png",
+      "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_ancient_v1_radar_psd.png"
+    ]
+  },
+  "de_anubis": {
+    "pos_x": -2796,
+    "pos_y": 3328,
+    "scale": 5.22,
+    "verticalsections": {},
+    "radar_paths": [
+      "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_anubis_radar_psd.png"
+    ]
+  },
+  "de_vertigo": {
+    "pos_x": -3168,
+    "pos_y": 1762,
+    "scale": 4,
+    "verticalsections": {
+      "default": {
+        "AltitudeMax": 20000,
+        "AltitudeMin": 11700
+      },
+      "lower": {
+        "AltitudeMax": 11700,
+        "AltitudeMin": -10000
+      }
+    },
+    "radar_paths": [
+      "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_vertigo_lower_radar_psd.png",
+      "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_vertigo_radar_psd.png"
+    ]
+  },
+  "de_overpass": {
+    "pos_x": -4831,
+    "pos_y": 1781,
+    "scale": 5.2,
+    "verticalsections": {},
+    "radar_paths": [
+      "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_overpass_radar_psd.png"
+    ]
+  },
+  "cs_office": {
+    "pos_x": -1838,
+    "pos_y": 1858,
+    "scale": 4.1,
+    "verticalsections": {},
+    "radar_paths": [
+      "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/cs_office_radar_psd.png"
+    ]
+  },
+  "cs_italy": {
+    "pos_x": -2647,
+    "pos_y": 2592,
+    "scale": 4.6,
+    "verticalsections": {},
+    "radar_paths": [
+      "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/cs_italy_radar_psd.png"
+    ]
+  },
+  "de_train": {
+    "pos_x": -2308,
+    "pos_y": 2078,
+    "scale": 4.082077,
+    "verticalsections": {
+      "default": {
+        "AltitudeMax": 20000,
+        "AltitudeMin": -50
+      },
+      "lower": {
+        "AltitudeMax": -50,
+        "AltitudeMin": -5000
+      }
+    },
+    "radar_paths": [
+      "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_train_lower_radar_psd.png",
+      "https://raw.githubusercontent.com/MurkyYT/cs2-map-icons/main/images/radars/de_train_radar_psd.png"
+    ]
+  }
+}

@@ -1,0 +1,142 @@
+# ==========================================
+# CS2 Highlights Studio — Root .gitignore
+# ==========================================
+
+# --- Python Virtual Environments & Packages ---
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# --- Python Bytecode & Build Caches ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+*.egg-info/
+.installed.cfg
+*.egg
+pip-log.txt
+pip-delete-this-directory.txt
+
+# --- Pytest, Testing & Coverage ---
+.pytest_cache/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+htmlcov/
+.tox/
+.nox/
+
+# --- Node & Frontend ---
+frontend/node_modules/
+node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.local
+.npm/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# --- Databases & SQLite Local State ---
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+debug_pov.db
+temp_inspect.db
+demtoshka.db
+demtoshka.db-*
+cs2_studio.db
+
+# --- CS2 Demo Files (>100MB, cannot be committed to Git) ---
+*.dem
+*.dem.gz
+*.dem.bz2
+*.dem.zip
+*.dem.zst
+tests/integration/fixtures/*.dem
+!tests/integration/fixtures/.gitkeep
+
+# --- Rendered Videos, Audio & Frame Output ---
+renders/*
+!renders/.gitkeep
+*.mp4
+*.avi
+*.mkv
+*.webm
+*.mov
+*.wav
+*.pcm
+take[0-9]*/
+
+# --- Debug, Scratch & Temporary Artifacts ---
+debug_*.png
+test_*_frame.png
+frame_*.png
+preview_*.png
+scratch/
+temp_*
+
+# --- Logs ---
+*.log
+backend.log
+backend_err.log
+frontend.log
+frontend_err.log
+
+# --- External Tools & Third-party Binaries ---
+# HLAE and FFmpeg binaries should be downloaded / installed locally
+tools/hlae/*
+!tools/hlae/.gitkeep
+tools/ffmpeg/*
+!tools/ffmpeg/.gitkeep
+
+# --- IDEs & Editors ---
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.bak
+*~
+
+# --- Internal Agent Instructions, Development Notes & History ---
+.agents/
+AGENTS.md
+PROJECT_STATE.md
+DECISIONS.md
+BUG_REPORT_TEMPLATE.txt
+PROMPTS.txt
+storage_settings.json
+experiments/
+brain/
+.gemini/
+.antigravity/
+*.bak
+scratch/
+
+
