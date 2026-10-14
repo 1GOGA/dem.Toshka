@@ -203,37 +203,24 @@ class TestCfgGenerator:
         assert "spec_player HeroPlayer" in content
         assert kill_tick - hero_switch >= int(2.0 * tickrate)
 
-    def test_generate_cfg_two_phase_tournament_killcam_replay(self, tmp_path):
-        """Verify two-phase tournament killcam replay: victim dies on camera -> demo rewinds ~4s back -> hero POV."""
-        out_dir = tmp_path / "killcam_out"
-        cfg_path = tmp_path / "killcam.cfg"
+    def test_generate_cfg_linear_recording_pass(self, tmp_path):
+        """Verify linear CFG generation: seek forward, record start, record end & quit without backward loops."""
+        out_dir = tmp_path / "clip_out"
+        cfg_path = tmp_path / "clip.cfg"
         content = generate_render_cfg(
-            start_tick=5000,
-            end_tick=5800,
+            start_tick=4800,
+            end_tick=5080,
             output_dir=out_dir,
             output_cfg_path=cfg_path,
             fps=60,
-            pov_steam_id="76561197960278074",
-            pov_name="HeroAttacker",
-            is_killcam_replay=True,
-            killcam_victim_steam_id="76561197960278073",
-            killcam_victim_name="VictimPlayer",
-            killcam_victim_start_tick=4800,
-            killcam_victim_end_tick=5080,
-            killcam_hero_start_tick=4750,
+            pov_steam_id="76561197960278073",
+            pov_name="VictimPlayer",
         )
 
-        # 1. Phase 1: Seek to victim before death and record victim dying
         assert "demo_gototick 4780" in content
         assert "spec_player VictimPlayer" in content
         assert 'mirv_cmd addAtTick 4800 "spec_autodirector 0; spec_mode 4; spec_lock_to_accountid 12345; spec_player VictimPlayer; cl_trueview_show_status 0; demo_ui_mode 0; cl_spec_show_bindings 0; mirv_streams record start"' in content
-
-        # 2. Phase 2: Victim death ends at 5080, then REWIND back to Hero start (4730)
-        assert 'mirv_cmd addAtTick 5080 "mirv_streams record end; demo_gototick 4730; demo_resume"' in content
-        assert 'mirv_cmd addAtTick 4750 "spec_autodirector 0; spec_mode 4; spec_lock_to_accountid 12346; spec_player HeroAttacker; mirv_streams record start"' in content
-
-        # 3. Final clip completion
-        assert 'mirv_cmd addAtTick 5800 "mirv_streams record end; quit"' in content
+        assert 'mirv_cmd addAtTick 5080 "mirv_streams record end; quit"' in content
         assert cfg_path.exists()
 
     def test_generate_batch_render_cfg(self, tmp_path):
@@ -461,3 +448,90 @@ class TestRenderEngineValidation:
         assert cine.draw_hud is False
         assert cine.custom_crosshair is False
         assert cine.trueview_suppressed is True
+
+    def test_render_clip_tournament_killcam_two_pass_staging(self, tmp_path, monkeypatch):
+        """Verify that tournament killcam triggers two sequential passes (Victim then Hero) and concatenates via create_montage."""
+        from unittest.mock import MagicMock
+        from backend.render.montage import MontageResult
+
+        dummy_cs2 = tmp_path / "cs2.exe"
+        dummy_cs2.write_text("cs2")
+        dummy_hlae = tmp_path / "hlae.exe"
+        dummy_hlae.write_text("hlae")
+        dummy_hook = tmp_path / "hook.dll"
+        dummy_hook.write_text("hook")
+        dummy_demo = tmp_path / "match.dem"
+        dummy_demo.write_text("demo")
+
+        engine = RenderEngine(
+            cs2_exe=dummy_cs2,
+            hlae_exe=dummy_hlae,
+            hook_dll=dummy_hook,
+        )
+
+        out_mp4 = tmp_path / "final_killcam.mp4"
+        task = RenderTask(
+            task_id="kc_task_123",
+            demo_path=dummy_demo,
+            start_tick=5000,
+            end_tick=5800,
+            pov_steam_id="76561197960278074",
+            pov_name="HeroAttacker",
+            output_path=out_mp4,
+            is_killcam_replay=True,
+            killcam_victim_steam_id="76561197960278073",
+            killcam_victim_name="VictimPlayer",
+            killcam_victim_start_tick=4800,
+            killcam_victim_end_tick=5080,
+            killcam_hero_start_tick=4750,
+        )
+
+        # Track calls to _execute_cs2_pass
+        executed_passes = []
+
+        def mock_execute_pass(task, subtask_id, start_tick, end_tick, pov_steam_id, pov_name, output_mp4, camera_switches=None, log_file=None):
+            executed_passes.append({
+                "subtask_id": subtask_id,
+                "start_tick": start_tick,
+                "end_tick": end_tick,
+                "pov_name": pov_name,
+                "pov_steam_id": pov_steam_id,
+                "output_mp4": output_mp4,
+            })
+            output_mp4.parent.mkdir(parents=True, exist_ok=True)
+            output_mp4.write_text(f"dummy video for {subtask_id}")
+            return True, None, True, None
+
+        monkeypatch.setattr(engine, "_execute_cs2_pass", mock_execute_pass)
+
+        mock_montage = MagicMock()
+        def mock_montage_call(clip_paths, output_path):
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text("stitched final killcam")
+            return MontageResult(success=True, output_path=output_path, duration_seconds=10.0, clip_count=len(clip_paths))
+
+        monkeypatch.setattr("backend.render.engine.create_montage", mock_montage_call)
+        monkeypatch.setattr("backend.render.engine.verify_mp4", lambda *args, **kwargs: (True, 10.0, None))
+        monkeypatch.setattr("backend.render.engine.verify_media_integrity", lambda *args, **kwargs: (True, None))
+        monkeypatch.setattr("backend.render.engine.verify_mp4_visual_content", lambda *args, **kwargs: (True, None))
+        monkeypatch.setattr("backend.render.engine.verify_mp4_audio_signal", lambda *args, **kwargs: (True, 0.0, -14.0, None))
+
+        result = engine.render_clip(task)
+
+        assert result.success is True
+        assert len(executed_passes) == 2
+
+        # Pass 1: Victim view
+        assert executed_passes[0]["subtask_id"] == "kc_task_123_vic"
+        assert executed_passes[0]["start_tick"] == 4800
+        assert executed_passes[0]["end_tick"] == 5080
+        assert executed_passes[0]["pov_name"] == "VictimPlayer"
+        assert executed_passes[0]["pov_steam_id"] == "76561197960278073"
+
+        # Pass 2: Hero view
+        assert executed_passes[1]["subtask_id"] == "kc_task_123_hero"
+        assert executed_passes[1]["start_tick"] == 4750
+        assert executed_passes[1]["end_tick"] == 5800
+        assert executed_passes[1]["pov_name"] == "HeroAttacker"
+        assert executed_passes[1]["pov_steam_id"] == "76561197960278074"
+

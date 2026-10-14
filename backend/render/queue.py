@@ -550,7 +550,8 @@ class RenderQueueManager:
                 getattr(batch_fn, "side_effect", None) is not None
                 or (getattr(batch_fn, "return_value", None) is not None and not hasattr(getattr(batch_fn, "return_value", None), "_mock_name"))
             )
-            can_use_batch = (len(group_tasks) > 1) and (not is_mock or has_explicit_mock)
+            has_killcam = any(t.is_killcam_replay for t in group_tasks)
+            can_use_batch = (len(group_tasks) > 1) and not has_killcam and (not is_mock or has_explicit_mock)
 
             if can_use_batch:
                 # OPTIMIZATION: Single CS2 process continuous multi-clip recording

@@ -359,71 +359,36 @@ def generate_render_cfg(
             "mirv_cmd clear",
         ])
 
-        if is_killcam_replay and killcam_victim_start_tick is not None and killcam_victim_end_tick is not None:
-            # TOURNAMENT KILLCAM REPLAY (Instant Replay)
-            # Phase 1: Victim POV holding/moving, victim dies on camera (epic ragdoll & death event)
-            vic_acc = steam64_to_account_id(killcam_victim_steam_id) if killcam_victim_steam_id else None
-            vic_spec = _build_spec_commands(vic_acc, killcam_victim_name)
-            vic_jump = max(10, killcam_victim_start_tick - jump_lead_ticks)
+        # Schedule initial seek forward if starting past early ticks
+        if start_tick > 60:
+            jump_tick = max(10, start_tick - jump_lead_ticks)
+            lines.append(f'mirv_cmd addAtTick 5 "demo_gototick {jump_tick}; demo_resume"')
 
-            lines.append(f'mirv_cmd addAtTick 5 "demo_gototick {vic_jump}; demo_resume"')
-            if vic_spec:
-                lines.append(f'mirv_cmd addAtTick {vic_jump + 20} "{"; ".join(vic_spec)}; demo_resume"')
-
-            rec_vic_parts = list(vic_spec) + [
-                "cl_trueview_show_status 0",
-                "demo_ui_mode 0",
-                "cl_spec_show_bindings 0",
-                "mirv_streams record start",
-            ]
-            lines.append(f'mirv_cmd addAtTick {killcam_victim_start_tick} "{"; ".join(rec_vic_parts)}"')
-
-            # Phase 2: Victim record finishes at victim_end_tick.
-            # CS2 immediately REWINDS backwards ~4.0s before kill to Hero start!
-            h_start = killcam_hero_start_tick if killcam_hero_start_tick is not None else start_tick
-            hero_jump = max(10, h_start - jump_lead_ticks)
-            lines.append(
-                f'mirv_cmd addAtTick {killcam_victim_end_tick} "mirv_streams record end; demo_gototick {hero_jump}; demo_resume"'
-            )
             if spec_cmds:
-                lines.append(f'mirv_cmd addAtTick {hero_jump + 20} "{"; ".join(spec_cmds)}; demo_resume"')
-
-            rec_hero_parts = list(spec_cmds) + ["mirv_streams record start"]
-            lines.append(f'mirv_cmd addAtTick {h_start} "{"; ".join(rec_hero_parts)}"')
-            lines.append(f'mirv_cmd addAtTick {end_tick} "mirv_streams record end; quit"')
-
+                lines.append(f'mirv_cmd addAtTick {jump_tick + 20} "{"; ".join(spec_cmds)}; demo_resume"')
         else:
-            # Standard single-phase highlight clip
-            # Jump forward if starting past early ticks
-            if start_tick > 60:
-                jump_tick = max(10, start_tick - jump_lead_ticks)
-                lines.append(f'mirv_cmd addAtTick 5 "demo_gototick {jump_tick}; demo_resume"')
+            if spec_cmds:
+                lines.append(f'mirv_cmd addAtTick 5 "{"; ".join(spec_cmds)}"')
 
-                if spec_cmds:
-                    lines.append(f'mirv_cmd addAtTick {jump_tick + 20} "{"; ".join(spec_cmds)}; demo_resume"')
-            else:
-                if spec_cmds:
-                    lines.append(f'mirv_cmd addAtTick 5 "{"; ".join(spec_cmds)}"')
+        # Schedule highlight recording start and end with guaranteed TrueView & demo UI suppression
+        rec_start_parts = list(spec_cmds) + [
+            "cl_trueview_show_status 0",
+            "demo_ui_mode 0",
+            "cl_spec_show_bindings 0",
+            "mirv_streams record start",
+        ]
+        lines.append(f'mirv_cmd addAtTick {start_tick} "{"; ".join(rec_start_parts)}"')
 
-            # Schedule highlight recording start and end with guaranteed TrueView & demo UI suppression
-            rec_start_parts = list(spec_cmds) + [
-                "cl_trueview_show_status 0",
-                "demo_ui_mode 0",
-                "cl_spec_show_bindings 0",
-                "mirv_streams record start",
-            ]
-            lines.append(f'mirv_cmd addAtTick {start_tick} "{"; ".join(rec_start_parts)}"')
+        # Dynamic in-clip camera switches (e.g. dynamic switches during play)
+        if camera_switches:
+            for sw_tick, sw_steam, sw_name in sorted(camera_switches, key=lambda s: s[0]):
+                if start_tick < sw_tick < end_tick:
+                    sw_acc = steam64_to_account_id(sw_steam) if sw_steam else None
+                    sw_cmds = _build_spec_commands(sw_acc, sw_name)
+                    if sw_cmds:
+                        lines.append(f'mirv_cmd addAtTick {sw_tick} "{"; ".join(sw_cmds)}"')
 
-            # Dynamic in-clip camera switches (e.g. tournament killcam switching to victim and back)
-            if camera_switches:
-                for sw_tick, sw_steam, sw_name in sorted(camera_switches, key=lambda s: s[0]):
-                    if start_tick < sw_tick < end_tick:
-                        sw_acc = steam64_to_account_id(sw_steam) if sw_steam else None
-                        sw_cmds = _build_spec_commands(sw_acc, sw_name)
-                        if sw_cmds:
-                            lines.append(f'mirv_cmd addAtTick {sw_tick} "{"; ".join(sw_cmds)}"')
-
-            lines.append(f'mirv_cmd addAtTick {end_tick} "mirv_streams record end; quit"')
+        lines.append(f'mirv_cmd addAtTick {end_tick} "mirv_streams record end; quit"')
     else:
         # Fallback demo_gototick and spec commands for direct playback compatibility
         lines.append(f"demo_gototick {start_tick}")
@@ -524,117 +489,53 @@ def generate_batch_render_cfg(
         acc_id = steam64_to_account_id(clip.pov_steam_id) if clip.pov_steam_id else None
         spec_cmds = _build_spec_commands(acc_id, clip.pov_name)
 
-        if clip.is_killcam_replay and clip.killcam_victim_start_tick is not None and clip.killcam_victim_end_tick is not None:
-            # TOURNAMENT KILLCAM REPLAY (Instant Replay)
-            vic_acc = steam64_to_account_id(clip.killcam_victim_steam_id) if clip.killcam_victim_steam_id else None
-            vic_spec = _build_spec_commands(vic_acc, clip.killcam_victim_name)
-            vic_jump = max(10, clip.killcam_victim_start_tick - jump_lead_ticks)
+        jump_tick = max(10, clip.start_tick - jump_lead_ticks)
 
-            if idx == 0:
-                lines.append(f'mirv_cmd addAtTick 5 "demo_gototick {vic_jump}; demo_resume"')
-                if vic_spec:
-                    lines.append(f'mirv_cmd addAtTick {vic_jump + 20} "{"; ".join(vic_spec)}; demo_resume"')
-
-            # Phase 1: Record victim holding/moving and death
-            rec_vic_parts = list(vic_spec) + ["mirv_streams record start"]
-            lines.append(f'mirv_cmd addAtTick {clip.killcam_victim_start_tick} "{"; ".join(rec_vic_parts)}"')
-
-            # Phase 2: Victim dies on camera at kill_tick, stop victim record at victim_end_tick.
-            # CS2 immediately REWINDS backwards ~4.0s before kill to Hero start!
-            h_start = clip.killcam_hero_start_tick if clip.killcam_hero_start_tick is not None else clip.start_tick
-            hero_jump = max(10, h_start - jump_lead_ticks)
-            lines.append(
-                f'mirv_cmd addAtTick {clip.killcam_victim_end_tick} "mirv_streams record end; demo_gototick {hero_jump}; demo_resume"'
-            )
-            if spec_cmds:
-                lines.append(f'mirv_cmd addAtTick {hero_jump + 20} "{"; ".join(spec_cmds)}; demo_resume"')
-
-            rec_hero_parts = list(spec_cmds) + ["mirv_streams record start"]
-            lines.append(f'mirv_cmd addAtTick {h_start} "{"; ".join(rec_hero_parts)}"')
-
-            # End recording for Hero POV
-            if idx == len(sorted_clips) - 1:
-                lines.append(f'mirv_cmd addAtTick {clip.end_tick} "mirv_streams record end; quit"')
+        if idx == 0:
+            # First clip: schedule initial seek at tick 5
+            if clip.start_tick > 60:
+                lines.append(f'mirv_cmd addAtTick 5 "demo_gototick {jump_tick}; demo_resume"')
+                if spec_cmds:
+                    lines.append(f'mirv_cmd addAtTick {jump_tick + 20} "{"; ".join(spec_cmds)}; demo_resume"')
             else:
-                next_clip = sorted_clips[idx + 1]
-                next_start = (
-                    next_clip.killcam_victim_start_tick
-                    if (next_clip.is_killcam_replay and next_clip.killcam_victim_start_tick is not None)
-                    else next_clip.start_tick
-                )
-                next_jump = max(10, next_start - jump_lead_ticks)
-                next_acc_id = steam64_to_account_id(
-                    next_clip.killcam_victim_steam_id if next_clip.is_killcam_replay else next_clip.pov_steam_id
-                )
-                next_spec_cmds = _build_spec_commands(
-                    next_acc_id,
-                    next_clip.killcam_victim_name if next_clip.is_killcam_replay else next_clip.pov_name,
-                )
+                if spec_cmds:
+                    lines.append(f'mirv_cmd addAtTick 5 "{"; ".join(spec_cmds)}"')
 
-                lines.append(
-                    f'mirv_cmd addAtTick {clip.end_tick} "mirv_streams record end; demo_gototick {next_jump}; demo_resume"'
-                )
+        # Start recording this clip with clean HUD & camera lock
+        start_parts = list(spec_cmds) + ["mirv_streams record start"]
+        lines.append(f'mirv_cmd addAtTick {clip.start_tick} "{"; ".join(start_parts)}"')
+
+        # Dynamic in-clip camera switches
+        if clip.camera_switches:
+            for sw_tick, sw_steam, sw_name in sorted(clip.camera_switches, key=lambda s: s[0]):
+                if clip.start_tick < sw_tick < clip.end_tick:
+                    sw_acc = steam64_to_account_id(sw_steam) if sw_steam else None
+                    sw_cmds = _build_spec_commands(sw_acc, sw_name)
+                    if sw_cmds:
+                        lines.append(f'mirv_cmd addAtTick {sw_tick} "{"; ".join(sw_cmds)}"')
+
+        # End recording for this clip
+        if idx == len(sorted_clips) - 1:
+            # Final clip: stop recording and quit CS2
+            lines.append(f'mirv_cmd addAtTick {clip.end_tick} "mirv_streams record end; quit"')
+        else:
+            next_clip = sorted_clips[idx + 1]
+            next_start = next_clip.start_tick
+            next_jump = max(10, next_start - jump_lead_ticks)
+            next_acc_id = steam64_to_account_id(next_clip.pov_steam_id)
+            next_spec_cmds = _build_spec_commands(next_acc_id, next_clip.pov_name)
+
+            if next_jump > clip.end_tick + 30:
+                # Fast-forward jump forward directly to next clip lead-in
+                lines.append(f'mirv_cmd addAtTick {clip.end_tick} "mirv_streams record end; demo_gototick {next_jump}; demo_resume"')
                 if next_spec_cmds:
                     lines.append(f'mirv_cmd addAtTick {next_jump + 20} "{"; ".join(next_spec_cmds)}; demo_resume"')
-
-        else:
-            # Standard single-phase highlight clip
-            jump_tick = max(10, clip.start_tick - jump_lead_ticks)
-
-            if idx == 0:
-                # First clip: schedule initial seek at tick 5
-                if clip.start_tick > 60:
-                    lines.append(f'mirv_cmd addAtTick 5 "demo_gototick {jump_tick}; demo_resume"')
-                    if spec_cmds:
-                        lines.append(f'mirv_cmd addAtTick {jump_tick + 20} "{"; ".join(spec_cmds)}; demo_resume"')
-                else:
-                    if spec_cmds:
-                        lines.append(f'mirv_cmd addAtTick 5 "{"; ".join(spec_cmds)}"')
-
-            # Start recording this clip with clean HUD & camera lock (kept short to prevent CS2 line truncation)
-            start_parts = list(spec_cmds) + ["mirv_streams record start"]
-            lines.append(f'mirv_cmd addAtTick {clip.start_tick} "{"; ".join(start_parts)}"')
-
-            # Dynamic in-clip camera switches (e.g. tournament killcam switching to victim and back)
-            if clip.camera_switches:
-                for sw_tick, sw_steam, sw_name in sorted(clip.camera_switches, key=lambda s: s[0]):
-                    if clip.start_tick < sw_tick < clip.end_tick:
-                        sw_acc = steam64_to_account_id(sw_steam) if sw_steam else None
-                        sw_cmds = _build_spec_commands(sw_acc, sw_name)
-                        if sw_cmds:
-                            lines.append(f'mirv_cmd addAtTick {sw_tick} "{"; ".join(sw_cmds)}"')
-
-            # End recording for this clip
-            if idx == len(sorted_clips) - 1:
-                # Final clip: stop recording and immediately quit CS2
-                lines.append(f'mirv_cmd addAtTick {clip.end_tick} "mirv_streams record end; quit"')
             else:
-                next_clip = sorted_clips[idx + 1]
-                next_start = (
-                    next_clip.killcam_victim_start_tick
-                    if (next_clip.is_killcam_replay and next_clip.killcam_victim_start_tick is not None)
-                    else next_clip.start_tick
-                )
-                next_jump = max(10, next_start - jump_lead_ticks)
-                next_acc_id = steam64_to_account_id(
-                    next_clip.killcam_victim_steam_id if next_clip.is_killcam_replay else next_clip.pov_steam_id
-                )
-                next_spec_cmds = _build_spec_commands(
-                    next_acc_id,
-                    next_clip.killcam_victim_name if next_clip.is_killcam_replay else next_clip.pov_name,
-                )
-
-                if next_jump > clip.end_tick + 30:
-                    # Fast-forward jump directly to next clip lead-in without playing unnecessary demo ticks
-                    lines.append(f'mirv_cmd addAtTick {clip.end_tick} "mirv_streams record end; demo_gototick {next_jump}; demo_resume"')
-                    if next_spec_cmds:
-                        lines.append(f'mirv_cmd addAtTick {next_jump + 20} "{"; ".join(next_spec_cmds)}; demo_resume"')
-                else:
-                    # Seamless transition between closely spaced highlights
-                    lines.append(f'mirv_cmd addAtTick {clip.end_tick} "mirv_streams record end; demo_resume"')
-                    prep_tick = max(clip.end_tick + 1, next_start - 15)
-                    if next_spec_cmds and prep_tick < next_start:
-                        lines.append(f'mirv_cmd addAtTick {prep_tick} "{"; ".join(next_spec_cmds)}; demo_resume"')
+                # Seamless transition between closely spaced highlights
+                lines.append(f'mirv_cmd addAtTick {clip.end_tick} "mirv_streams record end; demo_resume"')
+                prep_tick = max(clip.end_tick + 1, next_start - 15)
+                if next_spec_cmds and prep_tick < next_start:
+                    lines.append(f'mirv_cmd addAtTick {prep_tick} "{"; ".join(next_spec_cmds)}; demo_resume"')
 
     lines.append("demo_resume")
     lines.append("")
