@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import type { DemoSummary } from '../types'
 
 interface LibraryViewProps {
@@ -19,6 +19,42 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
   error,
 }) => {
   const [inputPath, setInputPath] = useState('tests/integration/fixtures/test.dem')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Custom demo signatures / user notes persisted in localStorage
+  const [demoNotes, setDemoNotes] = useState<Record<number, string>>(() => {
+    const notes: Record<number, string> = {}
+    demos.forEach((d) => {
+      const saved = localStorage.getItem(`dem_note_${d.id}`)
+      if (saved) notes[d.id] = saved
+    })
+    return notes
+  })
+  const [editingDemoId, setEditingDemoId] = useState<number | null>(null)
+  const [noteDraft, setNoteDraft] = useState<string>('')
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const filePath = (file as any).path || file.name
+    setInputPath(filePath)
+    onParsePath(filePath)
+  }
+
+  const saveNote = (demoId: number) => {
+    if (noteDraft.trim()) {
+      localStorage.setItem(`dem_note_${demoId}`, noteDraft.trim())
+      setDemoNotes((prev) => ({ ...prev, [demoId]: noteDraft.trim() }))
+    } else {
+      localStorage.removeItem(`dem_note_${demoId}`)
+      setDemoNotes((prev) => {
+        const next = { ...prev }
+        delete next[demoId]
+        return next
+      })
+    }
+    setEditingDemoId(null)
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,19 +82,57 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
           marginBottom: '32px',
         }}
       >
-        <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '8px' }}>
-          Analyze CS2 Demo File (.dem)
-        </h2>
-        <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: '16px' }}>
-          Provide the local path to a CS2 demo. Ingestion validates the header and checks the SQLite cache. If already analyzed with the current parser schema, cached results load instantly.
-        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '16px' }}>
+          <div>
+            <h2 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 4px 0' }}>
+              Добавить CS2 демку (.dem) в библиотеку
+            </h2>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
+              Выберите файл с компьютера или укажите путь. Демка парсится движком CS2 Source 2 и сохраняется в локальной базе.
+            </p>
+          </div>
+
+          {/* Prominent Add Demo File Button */}
+          <div>
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept=".dem"
+              style={{ display: 'none' }}
+              onChange={handleFileSelect}
+            />
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isLoading}
+              style={{
+                padding: '12px 24px',
+                fontSize: '14px',
+                fontWeight: 800,
+                background: 'linear-gradient(135deg, #6366f1 0%, #38bdf8 100%)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '8px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 20px rgba(99, 102, 241, 0.45)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+              }}
+            >
+              <span style={{ fontSize: '18px' }}>📁</span>
+              <span>Выбрать .dem с компьютера</span>
+            </button>
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
           <input
             type="text"
             value={inputPath}
             onChange={(e) => setInputPath(e.target.value)}
-            placeholder="C:\path\to\match.dem or relative path"
+            placeholder="Или введите локальный путь: C:\cs2\demos\match.dem"
             disabled={isLoading}
             style={{
               flex: 1,
@@ -71,8 +145,8 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
               fontFamily: 'inherit',
             }}
           />
-          <button type="submit" className="btn btn-primary" disabled={isLoading}>
-            {isLoading ? 'Analyzing...' : 'Parse & Open Demo'}
+          <button type="submit" className="btn btn-secondary" disabled={isLoading} style={{ padding: '10px 18px', fontWeight: 600 }}>
+            {isLoading ? 'Анализ...' : 'Парсинг по пути'}
           </button>
         </form>
 
@@ -88,7 +162,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
               fontSize: '13px',
             }}
           >
-            <strong>Error:</strong> {error}
+            <strong>Ошибка:</strong> {error}
           </div>
         )}
       </div>
@@ -168,12 +242,92 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                         fontSize: '11px',
                         color: 'var(--text-muted)',
                         wordBreak: 'break-all',
-                        marginBottom: '16px',
+                        marginBottom: '10px',
                         fontFamily: 'monospace',
                       }}
                     >
                       {demo.file_path}
                     </p>
+
+                    {/* User custom demo signature/note */}
+                    {editingDemoId === demo.id ? (
+                      <div
+                        style={{ display: 'flex', gap: '6px', marginBottom: '14px' }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <input
+                          type="text"
+                          value={noteDraft}
+                          onChange={(e) => setNoteDraft(e.target.value)}
+                          placeholder="Например: FACEIT финал 16-14 против s1mple"
+                          autoFocus
+                          style={{
+                            flex: 1,
+                            backgroundColor: '#0f1219',
+                            border: '1px solid #38bdf8',
+                            borderRadius: '6px',
+                            padding: '5px 8px',
+                            fontSize: '11px',
+                            color: '#f1f5f9',
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveNote(demo.id)
+                            if (e.key === 'Escape') setEditingDemoId(null)
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className="btn btn-primary"
+                          style={{ padding: '4px 8px', fontSize: '11px' }}
+                          onClick={() => saveNote(demo.id)}
+                        >
+                          ✓
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-secondary"
+                          style={{ padding: '4px 8px', fontSize: '11px' }}
+                          onClick={() => setEditingDemoId(null)}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div
+                        style={{
+                          marginBottom: '14px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          backgroundColor: demoNotes[demo.id] ? 'rgba(56, 189, 248, 0.08)' : 'rgba(255, 255, 255, 0.03)',
+                          border: `1px solid ${demoNotes[demo.id] ? 'rgba(56, 189, 248, 0.25)' : '#1e2433'}`,
+                          padding: '5px 10px',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEditingDemoId(demo.id)
+                          setNoteDraft(demoNotes[demo.id] || '')
+                        }}
+                        title="Нажмите чтобы подписать или изменить заметку к этой демке"
+                      >
+                        <span
+                          style={{
+                            fontSize: '11px',
+                            color: demoNotes[demo.id] ? '#38bdf8' : '#64748b',
+                            fontStyle: demoNotes[demo.id] ? 'normal' : 'italic',
+                            fontWeight: demoNotes[demo.id] ? 600 : 400,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {demoNotes[demo.id] ? `📝 ${demoNotes[demo.id]}` : '+ Подписать демку / заметка'}
+                        </span>
+                        <span style={{ fontSize: '11px', color: '#94a3b8' }}>✏️</span>
+                      </div>
+                    )}
 
                     <div
                       style={{

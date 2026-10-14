@@ -7,7 +7,6 @@ import { TournamentHudModal } from './TournamentHudModal'
 import { PlayerAnalyticsModal } from './PlayerAnalyticsModal'
 import { Agent3DViewer } from './Agent3DViewer'
 import { InteractiveCrosshairPreview } from './InteractiveCrosshairPreview'
-import { HudRadarScreenSimulator } from './HudRadarScreenSimulator'
 
 
 
@@ -968,6 +967,62 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
               )
             })}
           </div>
+
+          {/* Step 2 Action Footer Bar */}
+          <div
+            style={{
+              marginTop: '12px',
+              padding: '16px 20px',
+              backgroundColor: '#12151e',
+              border: '1px solid #232838',
+              borderRadius: '12px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
+            }}
+          >
+            <div>
+              <div style={{ fontSize: '14px', fontWeight: 700, color: '#f1f5f9' }}>
+                Выбор игрока для нарезки
+              </div>
+              <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                Выберите конкретного игрока выше или перейдите ко всем моментам матча
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setCurrentStep(1)}
+                style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 600 }}
+              >
+                ← Сменить матч
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => {
+                  onSetPlayerFilter(null)
+                  setCurrentStep(3)
+                }}
+                style={{
+                  padding: '10px 24px',
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  backgroundColor: '#38bdf8',
+                  color: '#090d16',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  boxShadow: '0 0 16px rgba(56, 189, 248, 0.35)',
+                }}
+              >
+                Далее: Все моменты матча ({highlights.length}) →
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -1240,124 +1295,6 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       </button>
                     </div>
                   </div>
-
-                  {/* Player Preset Controls: FOV, Crosshair, HUD */}
-                  {clipSettings && onUpdateSettings && (
-                    <div
-                      style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                        gap: '10px',
-                        paddingTop: '10px',
-                        borderTop: '1px solid #1e2230',
-                      }}
-                    >
-                      {/* POV Director Mode */}
-                      <div>
-                        <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
-                          Режиссер POV:
-                        </span>
-                        <div style={{ display: 'flex', gap: '4px' }}>
-                          {[
-                            { label: '👑 ГГ', p: 'attacker' },
-                            { label: '🎬 Килл-кам', p: 'dynamic_killcam' },
-                            { label: '💀 Жертва', p: 'victim' },
-                          ].map((cam) => (
-                            <button
-                              key={cam.p}
-                              type="button"
-                              className={`btn ${(clipSettings.perspective || 'attacker') === cam.p ? 'btn-primary' : 'btn-secondary'}`}
-                              style={{ padding: '2px 6px', fontSize: '10px' }}
-                              onClick={() => onUpdateSettings({ ...clipSettings, perspective: cam.p as any })}
-                            >
-                              {cam.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* FOV Override */}
-                      <div>
-                        <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
-                          Камера POV (FOV):
-                        </span>
-                        <div style={{ display: 'flex', gap: '4px' }}>
-                          {[
-                            { label: 'Def', val: undefined },
-                            { label: '68°', val: 68 },
-                            { label: '95°', val: 95 },
-                            { label: '105°', val: 105 },
-                          ].map((f) => (
-                            <button
-                              key={f.label}
-                              type="button"
-                              className={`btn ${clipSettings.fov === f.val ? 'btn-primary' : 'btn-secondary'}`}
-                              style={{ padding: '2px 6px', fontSize: '10px' }}
-                              onClick={() => onUpdateSettings({ ...clipSettings, fov: f.val })}
-                            >
-                              {f.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* HUD Override */}
-                      <div>
-                        <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
-                          HUD игрока:
-                        </span>
-                        <div style={{ display: 'flex', gap: '4px' }}>
-                          {[
-                            { label: 'Full', mode: 'full' },
-                            { label: 'Killfeed', mode: 'killfeed_only' },
-                            { label: 'No-HUD', mode: 'none' },
-                          ].map((h) => (
-                            <button
-                              key={h.mode}
-                              type="button"
-                              className={`btn ${clipSettings.hudMode === h.mode ? 'btn-primary' : 'btn-secondary'}`}
-                              style={{ padding: '2px 6px', fontSize: '10px' }}
-                              onClick={() => onUpdateSettings({ ...clipSettings, hudMode: h.mode as any })}
-                            >
-                              {h.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Crosshair Preset Override */}
-                      <div>
-                        <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block', marginBottom: '4px' }}>
-                          Прицел:
-                        </span>
-                        <div style={{ display: 'flex', gap: '4px' }}>
-                          {[
-                            { label: 'Pro', p: 'pro_cyan' },
-                            { label: 'Green', p: 'green_clean' },
-                            { label: 'Dot', p: 'dot' },
-                            { label: 'White', p: 'minimal_white' },
-                            { label: 'None', p: 'hidden' },
-                          ].map((c) => (
-                            <button
-                              key={c.p}
-                              type="button"
-                              className={`btn ${(clipSettings.crosshairPreset || 'pro_cyan') === c.p ? 'btn-primary' : 'btn-secondary'}`}
-                              style={{ padding: '2px 6px', fontSize: '10px' }}
-                              onClick={() =>
-                                onUpdateSettings({
-                                  ...clipSettings,
-                                  crosshairPreset: c.p as any,
-                                  customCrosshair: c.p !== 'default' && c.p !== 'hidden',
-                                })
-                              }
-                            >
-                              {c.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               )
             })()}
@@ -1521,6 +1458,63 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 })
               )}
             </div>
+
+            {/* Step 3 Action Navigation Bar */}
+            <div
+              style={{
+                marginTop: '16px',
+                padding: '16px 20px',
+                backgroundColor: '#12151e',
+                border: '1px solid #232838',
+                borderRadius: '12px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
+              }}
+            >
+              <div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: '#f1f5f9' }}>
+                  Выбрано моментов: <strong style={{ color: '#38bdf8' }}>{selectedIds.size}</strong> из {highlights.length}
+                </div>
+                <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                  {selectedIds.size === 0
+                    ? 'Отметьте хотя бы один момент галочкой для перехода к записи'
+                    : 'Моменты выбраны! Нажмите «Далее» для настройки 4:3, стилей радара и записи'}
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px' }}>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setCurrentStep(2)}
+                  style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 600 }}
+                >
+                  ← Назад к игрокам
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => setCurrentStep(4)}
+                  disabled={selectedIds.size === 0}
+                  style={{
+                    padding: '10px 24px',
+                    fontSize: '13px',
+                    fontWeight: 800,
+                    backgroundColor: selectedIds.size > 0 ? '#6366f1' : '#334155',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: selectedIds.size > 0 ? 'pointer' : 'not-allowed',
+                    boxShadow: selectedIds.size > 0 ? '0 0 20px rgba(99, 102, 241, 0.5)' : 'none',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  Далее: Настройки и запись ({selectedIds.size}) →
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -1582,24 +1576,6 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   </div>
                 </div>
               </div>
-
-              {/* Live CS2 Viewport Simulator for HUD & Radar */}
-              {clipSettings && (
-                <HudRadarScreenSimulator
-                  hudMode={clipSettings.hudMode}
-                  radarMode={clipSettings.radarMode || 'broadcast'}
-                  aspectRatio={clipSettings.aspectRatio || (aspectRatio as any) || '16:9'}
-                  mapName={activeDemo?.map_name || undefined}
-                  onSelectPreset={(p) => {
-                    onUpdateSettings && onUpdateSettings({
-                      ...clipSettings,
-                      hudMode: p.hudMode,
-                      radarMode: p.radarMode,
-                      hudScale: p.hudMode.startsWith('huge') ? 1.15 : 0.95,
-                    })
-                  }}
-                />
-              )}
 
               {/* Settings Navigation Tabs */}
               <div

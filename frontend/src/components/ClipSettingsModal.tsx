@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 import type { ClipSettings } from '../types'
-import { HudRadarScreenSimulator } from './HudRadarScreenSimulator'
 
 interface ClipSettingsModalProps {
   isOpen: boolean
@@ -42,21 +41,6 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
         </div>
 
         <div className="modal-body" style={{ maxHeight: '78vh', overflowY: 'auto', padding: '16px 20px' }}>
-          {/* Top Live Interactive CS2 Screen Simulator */}
-          <HudRadarScreenSimulator
-            hudMode={settings.hudMode}
-            radarMode={settings.radarMode || 'broadcast'}
-            aspectRatio={settings.aspectRatio || '16:9'}
-            onSelectPreset={(p) => {
-              onUpdateSettings({
-                ...settings,
-                hudMode: p.hudMode,
-                radarMode: p.radarMode,
-                hudScale: p.hudMode.startsWith('huge') ? 1.15 : 0.95,
-              })
-            }}
-          />
-
           {/* Navigation Tabs */}
           <div
             style={{

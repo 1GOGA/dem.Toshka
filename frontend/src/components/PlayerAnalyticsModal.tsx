@@ -340,6 +340,9 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                     <div className="num" style={{ fontSize: '22px', fontWeight: 800, color: faceitInfo.color, marginTop: '2px' }}>
                       {analytics.performance_rating.toFixed(2)}
                     </div>
+                    <div style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 600 }}>
+                      Impact: {(analytics.map_impact_score ?? 1.0).toFixed(2)}
+                    </div>
                   </div>
 
                   <div style={{ backgroundColor: '#101217', padding: '12px 14px', borderRadius: '10px', border: '1px solid #1f2430' }}>
@@ -383,6 +386,60 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                   </div>
                 </div>
               </div>
+
+              {/* FUN CS2 ESPORTS BADGES & ROLES */}
+              {analytics.fun_badges && analytics.fun_badges.length > 0 && (
+                <div
+                  style={{
+                    backgroundColor: '#12151e',
+                    border: '1px solid #232838',
+                    borderRadius: '12px',
+                    padding: '16px 20px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '15px' }}>🏆</span>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#f1f5f9', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                      Награды и Роли игрока в матче
+                    </span>
+                    <span style={{ fontSize: '11px', color: '#64748b' }}>
+                      (Мат-анализ полезности карты и фановые ачивки)
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '10px' }}>
+                    {analytics.fun_badges.map((b, i) => {
+                      const borderColor =
+                        b.rarity === 'gold' ? '#fbbf24' : b.rarity === 'purple' ? '#a855f7' : b.rarity === 'blue' ? '#38bdf8' : '#34d399'
+                      return (
+                        <div
+                          key={i}
+                          style={{
+                            backgroundColor: '#0d1017',
+                            border: `1px solid ${borderColor}44`,
+                            borderLeft: `3px solid ${borderColor}`,
+                            borderRadius: '8px',
+                            padding: '10px 14px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '3px',
+                          }}
+                        >
+                          <div style={{ fontSize: '13px', fontWeight: 800, color: '#f1f5f9' }}>
+                            {b.badge}
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#94a3b8', lineHeight: 1.3 }}>
+                            {b.desc}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
 
               {/* ADVANCED PARAMETERS: SWING, AIM & PRECISION, OPENING & TRADES */}
               <div>

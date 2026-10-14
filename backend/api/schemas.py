@@ -212,6 +212,8 @@ class PlayerAnalyticsDTO(BaseModel):
     errors: list[PlayerErrorDTO] = Field(default_factory=list)
     strengths: list[str] = Field(default_factory=list)
     advice: list[str] = Field(default_factory=list)
+    map_impact_score: float = 1.0
+    fun_badges: list[dict[str, str]] = Field(default_factory=list)
 
 
 

@@ -496,8 +496,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
-        backgroundColor: 'rgba(5, 7, 12, 0.88)',
-        backdropFilter: 'blur(16px)',
+        backgroundColor: 'rgba(5, 7, 12, 0.94)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -514,9 +513,9 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
           borderRadius: isFullscreen ? 0 : '14px',
           boxShadow: '0 25px 60px rgba(0, 0, 0, 0.9), 0 0 40px rgba(56, 189, 248, 0.1)',
           width: isFullscreen ? '100vw' : '92%',
-          maxWidth: isFullscreen ? 'none' : (!is43Stretched && videoAspectRatio === '4 / 3' ? '840px' : '1040px'),
+          maxWidth: isFullscreen ? 'none' : (!is43Stretched && videoAspectRatio === '4 / 3' ? '880px' : '1100px'),
           height: isFullscreen ? '100vh' : 'auto',
-          maxHeight: isFullscreen ? 'none' : '94vh',
+          maxHeight: isFullscreen ? 'none' : '92vh',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -642,14 +641,14 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
           style={{
             position: 'relative',
             backgroundColor: '#000',
-            aspectRatio: isFullscreen ? 'auto' : (is43Stretched ? '16 / 9' : videoAspectRatio),
-            maxHeight: isFullscreen ? 'none' : 'calc(88vh - 160px)',
             width: '100%',
-            flex: isFullscreen ? 1 : 'none',
+            flex: isFullscreen ? 1 : '1 1 auto',
+            minHeight: 0,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             overflow: 'hidden',
+            padding: isFullscreen ? 0 : '8px 16px',
             cursor: isFullscreen && !showControls ? 'none' : 'default',
           }}
           onClick={togglePlay}
@@ -686,13 +685,13 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
               }
             }}
             style={{
-              width: '100%',
-              height: '100%',
-              maxHeight: isFullscreen ? 'none' : 'calc(88vh - 160px)',
+              maxWidth: '100%',
+              maxHeight: isFullscreen ? '100vh' : 'calc(70vh - 60px)',
+              width: is43Stretched ? '100%' : 'auto',
+              height: is43Stretched ? '100%' : 'auto',
               objectFit: is43Stretched ? 'fill' : 'contain',
               backgroundColor: '#000',
-              transform: 'translateZ(0)',
-              willChange: 'transform',
+              borderRadius: isFullscreen ? 0 : '6px',
             }}
           />
 
@@ -875,6 +874,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
               : {
                   position: 'relative',
                   width: '100%',
+                  flex: '0 0 auto',
                   padding: '12px 18px 14px 18px',
                   backgroundColor: '#10141f',
                   borderTop: '1px solid #202738',

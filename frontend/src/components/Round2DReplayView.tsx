@@ -18,6 +18,8 @@ export function Round2DReplayView({
   const [replayData, setReplayData] = useState<RoundReplayData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showTrails, setShowTrails] = useState(true)
+  const [showShots, setShowShots] = useState(true)
 
   // Playback state
   const [currentFrameIndex, setCurrentFrameIndex] = useState(0)
@@ -26,6 +28,13 @@ export function Round2DReplayView({
   const [currentLevel, setCurrentLevel] = useState<'upper' | 'lower'>('upper')
 
   const animationTimerRef = useRef<number | null>(null)
+
+  // Synchronize selected round if rounds change or load asynchronously
+  useEffect(() => {
+    if (rounds.length > 0 && !rounds.some((r) => r.round_num === selectedRoundNum)) {
+      setSelectedRoundNum(rounds[0].round_num)
+    }
+  }, [rounds, selectedRoundNum])
 
   // Load round data on round change
   useEffect(() => {
@@ -81,6 +90,21 @@ export function Round2DReplayView({
     if (!replayData || !currentFrame) return []
     return replayData.kills.filter((k) => k.tick <= currentFrame.tick)
   }, [replayData, currentFrame])
+
+  // Accumulate breadcrumb movement trails for each player up to currentFrameIndex
+  const playerTrails = useMemo(() => {
+    if (!replayData || !replayData.frames || replayData.frames.length === 0) return {}
+    const trails: Record<string, Array<{ x: number; y: number; is_alive: boolean }>> = {}
+    const maxIdx = Math.min(currentFrameIndex, replayData.frames.length - 1)
+    for (let i = 0; i <= maxIdx; i++) {
+      const f = replayData.frames[i]
+      for (const p of f.players) {
+        if (!trails[p.steam_id]) trails[p.steam_id] = []
+        trails[p.steam_id].push({ x: p.x, y: p.y, is_alive: p.is_alive })
+      }
+    }
+    return trails
+  }, [replayData, currentFrameIndex])
 
   // Highlights occurring in this round
   const roundHighlights = useMemo(() => {
@@ -292,15 +316,37 @@ export function Round2DReplayView({
                 )}
               </div>
 
-              {/* Teams Legend */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', fontSize: '12px' }}>
+              {/* Legend & Display Toggles */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '12px' }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: '#cbd5e1' }}>
+                  <input
+                    type="checkbox"
+                    checked={showTrails}
+                    onChange={(e) => setShowTrails(e.target.checked)}
+                    style={{ accentColor: '#38bdf8', cursor: 'pointer' }}
+                  />
+                  <span>Траектории</span>
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: '#cbd5e1' }}>
+                  <input
+                    type="checkbox"
+                    checked={showShots}
+                    onChange={(e) => setShowShots(e.target.checked)}
+                    style={{ accentColor: '#fbbf24', cursor: 'pointer' }}
+                  />
+                  <span>Выстрелы</span>
+                </label>
+
+                <div style={{ width: '1px', height: '14px', backgroundColor: '#232733' }} />
+
                 <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#60a5fa', fontWeight: 600 }}>
                   <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#3b82f6', display: 'inline-block', boxShadow: '0 0 6px rgba(59, 130, 246, 0.5)' }} />
-                  CT (Спецназ)
+                  CT
                 </span>
                 <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#fb923c', fontWeight: 600 }}>
                   <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#f97316', display: 'inline-block', boxShadow: '0 0 6px rgba(249, 115, 22, 0.5)' }} />
-                  T (Террористы)
+                  T
                 </span>
               </div>
             </div>
@@ -340,7 +386,7 @@ export function Round2DReplayView({
                 />
               )}
 
-              {/* Tactical Vectors, Rings & Kill Lines */}
+              {/* Tactical Vectors, Rings, Trails & Kill Lines */}
               <svg
                 viewBox="0 0 1000 1000"
                 style={{
@@ -357,6 +403,55 @@ export function Round2DReplayView({
                 <circle cx="500" cy="500" r="460" fill="none" stroke="#38bdf8" strokeWidth="0.8" strokeDasharray="6 6" opacity="0.12" />
                 <circle cx="500" cy="500" r="280" fill="none" stroke="#38bdf8" strokeWidth="0.8" strokeDasharray="6 6" opacity="0.1" />
 
+                {/* Player Movement Breadcrumb Trails */}
+                {showTrails &&
+                  Object.entries(playerTrails).map(([steamId, points]) => {
+                    if (points.length < 2) return null
+                    const pInfo = replayData?.players[steamId]
+                    const isCT = pInfo?.side === 'ct'
+                    const stroke = isCT ? '#3b82f6' : '#f97316'
+                    const polyPoints = points.map((pt) => `${pt.x * 10},${pt.y * 10}`).join(' ')
+                    return (
+                      <polyline
+                        key={`trail-${steamId}`}
+                        points={polyPoints}
+                        fill="none"
+                        stroke={stroke}
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeOpacity="0.45"
+                        strokeDasharray="4 2"
+                      />
+                    )
+                  })}
+
+                {/* Active Gunfire Muzzle Burst & Tracer Beams */}
+                {showShots &&
+                  pastKills
+                    .filter((k) => Math.abs(k.tick - (currentFrame?.tick || 0)) < (replayData?.tickrate || 64) * 2.0)
+                    .map((k, i) => (
+                      <g key={`shot-${i}`}>
+                        <line
+                          x1={k.attacker_x * 10}
+                          y1={k.attacker_y * 10}
+                          x2={k.victim_x * 10}
+                          y2={k.victim_y * 10}
+                          stroke="#facc15"
+                          strokeWidth="3.5"
+                          strokeOpacity="0.9"
+                        />
+                        <circle
+                          cx={k.attacker_x * 10}
+                          cy={k.attacker_y * 10}
+                          r="14"
+                          fill="rgba(250, 204, 21, 0.4)"
+                          stroke="#facc15"
+                          strokeWidth="2"
+                        />
+                      </g>
+                    ))}
+
                 {/* Kill Vectors Lines */}
                 {pastKills.map((k, i) => (
                   <line
@@ -366,9 +461,9 @@ export function Round2DReplayView({
                     x2={k.victim_x * 10}
                     y2={k.victim_y * 10}
                     stroke={k.attacker_side === 'ct' ? '#38bdf8' : '#f97316'}
-                    strokeWidth="2"
+                    strokeWidth="1.5"
                     strokeDasharray="4 3"
-                    opacity="0.65"
+                    opacity="0.5"
                   />
                 ))}
               </svg>

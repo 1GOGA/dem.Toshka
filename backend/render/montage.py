@@ -113,12 +113,33 @@ def create_montage(
 
         if res.returncode != 0 or not temp_output.exists() or temp_output.stat().st_size == 0:
             logger.warning("Stream-copy concat failed; falling back to filter_complex normalization...")
+            
+            # Determine native clip dimensions to preserve 4:3 (e.g. 1280x960) without forced 16:9 letterboxing
+            norm_w, norm_h = 1920, 1080
+            try:
+                probe_cmd = [
+                    "ffprobe",
+                    "-v", "error",
+                    "-select_streams", "v:0",
+                    "-show_entries", "stream=width,height",
+                    "-of", "csv=s=x:p=0",
+                    str(valid_clips[0].resolve()),
+                ]
+                probe_res = subprocess.run(probe_cmd, capture_output=True, text=True, timeout=5.0)
+                if probe_res.returncode == 0 and "x" in probe_res.stdout:
+                    parts = probe_res.stdout.strip().split("x")
+                    pw, ph = int(parts[0]), int(parts[1])
+                    if pw > 0 and ph > 0:
+                        norm_w, norm_h = pw, ph
+            except Exception as e:
+                logger.debug("Could not probe first clip dimensions, using 1920x1080: %s", e)
+
             inputs = []
             filter_parts = []
             for i, p in enumerate(valid_clips):
                 inputs.extend(["-i", str(p.resolve())])
                 filter_parts.append(
-                    f"[{i}:v]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,fps=60,setsar=1[v{i}];"
+                    f"[{i}:v]scale={norm_w}:{norm_h}:force_original_aspect_ratio=decrease,pad={norm_w}:{norm_h}:(ow-iw)/2:(oh-ih)/2,fps=60,setsar=1[v{i}];"
                     f"[{i}:a]aformat=sample_rates=44100:channel_layouts=stereo[a{i}];"
                 )
             concat_str = "".join(f"[v{i}][a{i}]" for i in range(len(valid_clips)))

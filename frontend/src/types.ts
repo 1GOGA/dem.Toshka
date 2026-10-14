@@ -260,6 +260,8 @@ export interface PlayerAnalyticsDTO {
   errors: PlayerErrorDTO[]
   strengths: string[]
   advice: string[]
+  map_impact_score?: number
+  fun_badges?: Array<{ badge: string; desc: string; rarity?: string }>
 }
 
 

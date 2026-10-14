@@ -86,6 +86,10 @@ class PlayerAnalytics:
     strengths: list[str] = field(default_factory=list)
     advice: list[str] = field(default_factory=list)
 
+    # Map Impact & Fun Esports Badges
+    map_impact_score: float = 1.0
+    fun_badges: list[dict[str, str]] = field(default_factory=list)
+
 
 def compute_player_analytics(
     target_steam_id_or_name: str,
@@ -392,6 +396,29 @@ def compute_player_analytics(
     if not advice:
         advice.append("Поддерживай стабильность и продолжай контролировать ключевые тайминги карты.")
 
+    # Map Impact Score (HLTV 2.0 Impact style formula)
+    map_impact = round(max(0.3, min(2.5, 2.13 * kpr + 0.42 * (opening_won - opening_lost) / max(1, total_rounds) + 1.2 * (clutches_won / max(1, total_rounds)) - 0.41)), 2)
+
+    # Fun Esports Badges
+    badges: list[dict[str, str]] = []
+    if headshot_pct >= 50.0 and kills_count >= 3:
+        badges.append({"badge": "🎯 One-Tap Машина", "desc": f"{headshot_pct:.0f}% хедшотов — стреляет только по головам", "rarity": "gold"})
+    if opening_won >= 2 and opening_winrate >= 50.0:
+        badges.append({"badge": "⚡ Энтри-Монстр", "desc": f"{opening_won} выигранных энтри-дуэлей ({opening_winrate:.0f}%)", "rarity": "purple"})
+    if clutches_won >= 1:
+        badges.append({"badge": "👑 Клатч-Бог", "desc": f"Затащил {clutches_won} клатч-ситуаций для команды", "rarity": "gold"})
+    if kast_pct >= 70.0:
+        badges.append({"badge": "🛡️ Железный Опорник", "desc": f"{kast_pct:.1f}% KAST полезности на карте", "rarity": "blue"})
+    multikills_sum = sum(multikill_counts.get(k, 0) for k in ("2k", "3k", "4k", "5k"))
+    if multikills_sum >= 2:
+        badges.append({"badge": "🔥 Спрей-Мастер", "desc": f"{multikills_sum} раундов с серией мульти-киллов", "rarity": "purple"})
+    if deaths_count >= 15 or opening_lost >= 4:
+        badges.append({"badge": "🧲 Магнит для пуль", "desc": "Принимает на себя весь урон команды", "rarity": "orange"})
+    if blinded_deaths_count >= 2 or headshot_pct < 25.0:
+        badges.append({"badge": "🙈 Слепой стрелок", "desc": "Стреляет на звук сквозь флешки и дымы", "rarity": "green"})
+    if perf_rating >= 1.20:
+        badges.append({"badge": "🌟 Звезда матча", "desc": f"Рейтинг полезности {perf_rating:.2f}", "rarity": "gold"})
+
     return PlayerAnalytics(
         name=player_name,
         steam_id=player_steam,
@@ -424,5 +451,7 @@ def compute_player_analytics(
         errors=errors[:12],  # Cap to top 12 errors for clean UI presentation
         strengths=strengths,
         advice=advice,
+        map_impact_score=map_impact,
+        fun_badges=badges,
     )
 

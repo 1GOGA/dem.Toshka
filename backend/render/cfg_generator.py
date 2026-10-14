@@ -88,6 +88,7 @@ def _build_radar_commands(radar_mode: str = "broadcast") -> list[str]:
             "cl_radar_scale 0.70",
             "cl_radar_rotate 1",
             "cl_radar_icon_scale_min 0.6",
+            "cl_radar_square_with_scoreboard 0",
         ]
     elif radar_mode == "hidden":
         return [
@@ -363,12 +364,14 @@ def generate_render_cfg(
         if start_tick > 60:
             jump_tick = max(10, start_tick - jump_lead_ticks)
             lines.append(f'mirv_cmd addAtTick 5 "demo_gototick {jump_tick}; demo_resume"')
+            lines.append('mirv_cmd addAtTick 5 "cl_radar_square_with_scoreboard 0"')
 
             if spec_cmds:
                 lines.append(f'mirv_cmd addAtTick {jump_tick + 20} "{"; ".join(spec_cmds)}; demo_resume"')
         else:
             if spec_cmds:
                 lines.append(f'mirv_cmd addAtTick 5 "{"; ".join(spec_cmds)}"')
+            lines.append('mirv_cmd addAtTick 5 "cl_radar_square_with_scoreboard 0"')
 
         # Schedule highlight recording start and end with guaranteed TrueView & demo UI suppression
         rec_start_parts = list(spec_cmds) + [
@@ -492,14 +495,16 @@ def generate_batch_render_cfg(
         jump_tick = max(10, clip.start_tick - jump_lead_ticks)
 
         if idx == 0:
-            # First clip: schedule initial seek at tick 5
+            # First clip: schedule initial seek at tick 5 with round radar enforced
             if clip.start_tick > 60:
                 lines.append(f'mirv_cmd addAtTick 5 "demo_gototick {jump_tick}; demo_resume"')
+                lines.append('mirv_cmd addAtTick 5 "cl_radar_square_with_scoreboard 0"')
                 if spec_cmds:
                     lines.append(f'mirv_cmd addAtTick {jump_tick + 20} "{"; ".join(spec_cmds)}; demo_resume"')
             else:
                 if spec_cmds:
                     lines.append(f'mirv_cmd addAtTick 5 "{"; ".join(spec_cmds)}"')
+                lines.append('mirv_cmd addAtTick 5 "cl_radar_square_with_scoreboard 0"')
 
         # Start recording this clip with clean HUD & camera lock
         start_parts = list(spec_cmds) + ["mirv_streams record start"]
