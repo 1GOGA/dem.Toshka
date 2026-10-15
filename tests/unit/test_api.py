@@ -416,3 +416,15 @@ class TestApiEndpoints:
             get_montage_video("nonexistent_montage.mp4")
         assert exc.value.status_code == 404
 
+    def test_parse_demo_with_filename_fallback(self, db_session, monkeypatch):
+        # Bare filename should resolve from fixtures
+        req = ParseDemoRequest(demo_path="test.dem")
+        # In this unit test environment, test.dem might be parsed or cached
+        from pathlib import Path
+        fixture_path = Path("tests/integration/fixtures/test.dem")
+        if fixture_path.exists():
+            summary = parse_demo_endpoint(req, db=db_session)
+            assert summary.file_path.endswith("test.dem")
+            assert summary.id > 0
+
+

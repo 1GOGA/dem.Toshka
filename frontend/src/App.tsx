@@ -131,6 +131,22 @@ export function App() {
     }
   }
 
+  // Upload and parse demo file
+  const handleUploadDemo = async (file: File) => {
+    setIsLoading(true)
+    setParseError(null)
+    try {
+      const summary = await api.uploadDemo(file)
+      await refreshDemos()
+      await selectDemo(summary)
+      setActiveTab('studio') // Switch to Studio directly on new parse
+    } catch (err: any) {
+      setParseError(err?.message || 'Failed to upload and parse demo')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   // Highlight selection handlers
   const handleToggleHighlight = (id: string) => {
     setSelectedHighlightIds((prev) => {
@@ -220,6 +236,7 @@ export function App() {
               setActiveTab('studio')
             }}
             onParsePath={handleParsePath}
+            onUploadDemo={handleUploadDemo}
             isLoading={isLoading}
             error={parseError}
           />
@@ -259,19 +276,7 @@ export function App() {
             onUpdateSettings={setClipSettings}
             onSubmitRender={handleSubmitRenderJobs}
             kills={kills}
-            onUploadDemo={async (file: File) => {
-              setIsLoading(true)
-              setParseError(null)
-              try {
-                const summary = await api.uploadDemo(file)
-                await refreshDemos()
-                await selectDemo(summary)
-              } catch (err: any) {
-                setParseError(err?.message || 'Failed to upload and parse demo')
-              } finally {
-                setIsLoading(false)
-              }
-            }}
+            onUploadDemo={handleUploadDemo}
             onParsePath={handleParsePath}
           />
         )}

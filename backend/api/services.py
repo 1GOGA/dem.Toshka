@@ -31,6 +31,19 @@ class DemoService:
     def parse_or_get_demo(demo_path_str: str, repo: DemoRepository) -> DemoModel:
         """Validate, fingerprint, check cache, and parse/detect/save if not cached."""
         path = Path(demo_path_str)
+        if not path.exists():
+            # Intelligent fallback resolution for bare filenames or relative paths
+            candidates = [
+                Path("demos") / path.name,
+                Path.home() / "Downloads" / path.name,
+                Path.home() / "Desktop" / path.name,
+                Path("tests/integration/fixtures") / path.name,
+            ]
+            for cand in candidates:
+                if cand.exists() and cand.is_file():
+                    path = cand
+                    break
+
         validate_demo_path(path)
         demo_fp = fingerprint(path)
 

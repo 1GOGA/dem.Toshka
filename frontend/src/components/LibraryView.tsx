@@ -6,6 +6,7 @@ interface LibraryViewProps {
   activeDemoId: number | null
   onSelectDemo: (demo: DemoSummary) => void
   onParsePath: (path: string) => Promise<void>
+  onUploadDemo?: (file: File) => Promise<void>
   isLoading: boolean
   error: string | null
 }
@@ -15,10 +16,13 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
   activeDemoId,
   onSelectDemo,
   onParsePath,
+  onUploadDemo,
   isLoading,
   error,
 }) => {
   const [inputPath, setInputPath] = useState('tests/integration/fixtures/test.dem')
+  const [uploadingName, setUploadingName] = useState<string | null>(null)
+  const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Custom demo signatures / user notes persisted in localStorage
@@ -33,12 +37,22 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
   const [editingDemoId, setEditingDemoId] = useState<number | null>(null)
   const [noteDraft, setNoteDraft] = useState<string>('')
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    const filePath = (file as any).path || file.name
-    setInputPath(filePath)
-    onParsePath(filePath)
+    e.target.value = ''
+    setInputPath(file.name)
+    if (onUploadDemo) {
+      setUploadingName(file.name)
+      try {
+        await onUploadDemo(file)
+      } finally {
+        setUploadingName(null)
+      }
+    } else {
+      const filePath = (file as any).path || file.name
+      await onParsePath(filePath)
+    }
   }
 
   const saveNote = (demoId: number) => {
@@ -74,12 +88,43 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
     <div className="container">
       {/* File Ingestion Card */}
       <div
+        onDragOver={(e) => {
+          e.preventDefault()
+          setIsDragging(true)
+        }}
+        onDragLeave={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+            setIsDragging(false)
+          }
+        }}
+        onDrop={async (e) => {
+          e.preventDefault()
+          setIsDragging(false)
+          const file = e.dataTransfer.files?.[0]
+          if (!file) return
+          if (!file.name.toLowerCase().endsWith('.dem')) {
+            alert('Пожалуйста, выберите файл с расширением .dem')
+            return
+          }
+          setInputPath(file.name)
+          if (onUploadDemo) {
+            setUploadingName(file.name)
+            try {
+              await onUploadDemo(file)
+            } finally {
+              setUploadingName(null)
+            }
+          } else {
+            await onParsePath(file.name)
+          }
+        }}
         style={{
-          backgroundColor: 'var(--bg-surface)',
-          border: '1px solid var(--border)',
+          backgroundColor: isDragging ? 'rgba(56, 189, 248, 0.08)' : 'var(--bg-surface)',
+          border: isDragging ? '2px dashed #38bdf8' : '1px solid var(--border)',
           borderRadius: '12px',
           padding: '24px',
           marginBottom: '32px',
+          transition: 'all 0.2s ease',
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '16px' }}>
@@ -88,7 +133,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
               Добавить CS2 демку (.dem) в библиотеку
             </h2>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
-              Выберите файл с компьютера или укажите путь. Демка парсится движком CS2 Source 2 и сохраняется в локальной базе.
+              Выберите файл с компьютера или перетащите его прямо сюда (Drag & Drop). Демка парсится движком CS2 Source 2 и сохраняется в локальной базе.
             </p>
           </div>
 
@@ -105,24 +150,27 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
               type="button"
               className="btn btn-primary"
               onClick={() => fileInputRef.current?.click()}
-              disabled={isLoading}
+              disabled={isLoading || !!uploadingName}
               style={{
                 padding: '12px 24px',
                 fontSize: '14px',
                 fontWeight: 800,
-                background: 'linear-gradient(135deg, #6366f1 0%, #38bdf8 100%)',
+                background: uploadingName
+                  ? 'linear-gradient(135deg, #f59e0b 0%, #ea580c 100%)'
+                  : 'linear-gradient(135deg, #6366f1 0%, #38bdf8 100%)',
                 color: '#ffffff',
                 border: 'none',
                 borderRadius: '8px',
-                cursor: 'pointer',
+                cursor: (isLoading || !!uploadingName) ? 'wait' : 'pointer',
+                opacity: (isLoading || !!uploadingName) ? 0.85 : 1,
                 boxShadow: '0 4px 20px rgba(99, 102, 241, 0.45)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '10px',
               }}
             >
-              <span style={{ fontSize: '18px' }}>📁</span>
-              <span>Выбрать .dem с компьютера</span>
+              <span style={{ fontSize: '18px' }}>{uploadingName ? '⏳' : '📁'}</span>
+              <span>{uploadingName ? `Загрузка и парсинг (${uploadingName})...` : 'Выбрать .dem с компьютера'}</span>
             </button>
           </div>
         </div>
@@ -149,6 +197,27 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
             {isLoading ? 'Анализ...' : 'Парсинг по пути'}
           </button>
         </form>
+
+        {uploadingName && (
+          <div
+            style={{
+              marginTop: '16px',
+              padding: '12px 16px',
+              backgroundColor: 'rgba(56, 189, 248, 0.12)',
+              border: '1px solid rgba(56, 189, 248, 0.4)',
+              borderRadius: '8px',
+              color: '#38bdf8',
+              fontSize: '13px',
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+            }}
+          >
+            <span style={{ fontSize: '16px' }}>⏳</span>
+            <span>Загрузка и полный анализ демки <strong>{uploadingName}</strong> движком CS2 Source 2... Это займет несколько секунд.</span>
+          </div>
+        )}
 
         {error && (
           <div
