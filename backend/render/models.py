@@ -32,7 +32,10 @@ class RenderTask:
     crosshair_preset: str = "pro_cyan"  # "pro_cyan" | "green_clean" | "dot" | "minimal_white" | "hidden" | "default"
     crosshair_color: Optional[str] = None  # "cyan" | "green" | "yellow" | "white" | "pink" | "red" | "blue"
     radar_mode: str = "broadcast"  # "dynamic_large" | "broadcast_giant" | "broadcast" | "player_focus" | "compact" | "hidden"
-    hud_scale: Optional[float] = None  # e.g. 0.95, 1.05, 1.15, 1.25
+    hud_scale: Optional[float] = None  # e.g. 0.95, 1.0, 1.15, 1.25
+    overhead_mode: Optional[bool] = None
+    killfeed_only: Optional[bool] = None
+    teamcounter_mode: Optional[bool] = None
     camera_switches: list[tuple[int, Optional[str], Optional[str]]] = field(default_factory=list)
     # Tournament Killcam Replay (Victim death POV -> Rewind -> Hero POV)
     is_killcam_replay: bool = False

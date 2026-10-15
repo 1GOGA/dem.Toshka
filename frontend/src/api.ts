@@ -123,6 +123,10 @@ export const api = {
     perspective_steam_id?: string | null
     xray?: boolean
     hud_mode?: string
+    hud_scale?: number
+    overhead_mode?: boolean
+    killfeed_only?: boolean
+    teamcounter_mode?: boolean
     custom_crosshair?: boolean
     fov?: number
     viewmodel_fov?: number

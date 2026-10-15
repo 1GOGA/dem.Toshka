@@ -126,14 +126,17 @@ export interface ClipSettings {
   resolution: '1080p' | '720p' | '1280x960' | '1440x1080' | '1024x768' | string
   aspectRatio: '16:9' | '4:3'
   stretch43?: boolean
-  fps: 60 | 30
+  fps: 120 | 60 | 30
   preRollSeconds: number
   postRollSeconds: number
   perspective: 'attacker' | 'victim' | 'specific_player' | 'dynamic_killcam'
   perspectiveSteamId?: string
   xray: boolean
   hudMode: 'real' | 'huge_esports' | 'huge_killfeed' | 'full' | 'killfeed_only' | 'none'
-  hudScale?: number // 0.95, 1.05, 1.15, 1.25
+  hudScale?: number // 0.95, 1.0, 1.05, 1.15, 1.25
+  overheadMode?: boolean // show/hide player name tags over heads
+  killfeedOnly?: boolean // draw only death notices
+  teamcounterMode?: boolean // numbers (5v3) vs avatar icons
   customCrosshair: boolean
   fov?: number // 68, 90, 95, 100, 105
   viewmodelFov?: number // 60, 68

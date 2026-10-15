@@ -368,6 +368,9 @@ async def create_render_jobs(
         "crosshair_preset": req.crosshair_preset,
         "crosshair_color": req.crosshair_color,
         "radar_mode": req.radar_mode,
+        "overhead_mode": req.overhead_mode,
+        "killfeed_only": req.killfeed_only,
+        "teamcounter_mode": req.teamcounter_mode,
     }
 
     # 1. Deduplicate highlight_ids in request preserving order

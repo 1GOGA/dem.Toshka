@@ -28,6 +28,9 @@ class BatchClipItem:
     crosshair_color: Optional[str] = None
     radar_mode: str = "broadcast"
     hud_scale: Optional[float] = None
+    overhead_mode: Optional[bool] = None
+    killfeed_only: Optional[bool] = None
+    teamcounter_mode: Optional[bool] = None
     camera_switches: list[tuple[int, Optional[str], Optional[str]]] = field(default_factory=list)
     # Tournament Killcam Replay (Victim death POV -> Rewind -> Hero POV)
     is_killcam_replay: bool = False
@@ -226,8 +229,14 @@ def _build_fov_commands(fov: Optional[int] = None, viewmodel_fov: Optional[int] 
     return cmds
 
 
-def _build_hud_commands(hud_mode: str, hud_scale: Optional[float] = None) -> list[str]:
-    """Build HUD commands based on mode and optional explicit scaling."""
+def _build_hud_commands(
+    hud_mode: str,
+    hud_scale: Optional[float] = None,
+    overhead_mode: Optional[bool] = None,
+    killfeed_only: Optional[bool] = None,
+    teamcounter_mode: Optional[bool] = None,
+) -> list[str]:
+    """Build HUD commands based on mode and optional explicit scaling and toggles."""
     cmds: list[str] = []
     if hud_mode == "real":
         # REAL OBS POV: Native match recording appearance
@@ -279,6 +288,15 @@ def _build_hud_commands(hud_mode: str, hud_scale: Optional[float] = None) -> lis
             f"hud_scaling {scale}",
             "cl_teamcounter_playercount_mode 0",
         ])
+
+    # Apply explicit overrides from advanced HUD switches if defined
+    if overhead_mode is not None:
+        cmds.append(f"cl_teamid_overhead_mode {1 if overhead_mode else 0}")
+    if killfeed_only is not None:
+        cmds.append(f"cl_draw_only_deathnotices {1 if killfeed_only else 0}")
+    if teamcounter_mode is not None:
+        cmds.append(f"cl_teamcounter_playercount_mode {1 if teamcounter_mode else 0}")
+
     return cmds
 
 
@@ -300,6 +318,9 @@ def generate_render_cfg(
     crosshair_preset: str = "pro_cyan",
     crosshair_color: Optional[str] = None,
     radar_mode: str = "broadcast",
+    overhead_mode: Optional[bool] = None,
+    killfeed_only: Optional[bool] = None,
+    teamcounter_mode: Optional[bool] = None,
     camera_switches: Optional[list[tuple[int, Optional[str], Optional[str]]]] = None,
     is_killcam_replay: bool = False,
     killcam_victim_steam_id: Optional[str] = None,
@@ -369,7 +390,15 @@ def generate_render_cfg(
         ])
 
     # HUD configuration
-    lines.extend(_build_hud_commands(hud_mode, hud_scale))
+    lines.extend(
+        _build_hud_commands(
+            hud_mode,
+            hud_scale,
+            overhead_mode=overhead_mode,
+            killfeed_only=killfeed_only,
+            teamcounter_mode=teamcounter_mode,
+        )
+    )
 
     spec_cmds = _build_spec_commands(account_id, pov_name)
 
@@ -523,7 +552,15 @@ def generate_batch_render_cfg(
     else:
         lines.extend(["spec_show_xray 0", "mirv_fix selectedPlayerGlow 0"])
 
-    lines.extend(_build_hud_commands(first_clip.hud_mode, getattr(first_clip, "hud_scale", None)))
+    lines.extend(
+        _build_hud_commands(
+            first_clip.hud_mode,
+            getattr(first_clip, "hud_scale", None),
+            overhead_mode=getattr(first_clip, "overhead_mode", None),
+            killfeed_only=getattr(first_clip, "killfeed_only", None),
+            teamcounter_mode=getattr(first_clip, "teamcounter_mode", None),
+        )
+    )
 
     radar_tick5 = "cl_radar_square_with_scoreboard 0"
     if first_clip.radar_mode == "player_focus":

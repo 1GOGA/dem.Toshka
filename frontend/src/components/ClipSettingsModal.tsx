@@ -217,14 +217,14 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    {([60, 30] as const).map((fps) => (
+                    {([120, 60, 30] as const).map((fps) => (
                       <button
                         key={fps}
                         className={`btn ${settings.fps === fps ? 'btn-primary' : 'btn-secondary'}`}
                         onClick={() => onUpdateSettings({ ...settings, fps })}
                         style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 700 }}
                       >
-                        {fps} FPS
+                        {fps === 120 ? '⚡ 120 FPS' : `${fps} FPS`}
                       </button>
                     ))}
                   </div>
@@ -243,43 +243,28 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
                       🗺️ 2D Радар / Мини-карта в CS2
                     </label>
                     <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-                      Размер и поведение карты на записи: крупный вращающийся или турнирный обзор
+                      Размер и поведение карты на записи: динамика за игроком или турнирный обзор
                     </div>
                   </div>
-                  {(settings.radarMode === 'dynamic_large' || settings.radarMode === 'broadcast_giant') && (
-                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#38bdf8', backgroundColor: '#0284c722', padding: '2px 8px', borderRadius: '4px', border: '1px solid #0284c744' }}>
-                      🔥 Увеличенная карта (130%)
-                    </span>
-                  )}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                   {[
-                    { id: 'dynamic_large', label: '🔥 Огромный динамический', desc: '130% масштаб, вращается с прицелом' },
-                    { id: 'broadcast_giant', label: '📡 Огромный турнирный', desc: '130% обзор всей карты (BLAST)' },
-                    { id: 'player_focus', label: '🧭 Динамика стандарт', desc: 'Центрирование на герое' },
-                    { id: 'broadcast', label: '📺 Pro BLAST', desc: 'Вся карта, север' },
-                    { id: 'compact', label: '🔍 Компактный', desc: 'Уменьшенный радар' },
+                    { id: 'player_focus', label: '🧭 Динамический', desc: 'Центрируется и вращается за игроком POV' },
+                    { id: 'broadcast', label: '📡 Турнирный BLAST', desc: 'Вся карта, фиксированный север' },
                     { id: 'hidden', label: '🚫 Без радара', desc: 'Скрыть радар (чистый экран)' },
                   ].map((r) => (
                     <button
                       key={r.id}
                       type="button"
-                      className={`btn ${(settings.radarMode || 'broadcast') === r.id ? 'btn-primary' : 'btn-secondary'}`}
+                      className={`btn ${(settings.radarMode || 'player_focus') === r.id ? 'btn-primary' : 'btn-secondary'}`}
                       onClick={() => onUpdateSettings({ ...settings, radarMode: r.id as any })}
-                      style={{ textAlign: 'left', padding: '10px 12px' }}
+                      style={{ textAlign: 'left', padding: '12px 14px' }}
                     >
                       <div style={{ fontWeight: 700, fontSize: '12px' }}>{r.label}</div>
-                      <div style={{ fontSize: '10px', opacity: 0.75, marginTop: '2px' }}>{r.desc}</div>
+                      <div style={{ fontSize: '10px', opacity: 0.75, marginTop: '4px' }}>{r.desc}</div>
                     </button>
                   ))}
-                </div>
-
-                <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '12px', borderTop: '1px solid #1e2433', paddingTop: '10px' }}>
-                  {settings.radarMode === 'dynamic_large' && '💡 Карта увеличена до максимума (130%), центрируется на авторе и динамически вращается по направлению взгляда.'}
-                  {settings.radarMode === 'broadcast_giant' && '💡 Максимальный размер турнирного радара (130%) со статичным обзором всей территории карты.'}
-                  {(settings.radarMode === 'player_focus' || !settings.radarMode) && '💡 Стандартный радар, центрирующийся на игроке.'}
-                  {settings.radarMode === 'hidden' && '💡 Радар полностью скрыт (для мувиков).'}
                 </div>
               </div>
             </div>
@@ -292,32 +277,20 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                   <div>
                     <label style={{ fontSize: '13px', fontWeight: 700, color: '#f1f5f9', display: 'block' }}>
-                      🏆 Игровой интерфейс (HUD) и Масштабирование
+                      🏆 Игровой интерфейс (HUD)
                     </label>
                     <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-                      Масштаб элементов, видимость полос HP, аватаров и киллфида
+                      3 основных режима записи интерфейса в CS2
                     </div>
                   </div>
-                  {(settings.hudMode === 'huge_esports' || settings.hudMode === 'huge_killfeed') && (
-                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#fbbf24', backgroundColor: '#d9770622', padding: '2px 8px', borderRadius: '4px', border: '1px solid #d9770644' }}>
-                      🔥 Крупный HUD (115%)
-                    </span>
-                  )}
-                  {settings.hudMode === 'real' && (
-                    <span style={{ fontSize: '11px', fontWeight: 800, color: '#38bdf8', backgroundColor: '#0284c722', padding: '2px 8px', borderRadius: '4px', border: '1px solid #0284c744' }}>
-                      🎥 REAL (OBS: Без X-Ray, без плашки спектатора, круглый радар)
-                    </span>
-                  )}
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '10px', marginBottom: '14px' }}>
+                {/* 3 Main HUD Presets */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '14px' }}>
                   {[
                     { id: 'real', label: '🎥 REAL (OBS Запись)', desc: '1:1 как живая игра: без X-Ray, без плашки спектатора, круглый радар' },
-                    { id: 'huge_esports', label: '🔥 Огромный киберспорт', desc: '115% фраги, HP, аватары команд' },
-                    { id: 'huge_killfeed', label: '⚡ Огромный киллфид', desc: '115% увеличенные фраги (чистый низ)' },
-                    { id: 'full', label: '📺 Spectator стандарт', desc: '95% размер: HP, патроны, счет' },
-                    { id: 'killfeed_only', label: '⚔️ Только киллфид', desc: 'Без полос HP, только фраги' },
-                    { id: 'none', label: '🎬 No HUD (Синематик)', desc: 'Полное скрытие для мувиков' },
+                    { id: 'full', label: '📺 Spectator Pro', desc: 'Турнирный спектатор: HP, патроны, счет' },
+                    { id: 'none', label: '🎬 No HUD (Чисто)', desc: 'Полное скрытие для оверлеев и мувиков' },
                   ].map((h) => (
                     <button
                       key={h.id}
@@ -328,16 +301,88 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
                         onUpdateSettings({
                           ...settings,
                           hudMode: h.id as any,
-                          hudScale: h.id.startsWith('huge') ? 1.15 : (isReal ? 1.0 : 0.95),
+                          hudScale: isReal ? 1.0 : (settings.hudScale || 0.95),
                           ...(isReal ? { xray: false, radarMode: 'player_focus' } : {}),
                         })
                       }}
-                      style={{ textAlign: 'left', padding: '10px 12px' }}
+                      style={{ textAlign: 'left', padding: '12px 14px' }}
                     >
                       <div style={{ fontWeight: 700, fontSize: '12px' }}>{h.label}</div>
-                      <div style={{ fontSize: '10px', opacity: 0.75, marginTop: '2px' }}>{h.desc}</div>
+                      <div style={{ fontSize: '10px', opacity: 0.75, marginTop: '4px' }}>{h.desc}</div>
                     </button>
                   ))}
+                </div>
+
+                {/* Advanced HUD Toggles */}
+                <div style={{ backgroundColor: '#0e111a', border: '1px solid #1c2230', borderRadius: '8px', padding: '14px', marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 800, color: '#38bdf8', letterSpacing: '0.04em' }}>
+                    ⚙️ РАСШИРЕННЫЕ НАСТРОЙКИ HUD (ТУМБЛЕРЫ)
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    {/* Overhead Name Tags */}
+                    <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', backgroundColor: '#131622', borderRadius: '6px', cursor: 'pointer', border: '1px solid #23283c' }}>
+                      <span style={{ fontSize: '11px', color: '#e2e8f0', fontWeight: 600 }}>👤 Ники над головами</span>
+                      <input
+                        type="checkbox"
+                        checked={settings.overheadMode !== false}
+                        onChange={(e) => onUpdateSettings({ ...settings, overheadMode: e.target.checked })}
+                        style={{ accentColor: '#38bdf8', width: '16px', height: '16px', cursor: 'pointer' }}
+                      />
+                    </label>
+
+                    {/* Killfeed only */}
+                    <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', backgroundColor: '#131622', borderRadius: '6px', cursor: 'pointer', border: '1px solid #23283c' }}>
+                      <span style={{ fontSize: '11px', color: '#e2e8f0', fontWeight: 600 }}>⚔️ Только киллфид</span>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(settings.killfeedOnly)}
+                        onChange={(e) => onUpdateSettings({ ...settings, killfeedOnly: e.target.checked })}
+                        style={{ accentColor: '#38bdf8', width: '16px', height: '16px', cursor: 'pointer' }}
+                      />
+                    </label>
+
+                    {/* Alive counter mode: numbers vs avatars */}
+                    <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', backgroundColor: '#131622', borderRadius: '6px', cursor: 'pointer', border: '1px solid #23283c' }}>
+                      <span style={{ fontSize: '11px', color: '#e2e8f0', fontWeight: 600 }}>🔢 Живые цифрой (5 v 3)</span>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(settings.teamcounterMode)}
+                        onChange={(e) => onUpdateSettings({ ...settings, teamcounterMode: e.target.checked })}
+                        style={{ accentColor: '#38bdf8', width: '16px', height: '16px', cursor: 'pointer' }}
+                      />
+                    </label>
+
+                    {/* HUD Scale */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 12px', backgroundColor: '#131622', borderRadius: '6px', border: '1px solid #23283c' }}>
+                      <span style={{ fontSize: '11px', color: '#e2e8f0', fontWeight: 600 }}>📏 Размер HUD</span>
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        {[
+                          { scale: 0.95, label: '95%' },
+                          { scale: 1.0, label: '100%' },
+                          { scale: 1.15, label: '115%' },
+                        ].map((s) => (
+                          <button
+                            key={s.scale}
+                            type="button"
+                            onClick={() => onUpdateSettings({ ...settings, hudScale: s.scale })}
+                            style={{
+                              padding: '2px 6px',
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              borderRadius: '4px',
+                              border: settings.hudScale === s.scale ? '1px solid #38bdf8' : '1px solid #2b3244',
+                              backgroundColor: settings.hudScale === s.scale ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
+                              color: settings.hudScale === s.scale ? '#38bdf8' : '#94a3b8',
+                              cursor: 'pointer',
+                            }}
+                          >
+                            {s.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 {/* X-Ray Toggle */}
@@ -351,6 +396,7 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     cursor: 'pointer',
+                    marginTop: '12px',
                   }}
                   onClick={() => onUpdateSettings({ ...settings, xray: !settings.xray })}
                 >
@@ -418,34 +464,37 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
               <div style={{ backgroundColor: '#131620', border: '1px solid #232838', borderRadius: '10px', padding: '16px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                   <label style={{ fontSize: '13px', fontWeight: 700, color: '#f1f5f9' }}>
-                    🎯 Киберспортивный прицел
+                    🎯 Прицел в CS2
                   </label>
                   <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 700 }}>
-                    {settings.crosshairPreset || 'pro_cyan'}
+                    {settings.crosshairPreset === 'default'
+                      ? 'Дефолтный CS2'
+                      : settings.crosshairPreset === 'hidden'
+                      ? 'Скрыт'
+                      : 'Прицел игрока (Pro)'}
                   </span>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '8px', marginBottom: '12px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '12px' }}>
                   {[
-                    { id: 'pro_cyan', label: 'Pro Cyan' },
-                    { id: 'green_clean', label: 'Clean Green' },
-                    { id: 'dot', label: 'Movie Dot' },
-                    { id: 'minimal_white', label: 'Thin White' },
-                    { id: 'hidden', label: 'Выкл' },
+                    { id: 'default', label: '🎮 Дефолтный CS2', desc: 'Родной прицел игры' },
+                    { id: 'pro_cyan', label: '🎯 Прицел игрока (Pro)', desc: 'Кастомный с цветом' },
+                    { id: 'hidden', label: '🚫 Без прицела', desc: 'Для мувиков' },
                   ].map((p) => (
                     <button
                       key={p.id}
                       type="button"
-                      className={`btn ${(settings.crosshairPreset || 'pro_cyan') === p.id ? 'btn-primary' : 'btn-secondary'}`}
-                      style={{ padding: '6px 8px', fontSize: '11px', textAlign: 'center', fontWeight: 700 }}
+                      className={`btn ${(settings.crosshairPreset || 'default') === p.id ? 'btn-primary' : 'btn-secondary'}`}
+                      style={{ padding: '8px 10px', textAlign: 'left' }}
                       onClick={() =>
                         onUpdateSettings({
                           ...settings,
                           crosshairPreset: p.id as any,
-                          customCrosshair: p.id !== 'default' && p.id !== 'hidden',
+                          customCrosshair: p.id === 'pro_cyan',
                         })
                       }
                     >
-                      {p.label}
+                      <div style={{ fontSize: '11px', fontWeight: 700 }}>{p.label}</div>
+                      <div style={{ fontSize: '9px', opacity: 0.75, marginTop: '2px' }}>{p.desc}</div>
                     </button>
                   ))}
                 </div>

@@ -101,7 +101,6 @@ export const InteractiveCrosshairPreview: React.FC<InteractiveCrosshairPreviewPr
   interactiveControls = true,
 }) => {
   const [activeScene, setActiveScene] = useState<SceneId>('dust2')
-  const [showEnemyDummy, setShowEnemyDummy] = useState<boolean>(true)
   const [showWeaponBarrel, setShowWeaponBarrel] = useState<boolean>(true)
 
   // Current crosshair parameters based on preset
@@ -257,59 +256,6 @@ export const InteractiveCrosshairPreview: React.FC<InteractiveCrosshairPreviewPr
           />
         )}
 
-        {/* Enemy Dummy Silhouette (at head height in crosshair) */}
-        {showEnemyDummy && (
-          <div
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: `translate(-50%, -46%) scale(${fovScale * 0.95})`,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              pointerEvents: 'none',
-              opacity: 0.85,
-            }}
-          >
-            {/* Enemy Head Silhouette (Headshot Target) */}
-            <div
-              style={{
-                width: '18px',
-                height: '22px',
-                borderRadius: '8px 8px 6px 6px',
-                backgroundColor: '#181e28',
-                border: '1px solid rgba(239, 68, 68, 0.4)',
-                boxShadow: '0 0 10px rgba(239, 68, 68, 0.2)',
-                position: 'relative',
-              }}
-            >
-              {/* Eye Visor Glow */}
-              <div
-                style={{
-                  position: 'absolute',
-                  top: '6px',
-                  left: '3px',
-                  right: '3px',
-                  height: '3px',
-                  backgroundColor: 'rgba(239, 68, 68, 0.7)',
-                  borderRadius: '2px',
-                }}
-              />
-            </div>
-            {/* Torso & Armor */}
-            <div
-              style={{
-                width: '38px',
-                height: '52px',
-                backgroundColor: '#121620',
-                borderRadius: '6px 6px 4px 4px',
-                marginTop: '2px',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-              }}
-            />
-          </div>
-        )}
 
         {/* Weapon Barrel / Viewmodel (Bottom Right) */}
         {showWeaponBarrel && (
@@ -525,24 +471,8 @@ export const InteractiveCrosshairPreview: React.FC<InteractiveCrosshairPreviewPr
             ))}
           </div>
 
-          {/* Dummy and Weapon Toggles */}
+          {/* Weapon Toggle */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button
-              type="button"
-              onClick={() => setShowEnemyDummy(!showEnemyDummy)}
-              style={{
-                fontSize: '11px',
-                fontWeight: 600,
-                padding: '4px 10px',
-                borderRadius: '5px',
-                border: showEnemyDummy ? '1px solid #38bdf8' : '1px solid #283042',
-                backgroundColor: showEnemyDummy ? 'rgba(56, 189, 248, 0.15)' : '#161a24',
-                color: showEnemyDummy ? '#38bdf8' : '#94a3b8',
-                cursor: 'pointer',
-              }}
-            >
-              {showEnemyDummy ? '🎯 Мишень: Вкл' : '🎯 Мишень: Выкл'}
-            </button>
 
             <button
               type="button"

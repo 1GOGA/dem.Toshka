@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react'
-import type { ClipSettings, DemoSummary, HighlightItem, KillDTO, MontageDTO, PlayerDTO } from '../types'
+import type { ClipSettings, DemoSummary, HighlightItem, KillDTO, MontageDTO, PlayerDTO, RoundDTO, RoundReplayData } from '../types'
 import { Map2DRadar } from './Map2DRadar'
 import { api } from '../api'
 import { VideoPlayerModal } from './VideoPlayerModal'
@@ -35,6 +35,7 @@ interface HighlightsStudioViewProps {
   onUpdateSettings?: (settings: ClipSettings) => void
   onSubmitRender?: (highlightIds: string[]) => Promise<any>
   kills?: KillDTO[]
+  demoRounds?: RoundDTO[]
   onUploadDemo?: (file: File) => Promise<void>
   onParsePath?: (path: string) => Promise<void>
 }
@@ -62,6 +63,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
   onUpdateSettings,
   onSubmitRender,
   kills = [],
+  demoRounds = [],
   onUploadDemo,
   onParsePath,
 }) => {
@@ -77,6 +79,141 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
   const [localPathInput, setLocalPathInput] = useState('')
   const [isIngestingDemo, setIsIngestingDemo] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
+
+  // Step 3: 2D Tactical Replay Player State
+  const [radarTab, setRadarTab] = useState<'markers' | 'replay'>('markers')
+  const [replayRoundNum, setReplayRoundNum] = useState<number>(demoRounds[0]?.round_num || 1)
+  const [replayData, setReplayData] = useState<RoundReplayData | null>(null)
+  const [isReplayLoading, setIsReplayLoading] = useState<boolean>(false)
+  const [replayError, setReplayError] = useState<string | null>(null)
+  const [replayFrameIndex, setReplayFrameIndex] = useState<number>(0)
+  const [isReplayPlaying, setIsReplayPlaying] = useState<boolean>(false)
+  const [replaySpeed, setReplaySpeed] = useState<number>(1)
+  const [replayShowTrails, setReplayShowTrails] = useState<boolean>(true)
+  const [replayShowShots, setReplayShowShots] = useState<boolean>(true)
+  const [replayLevel, setReplayLevel] = useState<'upper' | 'lower'>('upper')
+  const replayTimerRef = useRef<number | null>(null)
+
+  // Synchronize replay round if rounds list changes
+  useEffect(() => {
+    if (demoRounds.length > 0 && !demoRounds.some((r) => r.round_num === replayRoundNum)) {
+      setReplayRoundNum(demoRounds[0].round_num)
+    }
+  }, [demoRounds, replayRoundNum])
+
+  // Fetch round replay data when round or demo changes in replay mode
+  useEffect(() => {
+    if (!activeDemo || radarTab !== 'replay') return
+    setIsReplayLoading(true)
+    setReplayError(null)
+    setIsReplayPlaying(false)
+    setReplayFrameIndex(0)
+
+    api
+      .getRoundReplay(activeDemo.id, replayRoundNum, 32)
+      .then((data) => {
+        setReplayData(data)
+        setIsReplayLoading(false)
+      })
+      .catch((err) => {
+        console.error('Failed to load round replay:', err)
+        setReplayError(err?.message || 'Не удалось загрузить данные тактического повтора раунда')
+        setIsReplayLoading(false)
+      })
+  }, [activeDemo, replayRoundNum, radarTab])
+
+  // Playback loop for 2D round replay
+  useEffect(() => {
+    if (!isReplayPlaying || !replayData || replayData.frames.length === 0) {
+      if (replayTimerRef.current) clearInterval(replayTimerRef.current)
+      return
+    }
+
+    const intervalMs = Math.max(30, Math.floor(125 / replaySpeed))
+    replayTimerRef.current = window.setInterval(() => {
+      setReplayFrameIndex((prev) => {
+        if (prev >= replayData.frames.length - 1) {
+          setIsReplayPlaying(false)
+          return prev
+        }
+        return prev + 1
+      })
+    }, intervalMs)
+
+    return () => {
+      if (replayTimerRef.current) clearInterval(replayTimerRef.current)
+    }
+  }, [isReplayPlaying, replayData, replaySpeed])
+
+  const currentReplayFrame = useMemo(() => {
+    if (!replayData || replayData.frames.length === 0) return null
+    return replayData.frames[Math.min(replayFrameIndex, replayData.frames.length - 1)]
+  }, [replayData, replayFrameIndex])
+
+  const pastReplayKills = useMemo(() => {
+    if (!replayData || !currentReplayFrame) return []
+    return replayData.kills.filter((k) => k.tick <= currentReplayFrame.tick)
+  }, [replayData, currentReplayFrame])
+
+  const playerReplayTrails = useMemo(() => {
+    if (!replayData || !replayData.frames || replayData.frames.length === 0) return {}
+    const trails: Record<string, Array<{ x: number; y: number; is_alive: boolean }>> = {}
+    const maxIdx = Math.min(replayFrameIndex, replayData.frames.length - 1)
+    for (let i = 0; i <= maxIdx; i++) {
+      const f = replayData.frames[i]
+      for (const p of f.players) {
+        if (!trails[p.steam_id]) trails[p.steam_id] = []
+        trails[p.steam_id].push({ x: p.x, y: p.y, is_alive: p.is_alive })
+      }
+    }
+    return trails
+  }, [replayData, replayFrameIndex])
+
+  const replayRadarImageUrl = useMemo(() => {
+    if (!replayData) return ''
+    if (replayLevel === 'lower' && replayData.radar_file_lower) {
+      return `/maps/${replayData.radar_file_lower}`
+    }
+    return `/maps/${replayData.radar_file || (activeDemo?.map_name ? `${activeDemo.map_name}.png` : 'de_nuke.png')}`
+  }, [replayData, replayLevel, activeDemo])
+
+  const formatReplayTime = (tick: number, startTick: number, rTickrate: number) => {
+    const elapsedSec = Math.max(0, Math.floor((tick - startTick) / (rTickrate || 128)))
+    const mins = Math.floor(elapsedSec / 60)
+    const secs = elapsedSec % 60
+    return `${mins}:${secs.toString().padStart(2, '0')}`
+  }
+
+  const handleJumpToReplayTick = (targetTick: number) => {
+    if (!replayData || replayData.frames.length === 0) return
+    let bestIdx = 0
+    let bestDist = Infinity
+    replayData.frames.forEach((f, i) => {
+      const dist = Math.abs(f.tick - targetTick)
+      if (dist < bestDist) {
+        bestDist = dist
+        bestIdx = i
+      }
+    })
+    setReplayFrameIndex(bestIdx)
+    setIsReplayPlaying(false)
+  }
+
+  const handlePrevRound = () => {
+    if (demoRounds.length === 0) return
+    const curIdx = demoRounds.findIndex((r) => r.round_num === replayRoundNum)
+    if (curIdx > 0) {
+      setReplayRoundNum(demoRounds[curIdx - 1].round_num)
+    }
+  }
+
+  const handleNextRound = () => {
+    if (demoRounds.length === 0) return
+    const curIdx = demoRounds.findIndex((r) => r.round_num === replayRoundNum)
+    if (curIdx >= 0 && curIdx < demoRounds.length - 1) {
+      setReplayRoundNum(demoRounds[curIdx + 1].round_num)
+    }
+  }
 
   // Step 3 Montage creation state
   const defaultMontageTitle = activeDemo
@@ -128,8 +265,8 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
     return players[0] || null
   }, [inspectedPlayerSteamId, activePlayerFilter, players])
 
-  // Map rounds
-  const rounds = useMemo(() => {
+  // Map round numbers for filter
+  const roundNumbers = useMemo(() => {
     const set = new Set<number>()
     highlights.forEach((h) => set.add(h.round_num))
     return Array.from(set).sort((a, b) => a - b)
@@ -1032,21 +1169,547 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
       {/* ==================================================================== */}
       {currentStep === 3 && (
         <div style={{ display: 'grid', gridTemplateColumns: '480px 1fr', gap: '24px', alignItems: 'start' }}>
-          {/* Left Column: 2D Tactical Radar Map */}
+          {/* Left Column: 2D Radar Map & Round Replay Player */}
           <div>
-            <Map2DRadar
-              mapName={activeDemo?.map_name}
-              highlights={filteredHighlights}
-              selectedIds={selectedIds}
-              hoveredId={hoveredHighlightId}
-              onSelectHighlight={onToggleHighlight}
-              activeRound={activeRoundFilter}
-            />
-
-            {/* Quick Map Tips */}
-            <div style={{ marginTop: '14px', padding: '12px 14px', backgroundColor: '#16181f', border: '1px solid #232630', borderRadius: '8px', fontSize: '12px', color: '#94a3b8' }}>
-              💡 Кликните на маркер фраг-эпизода на 2D радаре для выбора, или наведите курсор для предпросмотра позиции.
+            {/* Mode Switcher: Static Highlight Markers vs Full 2D Round Player */}
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', backgroundColor: '#10131a', padding: '4px', borderRadius: '8px', border: '1px solid #232738' }}>
+              <button
+                type="button"
+                onClick={() => setRadarTab('markers')}
+                style={{
+                  flex: 1,
+                  padding: '7px 10px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: radarTab === 'markers' ? '#38bdf8' : 'transparent',
+                  color: radarTab === 'markers' ? '#090d16' : '#94a3b8',
+                  transition: 'all 0.15s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                }}
+              >
+                <span>🎯</span> Маркеры хайлайтов
+              </button>
+              <button
+                type="button"
+                onClick={() => setRadarTab('replay')}
+                style={{
+                  flex: 1,
+                  padding: '7px 10px',
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  borderRadius: '6px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  backgroundColor: radarTab === 'replay' ? '#38bdf8' : 'transparent',
+                  color: radarTab === 'replay' ? '#090d16' : '#94a3b8',
+                  transition: 'all 0.15s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                }}
+              >
+                <span>▶️</span> 2D Плеер раунда
+              </button>
             </div>
+
+            {/* TAB 1: Highlight Markers Radar */}
+            {radarTab === 'markers' && (
+              <div>
+                <Map2DRadar
+                  mapName={activeDemo?.map_name}
+                  highlights={filteredHighlights}
+                  selectedIds={selectedIds}
+                  hoveredId={hoveredHighlightId}
+                  onSelectHighlight={onToggleHighlight}
+                  activeRound={activeRoundFilter}
+                />
+
+                {/* Quick Map Tips */}
+                <div style={{ marginTop: '12px', padding: '10px 14px', backgroundColor: '#131622', border: '1px solid #23283c', borderRadius: '8px', fontSize: '11px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>💡</span>
+                  <span>Кликните на маркер фраг-эпизода для выбора, или переключитесь на <strong>«2D Плеер раунда»</strong> для покадрового просмотра.</span>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 2: Full 2D Tactical Round Player */}
+            {radarTab === 'replay' && (
+              <div
+                style={{
+                  backgroundColor: '#10131b',
+                  border: '1px solid #23283a',
+                  borderRadius: '12px',
+                  padding: '14px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                }}
+              >
+                {/* Round Switcher & Layer Toggles Bar */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  {/* Round Navigator */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <button
+                      type="button"
+                      onClick={handlePrevRound}
+                      disabled={demoRounds.findIndex((r) => r.round_num === replayRoundNum) <= 0}
+                      style={{
+                        padding: '4px 8px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        backgroundColor: '#181c28',
+                        color: '#94a3b8',
+                        border: '1px solid #283044',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                      }}
+                      title="Предыдущий раунд"
+                    >
+                      ⏮️
+                    </button>
+
+                    <select
+                      value={replayRoundNum}
+                      onChange={(e) => setReplayRoundNum(parseInt(e.target.value, 10))}
+                      style={{
+                        backgroundColor: '#181c28',
+                        color: '#38bdf8',
+                        border: '1px solid #283044',
+                        borderRadius: '4px',
+                        padding: '4px 8px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {demoRounds.map((r) => (
+                        <option key={r.round_num} value={r.round_num}>
+                          Раунд {r.round_num} {r.winner ? `(${r.winner.toUpperCase()} Win)` : ''}
+                        </option>
+                      ))}
+                    </select>
+
+                    <button
+                      type="button"
+                      onClick={handleNextRound}
+                      disabled={demoRounds.findIndex((r) => r.round_num === replayRoundNum) >= demoRounds.length - 1}
+                      style={{
+                        padding: '4px 8px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        backgroundColor: '#181c28',
+                        color: '#94a3b8',
+                        border: '1px solid #283044',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                      }}
+                      title="Следующий раунд"
+                    >
+                      ⏭️
+                    </button>
+                  </div>
+
+                  {/* Multilevel map switcher */}
+                  {replayData?.levels && replayData.levels.length > 1 && (
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setReplayLevel('upper')}
+                        style={{
+                          padding: '3px 8px',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          borderRadius: '4px',
+                          border: replayLevel === 'upper' ? '1px solid #38bdf8' : '1px solid #283044',
+                          backgroundColor: replayLevel === 'upper' ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
+                          color: replayLevel === 'upper' ? '#38bdf8' : '#94a3b8',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Верх (A)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setReplayLevel('lower')}
+                        style={{
+                          padding: '3px 8px',
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          borderRadius: '4px',
+                          border: replayLevel === 'lower' ? '1px solid #38bdf8' : '1px solid #283044',
+                          backgroundColor: replayLevel === 'lower' ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
+                          color: replayLevel === 'lower' ? '#38bdf8' : '#94a3b8',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        Низ (B)
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Trails & Shots Toggles */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11px', color: '#94a3b8' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={replayShowTrails}
+                        onChange={(e) => setReplayShowTrails(e.target.checked)}
+                        style={{ accentColor: '#38bdf8', cursor: 'pointer' }}
+                      />
+                      <span>Следы</span>
+                    </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={replayShowShots}
+                        onChange={(e) => setReplayShowShots(e.target.checked)}
+                        style={{ accentColor: '#fbbf24', cursor: 'pointer' }}
+                      />
+                      <span>Выстрелы</span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* 2D Canvas Area (450x450 Square) */}
+                <div
+                  style={{
+                    position: 'relative',
+                    width: '100%',
+                    aspectRatio: '1 / 1',
+                    backgroundColor: '#0a0c10',
+                    borderRadius: '8px',
+                    border: '1px solid #1a1e28',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {isReplayLoading && (
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', backgroundColor: 'rgba(10, 12, 16, 0.85)', zIndex: 10, color: '#38bdf8', fontSize: '12px' }}>
+                      <div className="spinner" style={{ width: '24px', height: '24px' }} />
+                      <span>Загрузка тактических тиков раунда...</span>
+                    </div>
+                  )}
+
+                  {replayError && (
+                    <div style={{ position: 'absolute', inset: 0, padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#f87171', fontSize: '12px', textAlign: 'center', zIndex: 10 }}>
+                      {replayError}
+                    </div>
+                  )}
+
+                  {/* Official Radar Image Backdrop */}
+                  {replayRadarImageUrl && (
+                    <img
+                      src={replayRadarImageUrl}
+                      alt={activeDemo?.map_name || 'CS2 Radar'}
+                      style={{
+                        position: 'absolute',
+                        top: 0,
+                        left: 0,
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        pointerEvents: 'none',
+                        opacity: 0.92,
+                        filter: 'brightness(0.95) contrast(1.08)',
+                        zIndex: 1,
+                      }}
+                    />
+                  )}
+
+                  {/* SVG Layer: Rings, Breadcrumb Trails & Gunfire */}
+                  <svg
+                    viewBox="0 0 1000 1000"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      pointerEvents: 'none',
+                      zIndex: 2,
+                    }}
+                  >
+                    {/* Concentric distance rings */}
+                    <circle cx="500" cy="500" r="460" fill="none" stroke="#38bdf8" strokeWidth="0.8" strokeDasharray="6 6" opacity="0.12" />
+                    <circle cx="500" cy="500" r="280" fill="none" stroke="#38bdf8" strokeWidth="0.8" strokeDasharray="6 6" opacity="0.1" />
+
+                    {/* Movement Trails */}
+                    {replayShowTrails &&
+                      Object.entries(playerReplayTrails).map(([steamId, points]) => {
+                        if (points.length < 2) return null
+                        const pInfo = replayData?.players[steamId]
+                        const isCT = pInfo?.side === 'ct'
+                        const stroke = isCT ? '#3b82f6' : '#f97316'
+                        const polyPoints = points.map((pt) => `${pt.x * 10},${pt.y * 10}`).join(' ')
+                        return (
+                          <polyline
+                            key={`trail-${steamId}`}
+                            points={polyPoints}
+                            fill="none"
+                            stroke={stroke}
+                            strokeWidth="2.5"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeOpacity="0.45"
+                            strokeDasharray="4 2"
+                          />
+                        )
+                      })}
+
+                    {/* Active Gunfire Muzzle Burst & Tracer Beams */}
+                    {replayShowShots &&
+                      pastReplayKills
+                        .filter((k) => Math.abs(k.tick - (currentReplayFrame?.tick || 0)) < (replayData?.tickrate || 64) * 2.0)
+                        .map((k, i) => (
+                          <g key={`shot-${i}`}>
+                            <line
+                              x1={k.attacker_x * 10}
+                              y1={k.attacker_y * 10}
+                              x2={k.victim_x * 10}
+                              y2={k.victim_y * 10}
+                              stroke="#facc15"
+                              strokeWidth="3.5"
+                              strokeOpacity="0.9"
+                            />
+                            <circle
+                              cx={k.attacker_x * 10}
+                              cy={k.attacker_y * 10}
+                              r="12"
+                              fill="rgba(250, 204, 21, 0.4)"
+                              stroke="#facc15"
+                              strokeWidth="2"
+                            />
+                          </g>
+                        ))}
+
+                    {/* Kill Vector Lines */}
+                    {pastReplayKills.map((k, i) => (
+                      <line
+                        key={`kill-line-${i}`}
+                        x1={k.attacker_x * 10}
+                        y1={k.attacker_y * 10}
+                        x2={k.victim_x * 10}
+                        y2={k.victim_y * 10}
+                        stroke={k.attacker_side === 'ct' ? '#38bdf8' : '#f97316'}
+                        strokeWidth="1.5"
+                        strokeDasharray="4 3"
+                        opacity="0.5"
+                      />
+                    ))}
+                  </svg>
+
+                  {/* Real Living Player Dots & HP Tags */}
+                  {currentReplayFrame?.players.map((p) => {
+                    const isCurrentLevel = replayData?.levels && replayData.levels.length > 1 ? p.level === replayLevel : true
+                    const opacity = isCurrentLevel ? (p.is_alive ? 1 : 0.3) : 0.2
+                    const isCT = p.side === 'ct'
+                    const color = isCT ? '#3b82f6' : '#f97316'
+
+                    return (
+                      <div
+                        key={p.steam_id}
+                        style={{
+                          position: 'absolute',
+                          left: `${p.x}%`,
+                          top: `${p.y}%`,
+                          transform: 'translate(-50%, -50%)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          pointerEvents: 'none',
+                          opacity,
+                          transition: 'left 0.12s linear, top 0.12s linear',
+                          zIndex: isCurrentLevel ? 10 : 2,
+                        }}
+                      >
+                        {/* Dot */}
+                        <div
+                          style={{
+                            width: '16px',
+                            height: '16px',
+                            borderRadius: '50%',
+                            backgroundColor: color,
+                            border: '2px solid #ffffff',
+                            boxShadow: `0 0 8px ${color}`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: '8px',
+                            fontWeight: 800,
+                            color: '#ffffff',
+                          }}
+                        >
+                          {p.is_alive ? (isCT ? 'CT' : 'T') : '✕'}
+                        </div>
+
+                        {/* Name & HP Tag */}
+                        {isCurrentLevel && (
+                          <div
+                            style={{
+                              marginTop: '2px',
+                              backgroundColor: 'rgba(10, 12, 16, 0.85)',
+                              padding: '1px 4px',
+                              borderRadius: '3px',
+                              border: `1px solid ${color}44`,
+                              fontSize: '9px',
+                              fontWeight: 600,
+                              color: '#f1f5f9',
+                              whiteSpace: 'nowrap',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '3px',
+                            }}
+                          >
+                            <span>{p.name.slice(0, 8)}</span>
+                            {p.is_alive && (
+                              <span style={{ color: p.health < 40 ? '#ef4444' : '#22c55e', fontSize: '8px' }}>
+                                {Math.round(p.health)}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
+
+                  {/* Kill Skull Markers */}
+                  {pastReplayKills.map((k, i) => (
+                    <div
+                      key={`skull-${i}`}
+                      onClick={() => handleJumpToReplayTick(k.tick)}
+                      title={`Килл: ${k.attacker_name} ➔ ${k.victim_name}. Клик для перехода к тику`}
+                      style={{
+                        position: 'absolute',
+                        left: `${k.victim_x}%`,
+                        top: `${k.victim_y}%`,
+                        transform: 'translate(-50%, -50%)',
+                        width: '14px',
+                        height: '14px',
+                        borderRadius: '50%',
+                        backgroundColor: 'rgba(239, 68, 68, 0.85)',
+                        border: '1.5px solid #ffffff',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '9px',
+                        color: '#ffffff',
+                        fontWeight: 800,
+                        zIndex: 15,
+                        cursor: 'pointer',
+                        pointerEvents: 'auto',
+                        boxShadow: '0 0 6px rgba(239, 68, 68, 0.8)',
+                      }}
+                    >
+                      ☠
+                    </div>
+                  ))}
+                </div>
+
+                {/* Timeline Scrubber & Media Player Controls */}
+                <div style={{ backgroundColor: '#0d0f16', border: '1px solid #1c202d', borderRadius: '8px', padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {/* Scrubber slider & timestamps */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '11px', fontFamily: 'monospace', color: '#38bdf8', minWidth: '34px' }}>
+                      {currentReplayFrame && replayData ? formatReplayTime(currentReplayFrame.tick, replayData.start_tick, replayData.tickrate) : '0:00'}
+                    </span>
+                    <input
+                      type="range"
+                      min="0"
+                      max={Math.max(0, (replayData?.frames.length || 1) - 1)}
+                      value={replayFrameIndex}
+                      onChange={(e) => {
+                        setReplayFrameIndex(parseInt(e.target.value, 10))
+                        setIsReplayPlaying(false)
+                      }}
+                      style={{ flex: 1, accentColor: '#38bdf8', cursor: 'pointer' }}
+                    />
+                    <span style={{ fontSize: '11px', fontFamily: 'monospace', color: '#64748b', minWidth: '34px', textAlign: 'right' }}>
+                      {replayData ? formatReplayTime(replayData.end_tick, replayData.start_tick, replayData.tickrate) : '0:00'}
+                    </span>
+                  </div>
+
+                  {/* Playback Buttons & Speed Selector */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                    {/* Rewind / Play / Forward */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const framesToJump = Math.floor((replayData?.tickrate || 64) * 5 / 32)
+                          setReplayFrameIndex((prev) => Math.max(0, prev - framesToJump))
+                        }}
+                        style={{ padding: '4px 8px', fontSize: '11px', backgroundColor: '#181b26', border: '1px solid #282f42', borderRadius: '4px', color: '#cbd5e1', cursor: 'pointer' }}
+                        title="Назад на 5 секунд"
+                      >
+                        ↺ 5s
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => setIsReplayPlaying(!isReplayPlaying)}
+                        style={{
+                          padding: '6px 14px',
+                          fontSize: '12px',
+                          fontWeight: 800,
+                          backgroundColor: isReplayPlaying ? '#f59e0b' : '#38bdf8',
+                          color: '#090d16',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                        }}
+                      >
+                        {isReplayPlaying ? '⏸ Пауза' : '▶ Плей'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const framesToJump = Math.floor((replayData?.tickrate || 64) * 5 / 32)
+                          const maxFrames = (replayData?.frames.length || 1) - 1
+                          setReplayFrameIndex((prev) => Math.min(maxFrames, prev + framesToJump))
+                        }}
+                        style={{ padding: '4px 8px', fontSize: '11px', backgroundColor: '#181b26', border: '1px solid #282f42', borderRadius: '4px', color: '#cbd5e1', cursor: 'pointer' }}
+                        title="Вперед на 5 секунд"
+                      >
+                        5s ↻
+                      </button>
+                    </div>
+
+                    {/* Speed options */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                      {[0.5, 1, 2, 4].map((spd) => (
+                        <button
+                          key={spd}
+                          type="button"
+                          onClick={() => setReplaySpeed(spd)}
+                          style={{
+                            padding: '3px 6px',
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            borderRadius: '4px',
+                            border: replaySpeed === spd ? '1px solid #38bdf8' : '1px solid #282f42',
+                            backgroundColor: replaySpeed === spd ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
+                            color: replaySpeed === spd ? '#38bdf8' : '#64748b',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {spd}x
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Right Column: Filters Bar & Moments Table */}
@@ -1180,8 +1843,8 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     fontWeight: 600,
                   }}
                 >
-                  <option value="all">Все раунды ({rounds.length})</option>
-                  {rounds.map((r) => (
+                  <option value="all">Все раунды ({roundNumbers.length})</option>
+                  {roundNumbers.map((r) => (
                     <option key={r} value={r}>Раунд {r}</option>
                   ))}
                 </select>
@@ -1318,7 +1981,15 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     <div
                       key={h.id}
                       className={`moment-row ${isSelected ? 'selected' : ''}`}
-                      onClick={() => onToggleHighlight(h.id)}
+                      onClick={() => {
+                        onToggleHighlight(h.id)
+                        if (radarTab === 'replay') {
+                          if (replayRoundNum !== h.round_num) {
+                            setReplayRoundNum(h.round_num)
+                          }
+                          handleJumpToReplayTick(h.kill_start_tick)
+                        }
+                      }}
                       onMouseEnter={() => setHoveredHighlightId(h.id)}
                       onMouseLeave={() => setHoveredHighlightId(null)}
                       style={{
@@ -1783,6 +2454,38 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         )}
                       </div>
                     </div>
+
+                    {/* FPS & Smoothness */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#12141c', padding: '10px 12px', borderRadius: '8px', border: '1px solid #232734', marginTop: '10px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600 }}>Частота кадров (FPS)</span>
+                        <span style={{ fontSize: '10px', color: '#94a3b8' }}>120 FPS для сверхплавных замедлений; 60 FPS — стандарт CS2</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        {([120, 60, 30] as const).map((fpsVal) => {
+                          const isSelected = (clipSettings?.fps || 60) === fpsVal
+                          return (
+                            <button
+                              key={fpsVal}
+                              type="button"
+                              className="btn"
+                              onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, fps: fpsVal })}
+                              style={{
+                                padding: '5px 10px',
+                                fontSize: '11px',
+                                fontWeight: 700,
+                                backgroundColor: isSelected ? '#38bdf8' : '#1c2333',
+                                color: isSelected ? '#090d16' : '#cbd5e1',
+                                border: '1px solid #2d3748',
+                                borderRadius: '4px',
+                              }}
+                            >
+                              {fpsVal === 120 ? '⚡ 120 FPS' : `${fpsVal} FPS`}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1796,29 +2499,20 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       <div style={{ fontSize: '11px', color: '#64748b' }}>Масштаб и ориентация мини-карты на записи</div>
                     </div>
                     <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 600 }}>
-                      {clipSettings?.radarMode === 'dynamic_large'
-                        ? '🔥 Огромный динамический (130%)'
-                        : clipSettings?.radarMode === 'broadcast_giant'
-                        ? '📡 Огромный турнирный (130%)'
-                        : clipSettings?.radarMode === 'player_focus'
-                        ? 'Динамический'
-                        : clipSettings?.radarMode === 'compact'
-                        ? 'Компактный'
+                      {clipSettings?.radarMode === 'broadcast'
+                        ? '📡 Турнирный BLAST'
                         : clipSettings?.radarMode === 'hidden'
-                        ? 'Скрыт'
-                        : 'Broadcast Pro'}
+                        ? '🚫 Без радара'
+                        : '🧭 Динамический'}
                     </span>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                     {[
-                      { id: 'dynamic_large', label: '🔥 Огромный динамика', desc: '130% вращается за POV' },
-                      { id: 'broadcast_giant', label: '📡 Огромный турнирный', desc: '130% вся карта (BLAST)' },
-                      { id: 'player_focus', label: '🧭 Динамика', desc: 'Вращение за POV' },
-                      { id: 'broadcast', label: '📺 Pro BLAST', desc: 'Вся карта, север' },
-                      { id: 'compact', label: '🔍 Мини', desc: 'Компактный' },
-                      { id: 'hidden', label: '🚫 Без радара', desc: 'Скрыть радар' },
+                      { id: 'player_focus', label: '🧭 Динамический', desc: 'Центрируется и вращается за игроком POV' },
+                      { id: 'broadcast', label: '📡 Турнирный BLAST', desc: 'Вся карта, фиксированный север' },
+                      { id: 'hidden', label: '🚫 Без радара', desc: 'Скрыть радар (чистый экран)' },
                     ].map((r) => {
-                      const isSelected = (clipSettings?.radarMode || 'broadcast') === r.id
+                      const isSelected = (clipSettings?.radarMode || 'player_focus') === r.id
                       return (
                         <button
                           key={r.id}
@@ -1826,8 +2520,8 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                           className="btn"
                           onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, radarMode: r.id as any })}
                           style={{
-                            padding: '8px 6px',
-                            textAlign: 'center',
+                            padding: '10px 8px',
+                            textAlign: 'left',
                             backgroundColor: isSelected ? '#10b98122' : '#16181f',
                             borderColor: isSelected ? '#10b981' : '#2b2e38',
                             borderWidth: '1px',
@@ -1837,7 +2531,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                           }}
                         >
                           <div style={{ fontSize: '11px', fontWeight: 700, color: isSelected ? '#34d399' : '#e2e8f0' }}>{r.label}</div>
-                          <div style={{ fontSize: '9px', color: '#64748b', marginTop: '2px' }}>{r.desc}</div>
+                          <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>{r.desc}</div>
                         </button>
                       )
                     })}
@@ -1875,14 +2569,11 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         🏆 Турнирный HUD (Lexogrine / GSI)...
                       </button>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '8px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                       {[
-                        { mode: 'real', label: '🎥 REAL (OBS Запись)', sub: 'От первого лица, без X-Ray' },
-                        { mode: 'huge_esports', label: '🔥 Огромный киберспорт', sub: '115% фраги, HP, аватары' },
-                        { mode: 'huge_killfeed', label: '⚡ Огромный киллфид', sub: '115% увеличенные фраги' },
-                        { mode: 'killfeed_only', label: '⚔️ Киллфид', sub: 'Только киллы (чисто)' },
-                        { mode: 'full', label: '📺 Spectator', sub: 'HP, патроны, счет' },
-                        { mode: 'none', label: '🎬 No HUD', sub: 'Чисто для оверлеев' },
+                        { mode: 'real', label: '🎥 REAL (OBS Запись)', sub: 'От первого лица, без X-Ray и спектатор-плашки' },
+                        { mode: 'full', label: '📺 Spectator Pro', sub: 'Турнирный спектатор: HP, патроны, счет' },
+                        { mode: 'none', label: '🎬 No HUD', sub: 'Чисто для оверлеев и мувиков' },
                       ].map((h) => {
                         const isSelected = (clipSettings?.hudMode || 'full') === h.mode
                         return (
@@ -1896,14 +2587,14 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                                 onUpdateSettings({
                                   ...clipSettings,
                                   hudMode: h.mode as any,
-                                  hudScale: h.mode.startsWith('huge') ? 1.15 : (isReal ? 1.0 : 0.95),
+                                  hudScale: isReal ? 1.0 : (clipSettings.hudScale || 0.95),
                                   ...(isReal ? { xray: false, radarMode: 'player_focus' } : {}),
                                 })
                               }
                             }}
                             style={{
-                              padding: '8px 6px',
-                              textAlign: 'center',
+                              padding: '10px 8px',
+                              textAlign: 'left',
                               backgroundColor: isSelected ? (h.mode === 'real' ? '#0284c725' : '#6366f122') : '#16181f',
                               borderColor: isSelected ? (h.mode === 'real' ? '#38bdf8' : '#6366f1') : '#2b2e38',
                               borderWidth: '1px',
@@ -1913,7 +2604,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                             }}
                           >
                             <div style={{ fontSize: '11px', fontWeight: 700, color: isSelected ? (h.mode === 'real' ? '#38bdf8' : '#818cf8') : '#e2e8f0' }}>{h.label}</div>
-                            <div style={{ fontSize: '9px', color: '#64748b', marginTop: '2px' }}>{h.sub}</div>
+                            <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>{h.sub}</div>
                           </button>
                         )
                       })}
@@ -1924,6 +2615,78 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         <span><strong>Режим REAL:</strong> Запись выглядит 1:1 как при живой игре через OBS. Скрыта спектаторская полоса внизу (аватар и ник игрока), X-Ray отключен, обычный центрированный круглый радар. Все патроны, здоровье, деньги и киллфид активны.</span>
                       </div>
                     )}
+
+                    {/* Advanced HUD Toggles */}
+                    <div style={{ backgroundColor: '#0c0e14', border: '1px solid #1c202d', borderRadius: '8px', padding: '12px', marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div style={{ fontSize: '11px', fontWeight: 800, color: '#38bdf8', letterSpacing: '0.04em' }}>
+                        ⚙️ РАСШИРЕННЫЕ НАСТРОЙКИ HUD (ТУМБЛЕРЫ)
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px' }}>
+                        {/* Overhead Name Tags */}
+                        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', backgroundColor: '#131622', borderRadius: '6px', cursor: 'pointer', border: '1px solid #23283c' }}>
+                          <span style={{ fontSize: '11px', color: '#e2e8f0', fontWeight: 600 }}>👤 Ники над головами</span>
+                          <input
+                            type="checkbox"
+                            checked={clipSettings?.overheadMode !== false}
+                            onChange={(e) => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, overheadMode: e.target.checked })}
+                            style={{ accentColor: '#38bdf8', width: '15px', height: '15px', cursor: 'pointer' }}
+                          />
+                        </label>
+
+                        {/* Killfeed only */}
+                        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', backgroundColor: '#131622', borderRadius: '6px', cursor: 'pointer', border: '1px solid #23283c' }}>
+                          <span style={{ fontSize: '11px', color: '#e2e8f0', fontWeight: 600 }}>⚔️ Только киллфид</span>
+                          <input
+                            type="checkbox"
+                            checked={Boolean(clipSettings?.killfeedOnly)}
+                            onChange={(e) => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, killfeedOnly: e.target.checked })}
+                            style={{ accentColor: '#38bdf8', width: '15px', height: '15px', cursor: 'pointer' }}
+                          />
+                        </label>
+
+                        {/* Alive counter mode: numbers vs avatars */}
+                        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', backgroundColor: '#131622', borderRadius: '6px', cursor: 'pointer', border: '1px solid #23283c' }}>
+                          <span style={{ fontSize: '11px', color: '#e2e8f0', fontWeight: 600 }}>🔢 Живые цифрой (5 v 3)</span>
+                          <input
+                            type="checkbox"
+                            checked={Boolean(clipSettings?.teamcounterMode)}
+                            onChange={(e) => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, teamcounterMode: e.target.checked })}
+                            style={{ accentColor: '#38bdf8', width: '15px', height: '15px', cursor: 'pointer' }}
+                          />
+                        </label>
+
+                        {/* HUD Scale */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', backgroundColor: '#131622', borderRadius: '6px', border: '1px solid #23283c' }}>
+                          <span style={{ fontSize: '11px', color: '#e2e8f0', fontWeight: 600 }}>📏 Размер HUD</span>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            {[
+                              { scale: 0.95, label: '95%' },
+                              { scale: 1.0, label: '100%' },
+                              { scale: 1.15, label: '115%' },
+                            ].map((s) => (
+                              <button
+                                key={s.scale}
+                                type="button"
+                                onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, hudScale: s.scale })}
+                                style={{
+                                  padding: '2px 5px',
+                                  fontSize: '10px',
+                                  fontWeight: 700,
+                                  borderRadius: '4px',
+                                  border: clipSettings?.hudScale === s.scale ? '1px solid #38bdf8' : '1px solid #2b3244',
+                                  backgroundColor: clipSettings?.hudScale === s.scale ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
+                                  color: clipSettings?.hudScale === s.scale ? '#38bdf8' : '#94a3b8',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                {s.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   {/* X-Ray toggle */}
@@ -2033,22 +2796,24 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   <div style={{ padding: '14px', backgroundColor: '#121316', borderRadius: '8px', border: '1px solid #232630' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                       <div>
-                        <div style={{ fontSize: '13px', color: '#f1f5f9', fontWeight: 600 }}>Киберспортивный прицел</div>
-                        <div style={{ fontSize: '11px', color: '#64748b' }}>Статичный прицел, скрывает TrueView</div>
+                        <div style={{ fontSize: '13px', color: '#f1f5f9', fontWeight: 600 }}>🎯 Прицел в CS2</div>
+                        <div style={{ fontSize: '11px', color: '#64748b' }}>Родной прицел игры или кастомный прицел игрока</div>
                       </div>
                       <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 600 }}>
-                        {clipSettings?.crosshairPreset || 'pro_cyan'}
+                        {clipSettings?.crosshairPreset === 'default'
+                          ? 'Дефолтный CS2'
+                          : clipSettings?.crosshairPreset === 'hidden'
+                          ? 'Скрыт'
+                          : 'Прицел игрока (Pro)'}
                       </span>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '6px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '10px' }}>
                       {[
-                        { label: 'Cyan Pro', p: 'pro_cyan' },
-                        { label: 'Green', p: 'green_clean' },
-                        { label: 'Точка', p: 'dot' },
-                        { label: 'White', p: 'minimal_white' },
-                        { label: 'Выкл', p: 'hidden' },
+                        { p: 'default', label: '🎮 Дефолтный CS2', desc: 'Родной прицел игры' },
+                        { p: 'pro_cyan', label: '🎯 Прицел игрока (Pro)', desc: 'Кастомный с цветом' },
+                        { p: 'hidden', label: '🚫 Без прицела', desc: 'Скрыть прицел' },
                       ].map((c) => {
-                        const isSelected = (clipSettings?.crosshairPreset || 'pro_cyan') === c.p
+                        const isSelected = (clipSettings?.crosshairPreset || 'default') === c.p
                         return (
                           <button
                             key={c.p}
@@ -2064,22 +2829,54 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                               })
                             }
                             style={{
-                              padding: '6px 4px',
-                              fontSize: '11px',
+                              padding: '8px 10px',
+                              textAlign: 'left',
                               backgroundColor: isSelected ? '#38bdf822' : '#16181f',
                               borderColor: isSelected ? '#38bdf8' : '#2b2e38',
                               borderWidth: '1px',
                               borderStyle: 'solid',
                               borderRadius: '6px',
                               color: isSelected ? '#38bdf8' : '#cbd5e1',
-                              fontWeight: isSelected ? 700 : 500,
                             }}
                           >
-                            {c.label}
+                            <div style={{ fontSize: '11px', fontWeight: 700 }}>{c.label}</div>
+                            <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>{c.desc}</div>
                           </button>
                         )
                       })}
                     </div>
+
+                    {/* Color selection if custom crosshair is chosen */}
+                    {clipSettings?.crosshairPreset !== 'default' && clipSettings?.crosshairPreset !== 'hidden' && (
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', backgroundColor: '#0d1017', borderRadius: '6px', border: '1px solid #1e2433' }}>
+                        <span style={{ fontSize: '11px', color: '#94a3b8' }}>Цвет прицела:</span>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          {[
+                            { name: 'cyan', hex: '#00ffff' },
+                            { name: 'green', hex: '#00ff00' },
+                            { name: 'yellow', hex: '#ffff00' },
+                            { name: 'white', hex: '#ffffff' },
+                            { name: 'magenta', hex: '#ff00ff' },
+                          ].map((col) => (
+                            <button
+                              key={col.name}
+                              type="button"
+                              onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, crosshairColor: col.name as any })}
+                              style={{
+                                width: '20px',
+                                height: '20px',
+                                borderRadius: '50%',
+                                backgroundColor: col.hex,
+                                border: (clipSettings?.crosshairColor || 'cyan') === col.name ? '2px solid #ffffff' : '1px solid #334155',
+                                cursor: 'pointer',
+                                outline: (clipSettings?.crosshairColor || 'cyan') === col.name ? '2px solid #38bdf8' : 'none',
+                              }}
+                              title={col.name}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

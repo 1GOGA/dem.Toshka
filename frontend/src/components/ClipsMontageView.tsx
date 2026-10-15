@@ -380,7 +380,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
             </div>
           )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '18px' }}>
             {clips
               .filter((c) => filterMap === 'all' || c.map_name === filterMap)
               .map((c) => {
@@ -389,70 +389,26 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
                   <div
                     key={c.filename}
                     style={{
-                      backgroundColor: '#13151c',
-                      border: isSelected ? '1px solid #38bdf8' : '1px solid #232734',
-                      borderRadius: '8px',
-                      padding: '14px',
+                      backgroundColor: '#12141c',
+                      border: isSelected ? '1px solid #38bdf8' : '1px solid #232738',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '10px',
-                      transition: 'all 0.15s ease',
+                      boxShadow: isSelected ? '0 0 16px rgba(56, 189, 248, 0.2)' : '0 4px 14px rgba(0, 0, 0, 0.4)',
+                      transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                     }}
                   >
-                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <input
-                          type="checkbox"
-                          checked={isSelected}
-                          onChange={() => handleToggleSelect(c.filename)}
-                          style={{ accentColor: '#38bdf8', width: '16px', height: '16px', cursor: 'pointer' }}
-                        />
-                        <span
-                          style={{
-                            fontSize: '12px',
-                            fontWeight: 700,
-                            color: '#f1f5f9',
-                            wordBreak: 'break-all',
-                          }}
-                        >
-                          {c.filename}
-                        </span>
-                      </div>
-
-                      {c.is_montage && (
-                        <span style={{ fontSize: '10px', backgroundColor: '#38bdf8', color: '#000', padding: '2px 5px', borderRadius: '3px', fontWeight: 800 }}>
-                          МОНТАЖ
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Metadata pills */}
-                    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '6px', fontSize: '11px', color: '#94a3b8' }}>
-                      {c.map_name && (
-                        <span style={{ backgroundColor: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', padding: '1px 6px', borderRadius: '3px', fontSize: '10px', fontWeight: 700 }}>
-                          🗺️ {c.map_name.replace('de_', '').toUpperCase()}
-                        </span>
-                      )}
-                      {c.highlight_type && (
-                        <span style={{ backgroundColor: 'rgba(234, 179, 8, 0.15)', color: '#facc15', padding: '1px 6px', borderRadius: '3px', fontSize: '10px', fontWeight: 700 }}>
-                          ⚡ {c.highlight_type.toUpperCase()}
-                        </span>
-                      )}
-                      {c.player_name && (
-                        <span style={{ color: '#cbd5e1', fontSize: '10px' }}>
-                          👤 {c.player_name} {c.round_num ? `(R${c.round_num})` : ''}
-                        </span>
-                      )}
-                      <span>📦 {formatFileSize(c.size_bytes)}</span>
-                      <span>•</span>
-                      <span>🕒 {new Date(c.modified_at * 1000).toLocaleTimeString()}</span>
-                    </div>
-
-                  {/* Actions */}
-                  <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-                    <button
-                      type="button"
-                      className="btn btn-secondary"
+                    {/* 16:9 Video Thumbnail Preview */}
+                    <div
+                      style={{
+                        position: 'relative',
+                        width: '100%',
+                        aspectRatio: '16 / 9',
+                        backgroundColor: '#090b10',
+                        overflow: 'hidden',
+                        cursor: 'pointer',
+                      }}
                       onClick={() =>
                         setActiveModalVideo({
                           url: c.url,
@@ -460,22 +416,254 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
                           subtitle: `${formatFileSize(c.size_bytes)} • ${new Date(c.modified_at * 1000).toLocaleTimeString()}`,
                         })
                       }
-                      style={{ flex: 1, padding: '4px 8px', fontSize: '11px' }}
+                      title="Нажмите для полноэкранного воспроизведения"
                     >
-                      ▶ Просмотр
-                    </button>
-                    <a
-                      href={c.url}
-                      download={c.filename}
-                      className="btn btn-secondary"
-                      style={{ padding: '4px 8px', fontSize: '11px', textDecoration: 'none' }}
-                    >
-                      ⬇ Скачать
-                    </a>
+                      <video
+                        preload="metadata"
+                        src={`${c.url}#t=0.5`}
+                        muted
+                        playsInline
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          opacity: 0.88,
+                          transition: 'transform 0.3s ease, opacity 0.3s ease',
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.transform = 'scale(1.04)'
+                          e.currentTarget.style.opacity = '1.0'
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.transform = 'scale(1.0)'
+                          e.currentTarget.style.opacity = '0.88'
+                        }}
+                      />
+
+                      {/* Vignette Bottom Gradient */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          inset: 0,
+                          background: 'linear-gradient(180deg, rgba(0,0,0,0.3) 0%, transparent 40%, rgba(10,12,18,0.85) 100%)',
+                          pointerEvents: 'none',
+                        }}
+                      />
+
+                      {/* Center Play Button Overlay */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: '50%',
+                          transform: 'translate(-50%, -50%)',
+                          width: '42px',
+                          height: '42px',
+                          borderRadius: '50%',
+                          backgroundColor: 'rgba(15, 23, 42, 0.75)',
+                          border: '2px solid rgba(56, 189, 248, 0.6)',
+                          boxShadow: '0 0 16px rgba(56, 189, 248, 0.4)',
+                          backdropFilter: 'blur(4px)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#38bdf8',
+                          fontSize: '16px',
+                          pointerEvents: 'none',
+                          transition: 'all 0.2s ease',
+                        }}
+                      >
+                        ▶
+                      </div>
+
+                      {/* Top Bar Badges */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '10px',
+                          left: '10px',
+                          right: '10px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          zIndex: 2,
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {/* Checkbox for montage inclusion */}
+                        <label
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            backgroundColor: 'rgba(10, 12, 18, 0.75)',
+                            padding: '3px 8px',
+                            borderRadius: '6px',
+                            border: '1px solid rgba(255, 255, 255, 0.1)',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleToggleSelect(c.filename)}
+                            style={{ accentColor: '#38bdf8', width: '15px', height: '15px', cursor: 'pointer' }}
+                          />
+                        </label>
+
+                        {/* Event / Montage Badge */}
+                        {c.is_montage ? (
+                          <span
+                            style={{
+                              fontSize: '10px',
+                              backgroundColor: '#38bdf8',
+                              color: '#090d16',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontWeight: 900,
+                              letterSpacing: '0.05em',
+                              boxShadow: '0 0 10px rgba(56, 189, 248, 0.5)',
+                            }}
+                          >
+                            🎬 МОНТАЖ
+                          </span>
+                        ) : c.highlight_type ? (
+                          <span
+                            style={{
+                              fontSize: '10px',
+                              backgroundColor: 'rgba(234, 179, 8, 0.85)',
+                              color: '#090d16',
+                              padding: '2px 8px',
+                              borderRadius: '4px',
+                              fontWeight: 800,
+                              letterSpacing: '0.05em',
+                            }}
+                          >
+                            ⚡ {c.highlight_type.toUpperCase()}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      {/* Bottom Overlay Info (Map & Size) */}
+                      <div
+                        style={{
+                          position: 'absolute',
+                          bottom: '8px',
+                          left: '10px',
+                          right: '10px',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          pointerEvents: 'none',
+                        }}
+                      >
+                        {c.map_name && (
+                          <span
+                            style={{
+                              backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                              color: '#38bdf8',
+                              padding: '2px 7px',
+                              borderRadius: '4px',
+                              border: '1px solid rgba(56, 189, 248, 0.3)',
+                              fontSize: '10px',
+                            }}
+                          >
+                            🗺️ {c.map_name.replace('de_', '').toUpperCase()}
+                          </span>
+                        )}
+                        <span
+                          style={{
+                            backgroundColor: 'rgba(15, 23, 42, 0.85)',
+                            color: '#94a3b8',
+                            padding: '2px 7px',
+                            borderRadius: '4px',
+                            fontSize: '10px',
+                          }}
+                        >
+                          📦 {formatFileSize(c.size_bytes)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Card Body */}
+                    <div style={{ padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <div
+                        style={{
+                          fontSize: '12px',
+                          fontWeight: 700,
+                          color: '#f1f5f9',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}
+                        title={c.filename}
+                      >
+                        {c.filename}
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '11px', color: '#64748b' }}>
+                        {c.player_name ? (
+                          <span style={{ color: '#cbd5e1', fontWeight: 600 }}>
+                            👤 {c.player_name} {c.round_num ? `(R${c.round_num})` : ''}
+                          </span>
+                        ) : (
+                          <span>Матч CS2</span>
+                        )}
+                        <span>🕒 {new Date(c.modified_at * 1000).toLocaleTimeString()}</span>
+                      </div>
+
+                      {/* Card Action Buttons */}
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                        <button
+                          type="button"
+                          className="btn"
+                          onClick={() =>
+                            setActiveModalVideo({
+                              url: c.url,
+                              title: c.filename,
+                              subtitle: `${formatFileSize(c.size_bytes)} • ${new Date(c.modified_at * 1000).toLocaleTimeString()}`,
+                            })
+                          }
+                          style={{
+                            flex: 1,
+                            padding: '6px 10px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                            color: '#38bdf8',
+                            border: '1px solid rgba(56, 189, 248, 0.35)',
+                            borderRadius: '6px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '4px',
+                          }}
+                        >
+                          <span>▶</span> Смотреть
+                        </button>
+                        <a
+                          href={c.url}
+                          download={c.filename}
+                          className="btn btn-secondary"
+                          style={{
+                            padding: '6px 12px',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            textDecoration: 'none',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                          }}
+                        >
+                          <span>⬇</span> Скачать
+                        </a>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              )
-            })}
+                )
+              })}
           </div>
         </div>
 

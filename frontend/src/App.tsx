@@ -203,12 +203,16 @@ export function App() {
       perspective_steam_id: clipSettings.perspectiveSteamId,
       xray: clipSettings.xray,
       hud_mode: clipSettings.hudMode,
+      hud_scale: clipSettings.hudScale,
+      overhead_mode: clipSettings.overheadMode,
+      killfeed_only: clipSettings.killfeedOnly,
+      teamcounter_mode: clipSettings.teamcounterMode,
       custom_crosshair: clipSettings.customCrosshair,
       fov: clipSettings.fov,
       viewmodel_fov: clipSettings.viewmodelFov,
       crosshair_preset: clipSettings.crosshairPreset,
       crosshair_color: clipSettings.crosshairColor,
-      radar_mode: clipSettings.radarMode || 'broadcast',
+      radar_mode: clipSettings.radarMode || 'player_focus',
     })
   }
 
@@ -276,6 +280,7 @@ export function App() {
             onUpdateSettings={setClipSettings}
             onSubmitRender={handleSubmitRenderJobs}
             kills={kills}
+            demoRounds={rounds}
             onUploadDemo={handleUploadDemo}
             onParsePath={handleParsePath}
           />

@@ -1,77 +1,28 @@
-import React, { useState } from 'react'
+import React from 'react'
 
 interface Agent3DViewerProps {
   team?: 'ct' | 't' | string | null
   playerName?: string
   role?: string
-  interactive?: boolean
   height?: number
   weapon?: string
+  avatarUrl?: string
 }
-
-interface AgentProfile {
-  id: string
-  name: string
-  title: string
-  team: 'ct' | 't'
-  gifUrl: string
-  fallbackAvatar: string
-  description: string
-  quote: string
-}
-
-const AGENTS: AgentProfile[] = [
-  {
-    id: 'ct_ava',
-    name: 'Special Agent Ava',
-    title: 'FBI SWAT Commander',
-    team: 'ct',
-    gifUrl: 'https://media.tenor.com/qR3L5whq4mUAAAAM/time-out-cs2.gif',
-    fallbackAvatar: '🛡️',
-    description: 'Special Agent Ava was the FBI\'s first female operative deployed into high-threat tactical scenarios.',
-    quote: '"They see me, they freeze. Simple as that."',
-  },
-  {
-    id: 'ct_mae',
-    name: 'Cmdr. Mae "Dead Cold"',
-    title: 'SWAT Special Forces',
-    team: 'ct',
-    gifUrl: 'https://media.tenor.com/ad6HfaJtqU4AAAAM/agent-cs2-dancing-cmdr-mae-dead-cold-jamison-swat.gif',
-    fallbackAvatar: '⚡',
-    description: 'Renowned for exceptional clutch reactions and tactical discipline under hostile fire.',
-    quote: '"Round won. Ready for the next engagement."',
-  },
-  {
-    id: 't_phoenix',
-    name: 'Street Soldier',
-    title: 'Phoenix Connexion',
-    team: 't',
-    gifUrl: 'https://media.tenor.com/ad6HfaJtqU4AAAAM/agent-cs2-dancing-cmdr-mae-dead-cold-jamison-swat.gif',
-    fallbackAvatar: '🔥',
-    description: 'Veterans of eastern European conflicts, heavily armed and relentless on entry duels.',
-    quote: '"Plant the bomb and hold every corridor."',
-  },
-]
 
 export const Agent3DViewer: React.FC<Agent3DViewerProps> = ({
   team = 'ct',
   playerName = 'Operator',
   role = 'Entry Fragger',
-  interactive = true,
   height = 360,
   weapon = 'AK-47',
+  avatarUrl,
 }) => {
   const isCT = (team || '').toLowerCase().includes('ct')
-  const [selectedAgentIndex, setSelectedAgentIndex] = useState<number>(isCT ? 0 : 2)
-  const [tacticalMode, setTacticalMode] = useState<'combat' | 'tactical' | 'mvp'>('tactical')
-  const [imgError, setImgError] = useState<boolean>(false)
 
-  // Primary colors
+  // Primary team accent colors
   const primaryColor = isCT ? '#38bdf8' : '#f59e0b'
   const primaryBg = isCT ? 'rgba(56, 189, 248, 0.12)' : 'rgba(245, 158, 11, 0.12)'
   const primaryBorder = isCT ? 'rgba(56, 189, 248, 0.35)' : 'rgba(245, 158, 11, 0.35)'
-
-  const currentAgent = AGENTS[selectedAgentIndex] || AGENTS[0]
 
   return (
     <div
@@ -112,7 +63,7 @@ export const Agent3DViewer: React.FC<Agent3DViewerProps> = ({
             }}
           />
           <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.08em', color: '#f1f5f9' }}>
-            OPERATIVE HUD // {isCT ? 'COUNTER-TERRORIST' : 'TERRORIST'}
+            OPERATIVE PROFILE // {isCT ? 'COUNTER-TERRORIST' : 'TERRORIST'}
           </span>
         </div>
 
@@ -145,12 +96,13 @@ export const Agent3DViewer: React.FC<Agent3DViewerProps> = ({
         </div>
       </div>
 
-      {/* Main Agent Media Showcase Area */}
+      {/* Main Neutral Operative Media Showcase Area */}
       <div
         style={{
           position: 'relative',
           flex: 1,
           display: 'flex',
+          flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
           overflow: 'hidden',
@@ -162,62 +114,128 @@ export const Agent3DViewer: React.FC<Agent3DViewerProps> = ({
           style={{
             position: 'absolute',
             inset: 0,
-            opacity: 0.15,
+            opacity: 0.12,
             backgroundImage: `linear-gradient(${primaryColor} 1px, transparent 1px), linear-gradient(90deg, ${primaryColor} 1px, transparent 1px)`,
-            backgroundSize: '32px 32px',
+            backgroundSize: '28px 28px',
             pointerEvents: 'none',
           }}
         />
 
-        {/* Animated CS2 Agent GIF or Fallback Card */}
-        {!imgError ? (
+        {/* Center Neutral Operative Insignia / Artwork */}
+        {avatarUrl ? (
           <img
-            src={currentAgent.gifUrl}
-            alt={currentAgent.name}
-            onError={() => setImgError(true)}
+            src={avatarUrl}
+            alt={playerName}
             style={{
-              maxHeight: '85%',
-              maxWidth: '85%',
+              maxHeight: '75%',
+              maxWidth: '75%',
               objectFit: 'contain',
               borderRadius: '12px',
               filter: `drop-shadow(0 8px 24px ${isCT ? 'rgba(56, 189, 248, 0.3)' : 'rgba(245, 158, 11, 0.3)'})`,
               zIndex: 1,
-              transition: 'transform 0.3s ease',
             }}
           />
         ) : (
           <div
             style={{
+              position: 'relative',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              gap: '12px',
               zIndex: 1,
+              padding: '20px',
             }}
           >
+            {/* Holographic Platform Ring */}
             <div
               style={{
-                width: '100px',
-                height: '100px',
+                position: 'relative',
+                width: '130px',
+                height: '130px',
                 borderRadius: '50%',
                 backgroundColor: primaryBg,
-                border: `2px solid ${primaryColor}`,
+                border: `2px solid ${primaryBorder}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                fontSize: '44px',
-                boxShadow: `0 0 25px ${primaryColor}55`,
+                boxShadow: `0 0 35px ${isCT ? 'rgba(56, 189, 248, 0.25)' : 'rgba(245, 158, 11, 0.25)'}`,
               }}
             >
-              {currentAgent.fallbackAvatar}
+              {/* Tactical Silhouette SVG */}
+              <svg
+                viewBox="0 0 64 64"
+                fill="none"
+                style={{
+                  width: '72px',
+                  height: '72px',
+                  color: primaryColor,
+                  filter: `drop-shadow(0 0 10px ${primaryColor}88)`,
+                }}
+              >
+                {isCT ? (
+                  // Counter-Terrorist Helmet & Visor
+                  <>
+                    <path
+                      d="M32 8 C20 8 16 16 16 26 C16 34 20 40 22 46 L42 46 C44 40 48 34 48 26 C48 16 44 8 32 8 Z"
+                      fill="currentColor"
+                      fillOpacity="0.25"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    />
+                    <path
+                      d="M20 26 Q32 24 44 26 L42 32 Q32 30 22 32 Z"
+                      fill={primaryColor}
+                      stroke="none"
+                    />
+                    <path
+                      d="M14 54 C14 46 22 46 32 46 C42 46 50 46 50 54 L14 54 Z"
+                      fill="currentColor"
+                      fillOpacity="0.4"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    />
+                  </>
+                ) : (
+                  // Terrorist Balaclava & Goggles
+                  <>
+                    <path
+                      d="M32 8 C21 8 17 18 17 28 C17 38 21 42 23 46 L41 46 C43 42 47 38 47 28 C47 18 43 8 32 8 Z"
+                      fill="currentColor"
+                      fillOpacity="0.25"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    />
+                    <circle cx="26" cy="27" r="4" fill={primaryColor} />
+                    <circle cx="38" cy="27" r="4" fill={primaryColor} />
+                    <line x1="30" y1="27" x2="34" y2="27" stroke={primaryColor} strokeWidth="2" />
+                    <path
+                      d="M14 54 C14 46 22 46 32 46 C42 46 50 46 50 54 L14 54 Z"
+                      fill="currentColor"
+                      fillOpacity="0.4"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    />
+                  </>
+                )}
+              </svg>
             </div>
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: '15px', fontWeight: 800, color: '#f8fafc' }}>
-                {currentAgent.name}
+
+            {/* Operative Sub-badge */}
+            <div style={{ marginTop: '14px', textAlign: 'center' }}>
+              <div
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                  color: primaryColor,
+                }}
+              >
+                {isCT ? 'Counter-Terrorist' : 'Terrorist Phoenix'}
               </div>
-              <div style={{ fontSize: '11px', color: primaryColor, fontWeight: 600 }}>
-                {currentAgent.title}
+              <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>
+                CS2 Official Model · Neutral Operator
               </div>
             </div>
           </div>
@@ -262,96 +280,10 @@ export const Agent3DViewer: React.FC<Agent3DViewerProps> = ({
             {playerName}
           </div>
           <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-            {currentAgent.name} · {currentAgent.title}
+            {isCT ? 'CT Special Forces' : 'T Attack Unit'} · {role}
           </div>
         </div>
       </div>
-
-      {/* Interactive Controls Footer */}
-      {interactive && (
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            padding: '8px 16px',
-            backgroundColor: 'rgba(8, 11, 18, 0.9)',
-            borderTop: '1px solid rgba(255, 255, 255, 0.07)',
-            zIndex: 2,
-          }}
-        >
-          {/* Agent Switcher Pills */}
-          <div style={{ display: 'flex', gap: '6px' }}>
-            {AGENTS.map((ag, idx) => (
-              <button
-                key={ag.id}
-                onClick={() => {
-                  setSelectedAgentIndex(idx)
-                  setImgError(false)
-                }}
-                style={{
-                  fontSize: '10px',
-                  fontWeight: 700,
-                  padding: '3px 8px',
-                  borderRadius: '6px',
-                  border: selectedAgentIndex === idx ? `1px solid ${primaryColor}` : '1px solid rgba(255, 255, 255, 0.1)',
-                  backgroundColor: selectedAgentIndex === idx ? primaryBg : 'transparent',
-                  color: selectedAgentIndex === idx ? primaryColor : '#94a3b8',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                {ag.name.split(' ')[0]}
-              </button>
-            ))}
-          </div>
-
-          {/* Action Mood Selector */}
-          <div style={{ display: 'flex', gap: '4px' }}>
-            <button
-              onClick={() => setTacticalMode('tactical')}
-              style={{
-                fontSize: '10px',
-                fontWeight: tacticalMode === 'tactical' ? 800 : 500,
-                color: tacticalMode === 'tactical' ? '#38bdf8' : '#64748b',
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              Tactical
-            </button>
-            <span style={{ color: 'rgba(255, 255, 255, 0.2)', fontSize: '10px' }}>•</span>
-            <button
-              onClick={() => setTacticalMode('combat')}
-              style={{
-                fontSize: '10px',
-                fontWeight: tacticalMode === 'combat' ? 800 : 500,
-                color: tacticalMode === 'combat' ? '#f59e0b' : '#64748b',
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              Combat
-            </button>
-            <span style={{ color: 'rgba(255, 255, 255, 0.2)', fontSize: '10px' }}>•</span>
-            <button
-              onClick={() => setTacticalMode('mvp')}
-              style={{
-                fontSize: '10px',
-                fontWeight: tacticalMode === 'mvp' ? 800 : 500,
-                color: tacticalMode === 'mvp' ? '#a855f7' : '#64748b',
-                background: 'transparent',
-                border: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              MVP
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
