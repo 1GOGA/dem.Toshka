@@ -55,6 +55,7 @@ export function App() {
     xray: true,
     hudMode: 'full',
     customCrosshair: true,
+    watermark: true,
   })
 
   // Loading & error
@@ -213,6 +214,7 @@ export function App() {
       crosshair_preset: clipSettings.crosshairPreset,
       crosshair_color: clipSettings.crosshairColor,
       radar_mode: clipSettings.radarMode || 'player_focus',
+      watermark: clipSettings.watermark !== false,
     })
   }
 

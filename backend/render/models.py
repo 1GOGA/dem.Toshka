@@ -44,6 +44,7 @@ class RenderTask:
     killcam_victim_start_tick: Optional[int] = None
     killcam_victim_end_tick: Optional[int] = None
     killcam_hero_start_tick: Optional[int] = None
+    watermark: bool = True
 
     @property
     def duration_seconds(self) -> float:

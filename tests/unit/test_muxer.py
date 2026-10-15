@@ -130,6 +130,41 @@ class TestMuxerWithRealPocFixtures:
         assert max_db is not None and max_db > -40.0
         assert mean_db is not None and mean_db > -60.0
 
+    def test_successful_video_audio_muxing_without_watermark(self, tmp_path):
+        if not POC_VIDEO.exists() or not POC_AUDIO.exists():
+            pytest.skip("PoC fixtures not present on disk")
+
+        out = tmp_path / "muxed_nowm.mp4"
+        res = mux_video_and_audio(POC_VIDEO, POC_AUDIO, out, watermark=False)
+
+        assert res.success
+        assert res.output_path == out
+        assert out.exists()
+        assert res.has_audio
+
+        is_valid, probed_dur, err = verify_mp4(out, require_audio=True)
+        assert is_valid, f"Verification failed: {err}"
+
+    def test_successful_video_audio_muxing_with_watermark(self, tmp_path):
+        if not POC_VIDEO.exists() or not POC_AUDIO.exists():
+            pytest.skip("PoC fixtures not present on disk")
+
+        logo_path = pathlib.Path("logo_video.png")
+        if not logo_path.exists():
+            pytest.skip("logo_video.png not found")
+
+        out = tmp_path / "muxed_wm.mp4"
+        res = mux_video_and_audio(POC_VIDEO, POC_AUDIO, out, watermark=True, watermark_path=logo_path)
+
+        assert res.success
+        assert res.output_path == out
+        assert out.exists()
+        assert out.stat().st_size > 100_000
+        assert res.has_audio
+
+        is_valid, probed_dur, err = verify_mp4(out, require_audio=True)
+        assert is_valid, f"Verification with watermark failed: {err}"
+
 
 class TestAudioVerifier:
     def test_verify_audio_signal_missing_file(self, tmp_path):

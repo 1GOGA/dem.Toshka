@@ -371,6 +371,7 @@ async def create_render_jobs(
         "overhead_mode": req.overhead_mode,
         "killfeed_only": req.killfeed_only,
         "teamcounter_mode": req.teamcounter_mode,
+        "watermark": req.watermark,
     }
 
     # 1. Deduplicate highlight_ids in request preserving order

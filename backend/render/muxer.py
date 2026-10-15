@@ -11,7 +11,7 @@ import subprocess
 import uuid
 from typing import Optional
 
-from backend.render.config import FFMPEG_BIN, FFPROBE_BIN
+from backend.render.config import DEFAULT_WATERMARK_PNG, FFMPEG_BIN, FFPROBE_BIN
 from backend.render.verifier import verify_mp4
 
 logger = logging.getLogger("demtoshka.muxer")
@@ -42,7 +42,7 @@ def probe_media_info(file_path: pathlib.Path) -> dict:
         "-v",
         "error",
         "-show_entries",
-        "stream=index,codec_type,codec_name,channels,sample_rate,duration",
+        "stream=index,codec_type,codec_name,width,height,channels,sample_rate,duration",
         "-show_entries",
         "format=duration,size,format_name",
         "-of",
@@ -65,11 +65,14 @@ def mux_video_and_audio(
     audio_path: Optional[pathlib.Path],
     output_path: pathlib.Path,
     ffmpeg_bin: str = FFMPEG_BIN,
-    timeout_seconds: float = 60.0,
+    timeout_seconds: float = 120.0,
+    watermark: bool = True,
+    watermark_path: Optional[pathlib.Path] = None,
 ) -> MuxResult:
     """Multiplex H.264 video and PCM WAV audio into an MP4 container.
 
-    - Video stream is copied (-c:v copy) to preserve exact rendered frames without quality loss.
+    - Overlays top-left watermark (logo_video.png) when watermark=True and watermark_path exists.
+    - If watermark is disabled, copies video stream (-c:v copy) without re-encoding.
     - Audio is encoded to AAC (-c:a aac -b:a 192k) for optimal compatibility.
     - Writes to an isolated temporary staging file first; only replaces target on verified success.
     - Tolerates minor millisecond discrepancy between video and audio without arbitrary truncation.
@@ -96,15 +99,58 @@ def mux_video_and_audio(
     except (ValueError, TypeError):
         v_dur = 0.0
 
+    target_wm_path = watermark_path or DEFAULT_WATERMARK_PNG
+    apply_wm = bool(watermark and target_wm_path and target_wm_path.exists() and target_wm_path.stat().st_size > 0)
+
+    # Resolution dimensions for dynamic watermark scale
+    v_width = 1920
+    v_height = 1080
+    if v_streams:
+        try:
+            v_width = int(v_streams[0].get("width", 1920))
+            v_height = int(v_streams[0].get("height", 1080))
+        except (ValueError, TypeError):
+            pass
+
+    logo_w = max(160, int(v_width * 0.125))
+    offset_x = max(16, int(v_width * 0.0125))
+    offset_y = max(14, int(v_height * 0.0185))
+
     # Case 1: Audio file is absent
     if audio_path is None or not audio_path.exists() or audio_path.stat().st_size == 0:
         warning = "Audio file not found or empty; video exported without audio stream."
         logger.warning(warning)
         output_path.parent.mkdir(parents=True, exist_ok=True)
-        # Atomically copy video without audio
         temp_dest = output_path.with_name(f"temp_copy_{uuid.uuid4().hex[:8]}.mp4")
         try:
-            temp_dest.write_bytes(video_path.read_bytes())
+            if apply_wm:
+                cmd = [
+                    ffmpeg_bin,
+                    "-y",
+                    "-i",
+                    str(video_path),
+                    "-i",
+                    str(target_wm_path),
+                    "-filter_complex",
+                    f"[1:v]scale={logo_w}:-1[logo];[0:v][logo]overlay={offset_x}:{offset_y}[outv]",
+                    "-map",
+                    "[outv]",
+                    "-c:v",
+                    "libx264",
+                    "-preset",
+                    "veryfast",
+                    "-crf",
+                    "18",
+                    "-movflags",
+                    "+faststart",
+                    str(temp_dest),
+                ]
+                proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout_seconds)
+                if proc.returncode != 0:
+                    temp_dest.write_bytes(video_path.read_bytes())
+            else:
+                temp_dest.write_bytes(video_path.read_bytes())
+
             temp_dest.replace(output_path)
             return MuxResult(
                 success=True,
@@ -152,23 +198,54 @@ def mux_video_and_audio(
     output_path.parent.mkdir(parents=True, exist_ok=True)
     temp_mux = output_path.with_name(f"temp_mux_{uuid.uuid4().hex[:8]}.mp4")
 
-    cmd = [
-        ffmpeg_bin,
-        "-y",
-        "-i",
-        str(video_path),
-        "-i",
-        str(audio_path),
-        "-c:v",
-        "copy",
-        "-c:a",
-        "aac",
-        "-b:a",
-        "192k",
-        "-movflags",
-        "+faststart",
-        str(temp_mux),
-    ]
+    if apply_wm:
+        cmd = [
+            ffmpeg_bin,
+            "-y",
+            "-i",
+            str(video_path),
+            "-i",
+            str(audio_path),
+            "-i",
+            str(target_wm_path),
+            "-filter_complex",
+            f"[2:v]scale={logo_w}:-1[logo];[0:v][logo]overlay={offset_x}:{offset_y}[outv]",
+            "-map",
+            "[outv]",
+            "-map",
+            "1:a",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "veryfast",
+            "-crf",
+            "18",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "192k",
+            "-movflags",
+            "+faststart",
+            str(temp_mux),
+        ]
+    else:
+        cmd = [
+            ffmpeg_bin,
+            "-y",
+            "-i",
+            str(video_path),
+            "-i",
+            str(audio_path),
+            "-c:v",
+            "copy",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "192k",
+            "-movflags",
+            "+faststart",
+            str(temp_mux),
+        ]
 
     try:
         proc = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout_seconds)

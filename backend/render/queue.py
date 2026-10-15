@@ -499,6 +499,7 @@ class RenderQueueManager:
                 killcam_victim_start_tick=killcam_victim_start_tick,
                 killcam_victim_end_tick=killcam_victim_end_tick,
                 killcam_hero_start_tick=killcam_hero_start_tick,
+                watermark=bool(settings.get("watermark", True)),
             )
             return task, None
         except Exception as e:

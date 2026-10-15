@@ -23,3 +23,5 @@ FFMPEG_BIN = "ffmpeg"
 FFPROBE_BIN = "ffprobe"
 
 RENDER_OUTPUT_DIR = REPO_ROOT / "renders"
+
+DEFAULT_WATERMARK_PNG = REPO_ROOT / "logo_video.png"

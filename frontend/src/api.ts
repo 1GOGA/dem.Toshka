@@ -133,6 +133,7 @@ export const api = {
     crosshair_preset?: string
     crosshair_color?: string
     radar_mode?: string
+    watermark?: boolean
   }): Promise<RenderJobDTO[]> {
     const res = await fetch(`${BASE_URL}/render-jobs`, {
       method: 'POST',

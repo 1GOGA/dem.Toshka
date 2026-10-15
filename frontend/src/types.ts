@@ -143,6 +143,7 @@ export interface ClipSettings {
   crosshairPreset?: 'pro_cyan' | 'green_clean' | 'dot' | 'minimal_white' | 'hidden' | 'default'
   crosshairColor?: 'cyan' | 'green' | 'yellow' | 'white' | 'pink' | 'red' | 'blue'
   radarMode?: 'dynamic_large' | 'broadcast_giant' | 'broadcast' | 'player_focus' | 'compact' | 'hidden'
+  watermark?: boolean
 }
 
 export interface MontageDTO {

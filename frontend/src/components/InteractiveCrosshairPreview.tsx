@@ -7,6 +7,7 @@ export interface CrosshairConfig {
   viewmodelFov?: number
   hudMode?: string
   customCrosshair?: boolean
+  watermark?: boolean
   size?: number
   gap?: number
   thickness?: number
@@ -225,6 +226,38 @@ export const InteractiveCrosshairPreview: React.FC<InteractiveCrosshairPreviewPr
           userSelect: 'none',
         }}
       >
+        {/* Top-Left Watermark Overlay Preview */}
+        {config.watermark !== false && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '12px',
+              left: '14px',
+              zIndex: 10,
+              pointerEvents: 'none',
+              display: 'flex',
+              alignItems: 'center',
+              background: 'rgba(10, 12, 16, 0.45)',
+              backdropFilter: 'blur(4px)',
+              padding: '2px 6px',
+              borderRadius: '6px',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
+            }}
+            title="Водяной знак dem.Toshka (слева сверху)"
+          >
+            <img
+              src="/logo_video.png"
+              alt="dem.Toshka"
+              style={{
+                height: '22px',
+                width: 'auto',
+                objectFit: 'contain',
+                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.8))',
+              }}
+            />
+          </div>
+        )}
+
         {/* Tactical Grid / Wall architecture overlay */}
         <div
           style={{

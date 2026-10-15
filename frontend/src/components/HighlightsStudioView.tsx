@@ -2704,6 +2704,29 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       <span className="toggle-slider" />
                     </label>
                   </div>
+
+                  {/* Watermark Logo toggle */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#121316', padding: '12px 14px', borderRadius: '8px', border: '1px solid #232630' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <img
+                        src="/logo_video.png"
+                        alt="dem.Toshka"
+                        style={{ height: '24px', maxWidth: '75px', objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(56, 189, 248, 0.4))' }}
+                      />
+                      <div>
+                        <div style={{ fontSize: '13px', color: '#f1f5f9', fontWeight: 600 }}>Водяной знак dem.Toshka (слева сверху)</div>
+                        <div style={{ fontSize: '11px', color: '#64748b' }}>Фирменный логотип-водяной знак на финальном видео</div>
+                      </div>
+                    </div>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={clipSettings?.watermark !== false}
+                        onChange={(e) => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, watermark: e.target.checked })}
+                      />
+                      <span className="toggle-slider" />
+                    </label>
+                  </div>
                 </div>
               )}
 

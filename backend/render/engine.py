@@ -227,6 +227,7 @@ class RenderEngine:
                     video_path=recorded_video,
                     audio_path=recorded_audio,
                     output_path=output_mp4,
+                    watermark=getattr(task, "watermark", True),
                 )
                 if not mux_res.success:
                     return False, mux_res.error_message or "Multiplexing video and audio failed", False, None
@@ -765,6 +766,7 @@ class RenderEngine:
                         video_path=rec_video,
                         audio_path=rec_audio,
                         output_path=task.output_path,
+                        watermark=getattr(task, "watermark", True),
                     )
                     if not mux_res.success:
                         results_by_id[task.task_id] = RenderResult(

@@ -417,6 +417,54 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
                     style={{ width: '18px', height: '18px', accentColor: '#38bdf8', cursor: 'pointer' }}
                   />
                 </div>
+
+                {/* Watermark Logo Toggle */}
+                <div
+                  style={{
+                    padding: '12px 14px',
+                    backgroundColor: '#0e111a',
+                    border: '1px solid #1c2230',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    marginTop: '10px',
+                  }}
+                  onClick={() => onUpdateSettings({ ...settings, watermark: settings.watermark === false })}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <img
+                      src="/logo_video.png"
+                      alt="Watermark logo"
+                      style={{
+                        height: '28px',
+                        width: 'auto',
+                        maxWidth: '90px',
+                        objectFit: 'contain',
+                        borderRadius: '4px',
+                        filter: 'drop-shadow(0 0 6px rgba(56, 189, 248, 0.4))',
+                      }}
+                    />
+                    <div>
+                      <div style={{ fontSize: '13px', fontWeight: 700, color: '#f1f5f9' }}>
+                        Водяной знак dem.Toshka (слева сверху)
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                        {settings.watermark !== false
+                          ? 'Включено: фирменный вотермарк dem.Toshka в левом верхнем углу видео'
+                          : 'Отключено: запись без водяного знака (чистое видео)'}
+                      </div>
+                    </div>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={settings.watermark !== false}
+                    onChange={(e) => onUpdateSettings({ ...settings, watermark: e.target.checked })}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ width: '18px', height: '18px', accentColor: '#38bdf8', cursor: 'pointer' }}
+                  />
+                </div>
               </div>
             </div>
           )}
