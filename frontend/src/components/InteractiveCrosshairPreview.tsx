@@ -102,7 +102,6 @@ export const InteractiveCrosshairPreview: React.FC<InteractiveCrosshairPreviewPr
   interactiveControls = true,
 }) => {
   const [activeScene, setActiveScene] = useState<SceneId>('dust2')
-  const [showWeaponBarrel, setShowWeaponBarrel] = useState<boolean>(true)
 
   // Current crosshair parameters based on preset
   const preset = config.preset || 'pro_cyan'
@@ -290,33 +289,7 @@ export const InteractiveCrosshairPreview: React.FC<InteractiveCrosshairPreviewPr
         )}
 
 
-        {/* Weapon Barrel / Viewmodel (Bottom Right) */}
-        {showWeaponBarrel && (
-          <div
-            style={{
-              position: 'absolute',
-              bottom: '-10px',
-              right: config.viewmodelFov === 68 ? '40px' : '20px',
-              width: '130px',
-              height: '90px',
-              pointerEvents: 'none',
-              transform: config.viewmodelFov === 68 ? 'rotate(-6deg) scale(0.95)' : 'rotate(-2deg) scale(1.05)',
-              transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-              opacity: 0.75,
-            }}
-          >
-            <svg viewBox="0 0 200 120" fill="none" style={{ width: '100%', height: '100%' }}>
-              <path
-                d="M10 100 L90 40 L160 35 L190 42 L200 70 L150 110 Z"
-                fill="#161a22"
-                stroke="#2a3242"
-                strokeWidth="2"
-              />
-              <line x1="80" y1="42" x2="160" y2="38" stroke="#38bdf8" strokeWidth="2" opacity="0.6" />
-              <rect x="140" y="32" width="24" height="6" rx="2" fill="#252c3b" />
-            </svg>
-          </div>
-        )}
+
 
         {/* Minimalist In-Game HUD overlay elements */}
         {config.hudMode !== 'none' && (
@@ -504,26 +477,7 @@ export const InteractiveCrosshairPreview: React.FC<InteractiveCrosshairPreviewPr
             ))}
           </div>
 
-          {/* Weapon Toggle */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
 
-            <button
-              type="button"
-              onClick={() => setShowWeaponBarrel(!showWeaponBarrel)}
-              style={{
-                fontSize: '11px',
-                fontWeight: 600,
-                padding: '4px 10px',
-                borderRadius: '5px',
-                border: showWeaponBarrel ? '1px solid #38bdf8' : '1px solid #283042',
-                backgroundColor: showWeaponBarrel ? 'rgba(56, 189, 248, 0.15)' : '#161a24',
-                color: showWeaponBarrel ? '#38bdf8' : '#94a3b8',
-                cursor: 'pointer',
-              }}
-            >
-              {showWeaponBarrel ? '🔫 Оружие: Вкл' : '🔫 Оружие: Выкл'}
-            </button>
-          </div>
         </div>
       )}
     </div>

@@ -788,17 +788,17 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
             </button>
           </div>
 
-          {/* 3D Agent Inspector Showcase Banner */}
+          {/* Player Profile Showcase Banner */}
           {inspectedPlayer && (
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: '320px 1fr',
+                gridTemplateColumns: '280px 1fr',
                 gap: '24px',
                 backgroundColor: '#12151e',
-                border: `1px solid ${(inspectedPlayer.team || '').toLowerCase().includes('ct') ? 'rgba(56, 189, 248, 0.4)' : 'rgba(245, 158, 11, 0.4)'}`,
+                border: `1px solid ${(inspectedPlayer.team || '').toLowerCase().includes('ct') ? 'rgba(56, 189, 248, 0.35)' : 'rgba(245, 158, 11, 0.35)'}`,
                 borderRadius: '16px',
-                padding: '20px',
+                padding: '18px 22px',
                 alignItems: 'center',
                 boxShadow: '0 12px 35px rgba(0, 0, 0, 0.5)',
               }}
@@ -807,11 +807,11 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 team={inspectedPlayer.team}
                 playerName={inspectedPlayer.name}
                 role={(inspectedPlayer.team || '').toLowerCase().includes('ct') ? 'CT Specialist (Defense)' : 'Terrorist Operative (Attack)'}
-                height={260}
+                height={220}
                 weapon={(inspectedPlayer.team || '').toLowerCase().includes('ct') ? 'M4A1-S' : 'AK-47'}
               />
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <span
                     style={{
@@ -825,43 +825,82 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       border: `1px solid ${(inspectedPlayer.team || '').toLowerCase().includes('ct') ? 'rgba(56, 189, 248, 0.4)' : 'rgba(245, 158, 11, 0.4)'}`,
                     }}
                   >
-                    🛡️ 3D ИНСПЕКТОР АГЕНТА CS2
+                    ⭐ ВЫБРАННЫЙ ИГРОК
                   </span>
                   <span style={{ fontSize: '12px', color: '#64748b' }}>
-                    Наведите курсор на любого игрока в списке для смены 3D модели
+                    Нажмите на любого игрока в таблице ниже для смены выбора
                   </span>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <h3 style={{ fontSize: '22px', fontWeight: 800, color: '#f1f5f9', margin: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <h3 style={{ fontSize: '24px', fontWeight: 800, color: '#f1f5f9', margin: 0, letterSpacing: '-0.02em' }}>
                     {inspectedPlayer.name}
                   </h3>
                   <span
                     style={{
                       fontSize: '11px',
                       fontWeight: 700,
-                      padding: '2px 8px',
+                      padding: '3px 10px',
                       borderRadius: '4px',
                       backgroundColor: (inspectedPlayer.team || '').toLowerCase().includes('ct') ? 'rgba(56, 189, 248, 0.15)' : 'rgba(245, 158, 11, 0.15)',
                       color: (inspectedPlayer.team || '').toLowerCase().includes('ct') ? '#38bdf8' : '#f59e0b',
+                      border: `1px solid ${(inspectedPlayer.team || '').toLowerCase().includes('ct') ? 'rgba(56, 189, 248, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
                     }}
                   >
                     {(inspectedPlayer.team || '').toUpperCase()}
                   </span>
                 </div>
 
-                <div style={{ fontSize: '13px', color: '#94a3b8' }}>
-                  Сыграно раундов: <strong>{activeDemo?.rounds_count || 0}</strong> • Ключевых фраг-эпизодов в матче:{' '}
-                  <strong style={{ color: '#fbbf24' }}>
-                    {highlights.filter((h) => h.pov_steam_id === inspectedPlayer.steam_id).length}
-                  </strong>
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <div
+                    style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '8px',
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      color: '#94a3b8',
+                    }}
+                  >
+                    ⏱️ Раундов: <strong style={{ color: '#f1f5f9' }}>{activeDemo?.rounds_count || 0}</strong>
+                  </div>
+                  <div
+                    style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '8px',
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      color: '#94a3b8',
+                    }}
+                  >
+                    🎯 Фраг-эпизодов:{' '}
+                    <strong style={{ color: '#fbbf24' }}>
+                      {highlights.filter((h) => h.pov_steam_id === inspectedPlayer.steam_id).length}
+                    </strong>
+                  </div>
+                  <div
+                    style={{
+                      backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '8px',
+                      padding: '6px 12px',
+                      fontSize: '12px',
+                      color: '#94a3b8',
+                    }}
+                  >
+                    🛡️ Сторона:{' '}
+                    <strong style={{ color: (inspectedPlayer.team || '').toLowerCase().includes('ct') ? '#38bdf8' : '#f59e0b' }}>
+                      {(inspectedPlayer.team || '').toLowerCase().includes('ct') ? 'Спецназ (CT)' : 'Террористы (T)'}
+                    </strong>
+                  </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '12px', marginTop: '6px' }}>
+                <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
                   <button
                     type="button"
                     className="btn btn-primary"
-                    style={{ padding: '8px 20px', fontSize: '13px', fontWeight: 700 }}
+                    style={{ padding: '9px 22px', fontSize: '13px', fontWeight: 700 }}
                     onClick={() => {
                       onSetPlayerFilter(inspectedPlayer.steam_id)
                       setCurrentStep(3)
@@ -872,7 +911,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   <button
                     type="button"
                     className="btn btn-secondary"
-                    style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}
+                    style={{ padding: '9px 18px', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}
                     onClick={() =>
                       setSelectedPlayerForAnalytics({
                         steamIdOrName: inspectedPlayer.steam_id || inspectedPlayer.name,
@@ -2503,14 +2542,14 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         ? '📡 Турнирный BLAST'
                         : clipSettings?.radarMode === 'hidden'
                         ? '🚫 Без радара'
-                        : '🧭 Круглый динамический'}
+                        : '🧭 Круглый CS2'}
                     </span>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', alignItems: 'stretch' }}>
                     {[
-                      { id: 'player_focus', label: '🧭 Круглый (динамика)', desc: 'Классический круглый радар CS2 (центрирован, вращается)' },
-                      { id: 'broadcast', label: '📡 Турнирный BLAST', desc: 'Вся карта в круге, фиксированный север' },
-                      { id: 'hidden', label: '🚫 Без радара', desc: 'Скрыть радар (чистый экран)' },
+                      { id: 'player_focus', label: '🧭 Круглый CS2', desc: 'Динамика за игроком' },
+                      { id: 'broadcast', label: '📡 Турнирный', desc: 'Обзор всей карты' },
+                      { id: 'hidden', label: '🚫 Без радара', desc: 'Чистый экран' },
                     ].map((r) => {
                       const isSelected = (clipSettings?.radarMode || 'player_focus') === r.id
                       return (
@@ -2520,18 +2559,25 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                           className="btn"
                           onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, radarMode: r.id as any })}
                           style={{
-                            padding: '10px 8px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'flex-start',
+                            justifyContent: 'flex-start',
+                            padding: '10px 10px',
                             textAlign: 'left',
+                            minWidth: 0,
+                            width: '100%',
+                            boxSizing: 'border-box',
                             backgroundColor: isSelected ? '#10b98122' : '#16181f',
                             borderColor: isSelected ? '#10b981' : '#2b2e38',
                             borderWidth: '1px',
                             borderStyle: 'solid',
-                            borderRadius: '6px',
+                            borderRadius: '8px',
                             color: '#f1f5f9',
                           }}
                         >
-                          <div style={{ fontSize: '11px', fontWeight: 700, color: isSelected ? '#34d399' : '#e2e8f0' }}>{r.label}</div>
-                          <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>{r.desc}</div>
+                          <div style={{ fontSize: '11px', fontWeight: 700, color: isSelected ? '#34d399' : '#e2e8f0', whiteSpace: 'nowrap' }}>{r.label}</div>
+                          <div style={{ fontSize: '10px', color: '#64748b', marginTop: '3px', lineHeight: '1.2' }}>{r.desc}</div>
                         </button>
                       )
                     })}

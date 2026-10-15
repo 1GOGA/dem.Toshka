@@ -13,16 +13,16 @@ export const Agent3DViewer: React.FC<Agent3DViewerProps> = ({
   team = 'ct',
   playerName = 'Operator',
   role = 'Entry Fragger',
-  height = 360,
+  height = 250,
   weapon = 'AK-47',
   avatarUrl,
 }) => {
   const isCT = (team || '').toLowerCase().includes('ct')
 
-  // Primary team accent colors
+  // Team-based tactical styling
   const primaryColor = isCT ? '#38bdf8' : '#f59e0b'
   const primaryBg = isCT ? 'rgba(56, 189, 248, 0.12)' : 'rgba(245, 158, 11, 0.12)'
-  const primaryBorder = isCT ? 'rgba(56, 189, 248, 0.35)' : 'rgba(245, 158, 11, 0.35)'
+  const primaryBorder = isCT ? 'rgba(56, 189, 248, 0.3)' : 'rgba(245, 158, 11, 0.3)'
 
   return (
     <div
@@ -30,23 +30,23 @@ export const Agent3DViewer: React.FC<Agent3DViewerProps> = ({
         position: 'relative',
         height: `${height}px`,
         backgroundColor: '#0c0f17',
-        borderRadius: '16px',
+        borderRadius: '14px',
         border: `1px solid ${primaryBorder}`,
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
-        boxShadow: `0 12px 30px rgba(0, 0, 0, 0.6), inset 0 0 40px ${isCT ? 'rgba(56, 189, 248, 0.04)' : 'rgba(245, 158, 11, 0.04)'}`,
+        boxShadow: `0 8px 24px rgba(0, 0, 0, 0.5), inset 0 0 30px ${isCT ? 'rgba(56, 189, 248, 0.05)' : 'rgba(245, 158, 11, 0.05)'}`,
       }}
     >
-      {/* Tactical Top HUD Bar */}
+      {/* Top Header Bar */}
       <div
         style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          padding: '10px 16px',
+          padding: '8px 14px',
           borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
-          backgroundColor: 'rgba(10, 13, 20, 0.85)',
+          backgroundColor: 'rgba(10, 13, 20, 0.9)',
           backdropFilter: 'blur(8px)',
           zIndex: 2,
         }}
@@ -62,41 +62,45 @@ export const Agent3DViewer: React.FC<Agent3DViewerProps> = ({
               boxShadow: `0 0 8px ${primaryColor}`,
             }}
           />
-          <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.08em', color: '#f1f5f9' }}>
-            OPERATIVE PROFILE // {isCT ? 'COUNTER-TERRORIST' : 'TERRORIST'}
+          <span style={{ fontSize: '11px', fontWeight: 800, letterSpacing: '0.06em', color: '#f1f5f9' }}>
+            {isCT ? 'COUNTER-TERRORIST' : 'TERRORIST'}
           </span>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span
-            style={{
-              fontSize: '10px',
-              fontWeight: 700,
-              padding: '2px 8px',
-              borderRadius: '4px',
-              backgroundColor: primaryBg,
-              color: primaryColor,
-              border: `1px solid ${primaryBorder}`,
-            }}
-          >
-            {weapon}
-          </span>
-          <span
-            style={{
-              fontSize: '10px',
-              fontWeight: 700,
-              padding: '2px 8px',
-              borderRadius: '4px',
-              backgroundColor: 'rgba(255, 255, 255, 0.06)',
-              color: '#94a3b8',
-            }}
-          >
-            {role}
-          </span>
+          {weapon && (
+            <span
+              style={{
+                fontSize: '10px',
+                fontWeight: 700,
+                padding: '2px 8px',
+                borderRadius: '4px',
+                backgroundColor: primaryBg,
+                color: primaryColor,
+                border: `1px solid ${primaryBorder}`,
+              }}
+            >
+              {weapon}
+            </span>
+          )}
+          {role && (
+            <span
+              style={{
+                fontSize: '10px',
+                fontWeight: 600,
+                padding: '2px 8px',
+                borderRadius: '4px',
+                backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                color: '#94a3b8',
+              }}
+            >
+              {role}
+            </span>
+          )}
         </div>
       </div>
 
-      {/* Main Neutral Operative Media Showcase Area */}
+      {/* Main Card Body */}
       <div
         style={{
           position: 'relative',
@@ -105,76 +109,73 @@ export const Agent3DViewer: React.FC<Agent3DViewerProps> = ({
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
+          padding: '16px',
           overflow: 'hidden',
-          background: `radial-gradient(circle at 50% 45%, ${isCT ? 'rgba(56, 189, 248, 0.12)' : 'rgba(245, 158, 11, 0.12)'} 0%, transparent 70%)`,
+          background: `radial-gradient(circle at 50% 50%, ${isCT ? 'rgba(56, 189, 248, 0.1)' : 'rgba(245, 158, 11, 0.1)'} 0%, transparent 70%)`,
         }}
       >
-        {/* Subtle Cyber Grid Background */}
+        {/* Subtle Background Grid Pattern */}
         <div
           style={{
             position: 'absolute',
             inset: 0,
-            opacity: 0.12,
+            opacity: 0.08,
             backgroundImage: `linear-gradient(${primaryColor} 1px, transparent 1px), linear-gradient(90deg, ${primaryColor} 1px, transparent 1px)`,
-            backgroundSize: '28px 28px',
+            backgroundSize: '24px 24px',
             pointerEvents: 'none',
           }}
         />
 
-        {/* Center Neutral Operative Insignia / Artwork */}
         {avatarUrl ? (
           <img
             src={avatarUrl}
             alt={playerName}
             style={{
-              maxHeight: '75%',
-              maxWidth: '75%',
+              maxHeight: '110px',
+              maxWidth: '110px',
               objectFit: 'contain',
-              borderRadius: '12px',
-              filter: `drop-shadow(0 8px 24px ${isCT ? 'rgba(56, 189, 248, 0.3)' : 'rgba(245, 158, 11, 0.3)'})`,
+              borderRadius: '50%',
+              border: `2px solid ${primaryBorder}`,
+              boxShadow: `0 6px 20px ${isCT ? 'rgba(56, 189, 248, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
               zIndex: 1,
             }}
           />
         ) : (
           <div
             style={{
-              position: 'relative',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
               zIndex: 1,
-              padding: '20px',
             }}
           >
-            {/* Holographic Platform Ring */}
+            {/* Center Emblem Ring */}
             <div
               style={{
-                position: 'relative',
-                width: '130px',
-                height: '130px',
+                width: '90px',
+                height: '90px',
                 borderRadius: '50%',
                 backgroundColor: primaryBg,
                 border: `2px solid ${primaryBorder}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: `0 0 35px ${isCT ? 'rgba(56, 189, 248, 0.25)' : 'rgba(245, 158, 11, 0.25)'}`,
+                boxShadow: `0 0 25px ${isCT ? 'rgba(56, 189, 248, 0.2)' : 'rgba(245, 158, 11, 0.2)'}`,
               }}
             >
-              {/* Tactical Silhouette SVG */}
               <svg
                 viewBox="0 0 64 64"
                 fill="none"
                 style={{
-                  width: '72px',
-                  height: '72px',
+                  width: '56px',
+                  height: '56px',
                   color: primaryColor,
-                  filter: `drop-shadow(0 0 10px ${primaryColor}88)`,
+                  filter: `drop-shadow(0 0 8px ${primaryColor}66)`,
                 }}
               >
                 {isCT ? (
-                  // Counter-Terrorist Helmet & Visor
+                  // Counter-Terrorist Emblem
                   <>
                     <path
                       d="M32 8 C20 8 16 16 16 26 C16 34 20 40 22 46 L42 46 C44 40 48 34 48 26 C48 16 44 8 32 8 Z"
@@ -197,7 +198,7 @@ export const Agent3DViewer: React.FC<Agent3DViewerProps> = ({
                     />
                   </>
                 ) : (
-                  // Terrorist Balaclava & Goggles
+                  // Terrorist Phoenix Emblem
                   <>
                     <path
                       d="M32 8 C21 8 17 18 17 28 C17 38 21 42 23 46 L41 46 C43 42 47 38 47 28 C47 18 43 8 32 8 Z"
@@ -221,68 +222,25 @@ export const Agent3DViewer: React.FC<Agent3DViewerProps> = ({
               </svg>
             </div>
 
-            {/* Operative Sub-badge */}
-            <div style={{ marginTop: '14px', textAlign: 'center' }}>
+            {/* Operative Subtitle Badge */}
+            <div style={{ marginTop: '10px', textAlign: 'center' }}>
               <div
                 style={{
                   fontSize: '11px',
                   fontWeight: 800,
-                  letterSpacing: '0.1em',
+                  letterSpacing: '0.08em',
                   textTransform: 'uppercase',
                   color: primaryColor,
                 }}
               >
-                {isCT ? 'Counter-Terrorist' : 'Terrorist Phoenix'}
+                {isCT ? 'CT Special Forces' : 'Terrorist Phoenix'}
               </div>
-              <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>
-                CS2 Official Model · Neutral Operator
+              <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px', fontWeight: 600 }}>
+                {playerName}
               </div>
             </div>
           </div>
         )}
-
-        {/* Tactical Crosshair Watermark Overlay */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '20px',
-            right: '20px',
-            width: '36px',
-            height: '36px',
-            border: `1px solid ${primaryBorder}`,
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            pointerEvents: 'none',
-            opacity: 0.6,
-          }}
-        >
-          <div style={{ width: '8px', height: '1px', backgroundColor: primaryColor }} />
-          <div style={{ width: '1px', height: '8px', backgroundColor: primaryColor, position: 'absolute' }} />
-        </div>
-
-        {/* Player Name Tag in Bottom Left */}
-        <div
-          style={{
-            position: 'absolute',
-            bottom: '12px',
-            left: '16px',
-            zIndex: 2,
-            backgroundColor: 'rgba(12, 15, 23, 0.85)',
-            padding: '6px 12px',
-            borderRadius: '8px',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
-            backdropFilter: 'blur(6px)',
-          }}
-        >
-          <div style={{ fontSize: '12px', fontWeight: 800, color: '#f1f5f9' }}>
-            {playerName}
-          </div>
-          <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-            {isCT ? 'CT Special Forces' : 'T Attack Unit'} · {role}
-          </div>
-        </div>
       </div>
     </div>
   )

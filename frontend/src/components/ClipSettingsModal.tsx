@@ -248,21 +248,31 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
                   </div>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', alignItems: 'stretch' }}>
                   {[
-                    { id: 'player_focus', label: '🧭 Круглый (динамика)', desc: 'Классический круглый радар CS2 (центрирован, вращается)' },
-                    { id: 'broadcast', label: '📡 Турнирный BLAST', desc: 'Вся карта в круге, фиксированный север' },
-                    { id: 'hidden', label: '🚫 Без радара', desc: 'Скрыть радар (чистый экран)' },
+                    { id: 'player_focus', label: '🧭 Круглый CS2', desc: 'Динамика за игроком' },
+                    { id: 'broadcast', label: '📡 Турнирный', desc: 'Обзор всей карты' },
+                    { id: 'hidden', label: '🚫 Без радара', desc: 'Чистый экран' },
                   ].map((r) => (
                     <button
                       key={r.id}
                       type="button"
                       className={`btn ${(settings.radarMode || 'player_focus') === r.id ? 'btn-primary' : 'btn-secondary'}`}
                       onClick={() => onUpdateSettings({ ...settings, radarMode: r.id as any })}
-                      style={{ textAlign: 'left', padding: '12px 14px' }}
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'flex-start',
+                        justifyContent: 'flex-start',
+                        textAlign: 'left',
+                        padding: '12px 12px',
+                        minWidth: 0,
+                        width: '100%',
+                        boxSizing: 'border-box',
+                      }}
                     >
-                      <div style={{ fontWeight: 700, fontSize: '12px' }}>{r.label}</div>
-                      <div style={{ fontSize: '10px', opacity: 0.75, marginTop: '4px' }}>{r.desc}</div>
+                      <div style={{ fontWeight: 700, fontSize: '12px', whiteSpace: 'nowrap' }}>{r.label}</div>
+                      <div style={{ fontSize: '10px', opacity: 0.75, marginTop: '4px', lineHeight: '1.2' }}>{r.desc}</div>
                     </button>
                   ))}
                 </div>

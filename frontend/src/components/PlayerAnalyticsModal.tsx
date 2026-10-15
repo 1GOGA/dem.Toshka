@@ -205,9 +205,9 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                 alignItems: 'center',
                 gap: '5px',
               }}
-              title="Интерактивная 3D модель оперативника CS2"
+              title="Карточка оперативника CS2"
             >
-              <span>{show3DAgent ? '🛡️ 3D Модель: Вкл' : '🌐 3D Модель: Выкл'}</span>
+              <span>{show3DAgent ? '👤 Карточка: Вкл' : '👤 Карточка: Выкл'}</span>
             </button>
             <button
               type="button"
