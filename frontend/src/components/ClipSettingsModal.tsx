@@ -250,8 +250,8 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
                   {[
-                    { id: 'player_focus', label: '🧭 Динамический', desc: 'Центрируется и вращается за игроком POV' },
-                    { id: 'broadcast', label: '📡 Турнирный BLAST', desc: 'Вся карта, фиксированный север' },
+                    { id: 'player_focus', label: '🧭 Круглый (динамика)', desc: 'Классический круглый радар CS2 (центрирован, вращается)' },
+                    { id: 'broadcast', label: '📡 Турнирный BLAST', desc: 'Вся карта в круге, фиксированный север' },
                     { id: 'hidden', label: '🚫 Без радара', desc: 'Скрыть радар (чистый экран)' },
                   ].map((r) => (
                     <button

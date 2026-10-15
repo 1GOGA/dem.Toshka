@@ -2503,13 +2503,13 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         ? '📡 Турнирный BLAST'
                         : clipSettings?.radarMode === 'hidden'
                         ? '🚫 Без радара'
-                        : '🧭 Динамический'}
+                        : '🧭 Круглый динамический'}
                     </span>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                     {[
-                      { id: 'player_focus', label: '🧭 Динамический', desc: 'Центрируется и вращается за игроком POV' },
-                      { id: 'broadcast', label: '📡 Турнирный BLAST', desc: 'Вся карта, фиксированный север' },
+                      { id: 'player_focus', label: '🧭 Круглый (динамика)', desc: 'Классический круглый радар CS2 (центрирован, вращается)' },
+                      { id: 'broadcast', label: '📡 Турнирный BLAST', desc: 'Вся карта в круге, фиксированный север' },
                       { id: 'hidden', label: '🚫 Без радара', desc: 'Скрыть радар (чистый экран)' },
                     ].map((r) => {
                       const isSelected = (clipSettings?.radarMode || 'player_focus') === r.id

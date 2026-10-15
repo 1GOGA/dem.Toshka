@@ -31,7 +31,7 @@ class RenderTask:
     viewmodel_fov: Optional[int] = None  # e.g. 60, 68 (tournament movie viewmodel)
     crosshair_preset: str = "pro_cyan"  # "pro_cyan" | "green_clean" | "dot" | "minimal_white" | "hidden" | "default"
     crosshair_color: Optional[str] = None  # "cyan" | "green" | "yellow" | "white" | "pink" | "red" | "blue"
-    radar_mode: str = "broadcast"  # "dynamic_large" | "broadcast_giant" | "broadcast" | "player_focus" | "compact" | "hidden"
+    radar_mode: str = "player_focus"  # "player_focus" (round dynamic) | "broadcast" | "compact" | "hidden"
     hud_scale: Optional[float] = None  # e.g. 0.95, 1.0, 1.15, 1.25
     overhead_mode: Optional[bool] = None
     killfeed_only: Optional[bool] = None

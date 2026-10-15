@@ -56,6 +56,7 @@ export function App() {
     hudMode: 'full',
     customCrosshair: true,
     watermark: true,
+    radarMode: 'player_focus',
   })
 
   // Loading & error

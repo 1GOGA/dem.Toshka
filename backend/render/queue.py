@@ -314,12 +314,11 @@ class RenderQueueManager:
             hud_mode = str(settings.get("hud_mode", "full"))
             if hud_mode not in ("real", "huge_esports", "huge_killfeed", "full", "killfeed_only", "none"):
                 hud_mode = "full"
-            radar_mode = str(settings.get("radar_mode", "broadcast"))
+            radar_mode = str(settings.get("radar_mode", "player_focus"))
             if hud_mode == "real":
                 if "xray" not in settings:
                     xray = False
-                if "radar_mode" not in settings:
-                    radar_mode = "player_focus"
+                radar_mode = "player_focus"
             perspective = str(settings.get("perspective", "attacker"))
             custom_crosshair = bool(settings.get("custom_crosshair", True))
 
@@ -449,7 +448,7 @@ class RenderQueueManager:
                 end_tick = 100 + 10 * tickrate
                 pov_steam_id = None
                 pov_name = None
-                radar_mode = str(settings.get("radar_mode", "broadcast"))
+                radar_mode = str(settings.get("radar_mode", "player_focus"))
                 camera_switches = []
 
             logger.info(

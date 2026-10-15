@@ -26,7 +26,7 @@ class BatchClipItem:
     viewmodel_fov: Optional[int] = None
     crosshair_preset: str = "pro_cyan"
     crosshair_color: Optional[str] = None
-    radar_mode: str = "broadcast"
+    radar_mode: str = "player_focus"
     hud_scale: Optional[float] = None
     overhead_mode: Optional[bool] = None
     killfeed_only: Optional[bool] = None
@@ -52,16 +52,21 @@ def steam64_to_account_id(steam64: str) -> Optional[int]:
     return None
 
 
-def _build_radar_commands(radar_mode: str = "broadcast") -> list[str]:
-    """Build tournament broadcast or dynamic in-game radar convars."""
+def _build_radar_commands(radar_mode: str = "player_focus") -> list[str]:
+    """Build tournament broadcast or dynamic in-game radar convars.
+    
+    Enforces authentic circular (round) radar by disabling CS2's spectator square radar.
+    """
     if radar_mode == "dynamic_large":
-        # Ultra-large dynamic rotating radar: tracks player movement and rotates with aim
+        # Ultra-large dynamic rotating round radar: tracks player movement and rotates with aim
         return [
             "cl_hud_radar_scale 1.30",
             "cl_radar_always_centered 1",
             "cl_radar_scale 0.70",
             "cl_radar_rotate 1",
             "cl_radar_icon_scale_min 0.90",
+            "cl_radar_square_when_spectating 0",
+            "cl_radar_square_always 0",
             "cl_radar_square_with_scoreboard 0",
         ]
     elif radar_mode == "broadcast_giant":
@@ -72,16 +77,20 @@ def _build_radar_commands(radar_mode: str = "broadcast") -> list[str]:
             "cl_radar_scale 0.52",
             "cl_radar_rotate 0",
             "cl_radar_icon_scale_min 0.85",
+            "cl_radar_square_when_spectating 0",
+            "cl_radar_square_always 0",
             "cl_radar_square_with_scoreboard 0",
         ]
     elif radar_mode == "broadcast":
-        # Pro tournament broadcast: full map overview, north fixed, large sharp icons
+        # Pro tournament broadcast: full map overview in circular radar, north fixed, large sharp icons
         return [
             "cl_hud_radar_scale 1.25",
             "cl_radar_always_centered 0",
             "cl_radar_scale 0.55",
             "cl_radar_rotate 0",
             "cl_radar_icon_scale_min 0.75",
+            "cl_radar_square_when_spectating 0",
+            "cl_radar_square_always 0",
             "cl_radar_square_with_scoreboard 0",
         ]
     elif radar_mode == "compact":
@@ -91,6 +100,8 @@ def _build_radar_commands(radar_mode: str = "broadcast") -> list[str]:
             "cl_radar_scale 0.70",
             "cl_radar_rotate 1",
             "cl_radar_icon_scale_min 0.6",
+            "cl_radar_square_when_spectating 0",
+            "cl_radar_square_always 0",
             "cl_radar_square_with_scoreboard 0",
         ]
     elif radar_mode == "hidden":
@@ -105,6 +116,8 @@ def _build_radar_commands(radar_mode: str = "broadcast") -> list[str]:
             "cl_radar_scale 0.65",
             "cl_radar_rotate 1",
             "cl_radar_icon_scale_min 0.7",
+            "cl_radar_square_when_spectating 0",
+            "cl_radar_square_always 0",
             "cl_radar_square_with_scoreboard 0",
         ]
 
@@ -317,7 +330,7 @@ def generate_render_cfg(
     viewmodel_fov: Optional[int] = None,
     crosshair_preset: str = "pro_cyan",
     crosshair_color: Optional[str] = None,
-    radar_mode: str = "broadcast",
+    radar_mode: str = "player_focus",
     overhead_mode: Optional[bool] = None,
     killfeed_only: Optional[bool] = None,
     teamcounter_mode: Optional[bool] = None,
@@ -412,15 +425,16 @@ def generate_render_cfg(
             "mirv_cmd clear",
         ])
 
-        radar_tick5 = "cl_radar_square_with_scoreboard 0"
-        if radar_mode == "player_focus":
-            radar_tick5 += "; cl_radar_rotate 1; cl_radar_always_centered 1"
+        radar_tick5 = "cl_radar_square_when_spectating 0; cl_radar_square_always 0; cl_radar_square_with_scoreboard 0"
+        radar_rot_tick5 = "cl_radar_rotate 1; cl_radar_always_centered 1" if radar_mode == "player_focus" else None
 
         # Schedule initial seek forward if starting past early ticks
         if start_tick > 60:
             jump_tick = max(10, start_tick - jump_lead_ticks)
             lines.append(f'mirv_cmd addAtTick 5 "demo_gototick {jump_tick}; demo_resume"')
             lines.append(f'mirv_cmd addAtTick 5 "{radar_tick5}"')
+            if radar_rot_tick5:
+                lines.append(f'mirv_cmd addAtTick 5 "{radar_rot_tick5}"')
 
             if spec_cmds:
                 lines.append(f'mirv_cmd addAtTick {jump_tick + 20} "{"; ".join(spec_cmds)}; demo_resume"')
@@ -428,11 +442,18 @@ def generate_render_cfg(
             if spec_cmds:
                 lines.append(f'mirv_cmd addAtTick 5 "{"; ".join(spec_cmds)}"')
             lines.append(f'mirv_cmd addAtTick 5 "{radar_tick5}"')
+            if radar_rot_tick5:
+                lines.append(f'mirv_cmd addAtTick 5 "{radar_rot_tick5}"')
 
         # Schedule highlight recording start and end with guaranteed TrueView & demo UI suppression
         if hud_mode == "real":
             lines.append(f'mirv_cmd addAtTick {start_tick} "hud_showtargetid 0; cl_hide_avatar_images 1; cl_teamid_overhead_mode 0"')
-            lines.append(f'mirv_cmd addAtTick {start_tick} "cl_teamcounter_playercount_mode 1; cl_radar_square_with_scoreboard 0; cl_radar_rotate 1"')
+            lines.append(f'mirv_cmd addAtTick {start_tick} "cl_teamcounter_playercount_mode 1"')
+
+        if radar_mode != "hidden":
+            lines.append(f'mirv_cmd addAtTick {start_tick} "{radar_tick5}"')
+            if radar_rot_tick5:
+                lines.append(f'mirv_cmd addAtTick {start_tick} "{radar_rot_tick5}"')
 
         rec_start_parts = list(spec_cmds) + [
             "cl_trueview_show_status 0",
@@ -562,9 +583,8 @@ def generate_batch_render_cfg(
         )
     )
 
-    radar_tick5 = "cl_radar_square_with_scoreboard 0"
-    if first_clip.radar_mode == "player_focus":
-        radar_tick5 += "; cl_radar_rotate 1; cl_radar_always_centered 1"
+    radar_tick5 = "cl_radar_square_when_spectating 0; cl_radar_square_always 0; cl_radar_square_with_scoreboard 0"
+    radar_rot_tick5 = "cl_radar_rotate 1; cl_radar_always_centered 1" if first_clip.radar_mode == "player_focus" else None
 
     for idx, clip in enumerate(sorted_clips):
         acc_id = steam64_to_account_id(clip.pov_steam_id) if clip.pov_steam_id else None
@@ -577,17 +597,27 @@ def generate_batch_render_cfg(
             if clip.start_tick > 60:
                 lines.append(f'mirv_cmd addAtTick 5 "demo_gototick {jump_tick}; demo_resume"')
                 lines.append(f'mirv_cmd addAtTick 5 "{radar_tick5}"')
+                if radar_rot_tick5:
+                    lines.append(f'mirv_cmd addAtTick 5 "{radar_rot_tick5}"')
                 if spec_cmds:
                     lines.append(f'mirv_cmd addAtTick {jump_tick + 20} "{"; ".join(spec_cmds)}; demo_resume"')
             else:
                 if spec_cmds:
                     lines.append(f'mirv_cmd addAtTick 5 "{"; ".join(spec_cmds)}"')
                 lines.append(f'mirv_cmd addAtTick 5 "{radar_tick5}"')
+                if radar_rot_tick5:
+                    lines.append(f'mirv_cmd addAtTick 5 "{radar_rot_tick5}"')
 
         # Start recording this clip with clean HUD & camera lock
         if clip.hud_mode == "real":
             lines.append(f'mirv_cmd addAtTick {clip.start_tick} "hud_showtargetid 0; cl_hide_avatar_images 1; cl_teamid_overhead_mode 0"')
-            lines.append(f'mirv_cmd addAtTick {clip.start_tick} "cl_teamcounter_playercount_mode 1; cl_radar_square_with_scoreboard 0; cl_radar_rotate 1"')
+            lines.append(f'mirv_cmd addAtTick {clip.start_tick} "cl_teamcounter_playercount_mode 1"')
+
+        if clip.radar_mode != "hidden":
+            clip_rot = "cl_radar_rotate 1; cl_radar_always_centered 1" if clip.radar_mode == "player_focus" else None
+            lines.append(f'mirv_cmd addAtTick {clip.start_tick} "{radar_tick5}"')
+            if clip_rot:
+                lines.append(f'mirv_cmd addAtTick {clip.start_tick} "{clip_rot}"')
 
         start_parts = list(spec_cmds) + ["mirv_streams record start"]
         lines.append(f'mirv_cmd addAtTick {clip.start_tick} "{"; ".join(start_parts)}"')

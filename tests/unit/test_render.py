@@ -151,6 +151,9 @@ class TestCfgGenerator:
         content_pf = generate_render_cfg(start_tick=5000, radar_mode="player_focus")
         assert "cl_radar_always_centered 1" in content_pf
         assert "cl_radar_rotate 1" in content_pf
+        assert "cl_radar_square_when_spectating 0" in content_pf
+        assert "cl_radar_square_always 0" in content_pf
+        assert "cl_radar_square_with_scoreboard 0" in content_pf
 
         content_dl = generate_render_cfg(start_tick=5000, radar_mode="dynamic_large")
         assert "cl_hud_radar_scale 1.30" in content_dl
