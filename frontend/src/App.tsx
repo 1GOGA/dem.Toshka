@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { api } from './api'
+import { CinematicShowcaseView } from './components/CinematicShowcaseView'
 import { ClipSettingsModal } from './components/ClipSettingsModal'
 import { ClipsMontageView } from './components/ClipsMontageView'
 import { Header, type TabType } from './components/Header'
@@ -21,7 +22,7 @@ import type {
 } from './types'
 
 export function App() {
-  const [activeTab, setActiveTab] = useState<TabType>('library')
+  const [activeTab, setActiveTab] = useState<TabType>('showcase')
   const [demos, setDemos] = useState<DemoSummary[]>([])
   const [activeDemo, setActiveDemo] = useState<DemoSummary | null>(null)
 
@@ -233,7 +234,19 @@ export function App() {
         currentDemo={activeDemo}
       />
 
-      <main style={{ minHeight: 'calc(100vh - 64px)', paddingBottom: '48px' }}>
+      <main style={{ minHeight: 'calc(100vh - 64px)', paddingBottom: activeTab === 'showcase' ? '0px' : '48px' }}>
+        {activeTab === 'showcase' && (
+          <CinematicShowcaseView
+            onOpenStudio={() => {
+              if (demos.length > 0 && !activeDemo) {
+                selectDemo(demos[0])
+              }
+              setActiveTab('studio')
+            }}
+            onOpenLibrary={() => setActiveTab('library')}
+          />
+        )}
+
         {activeTab === 'library' && (
           <LibraryView
             demos={demos}

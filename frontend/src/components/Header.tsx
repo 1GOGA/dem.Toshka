@@ -1,7 +1,7 @@
 import React from 'react'
 import type { DemoSummary } from '../types'
 
-export type TabType = 'library' | 'overview' | 'replay' | 'studio' | 'clips' | 'settings'
+export type TabType = 'showcase' | 'library' | 'overview' | 'replay' | 'studio' | 'clips' | 'settings'
 
 interface HeaderProps {
   activeTab: TabType
@@ -22,19 +22,36 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   return (
     <header className="app-header">
-      <div className="brand" onClick={() => onTabChange('library')} style={{ cursor: 'pointer' }}>
+      <div className="brand" onClick={() => onTabChange('showcase')} style={{ cursor: 'pointer' }} title="Главная витрина проекта dem.Toshka">
         <div className="brand-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
             <polygon points="5 3 19 12 5 21 5 3" />
           </svg>
         </div>
         <div>
-          <div className="brand-title">dem.Toshka</div>
-          <div className="brand-subtitle">CS2 Highlights & Tactical Studio</div>
+          <div className="brand-title">
+            dem.Toshka <span style={{ color: '#38bdf8', fontWeight: 400 }}>|</span> pytoshka
+          </div>
+          <div className="brand-subtitle">CS2 Highlights Studio</div>
         </div>
       </div>
 
       <nav className="nav-tabs">
+        {/* Showcase / Overview Tab */}
+        <button
+          className={`nav-tab ${activeTab === 'showcase' ? 'active' : ''}`}
+          onClick={() => onTabChange('showcase')}
+          style={{
+            borderColor: activeTab === 'showcase' ? '#38bdf8' : undefined,
+            color: activeTab === 'showcase' ? '#38bdf8' : undefined,
+          }}
+        >
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
+          ✨ Обзор проекта
+        </button>
+
         {/* Library Tab */}
         <button
           className={`nav-tab ${activeTab === 'library' ? 'active' : ''}`}
@@ -121,6 +138,56 @@ export const Header: React.FC<HeaderProps> = ({
       </nav>
 
       <div className="header-actions">
+        {/* Creator Links */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginRight: '8px' }}>
+          <a
+            href="https://t.me/thepytoshka"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Telegram-канал разработчика @thepytoshka"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '32px',
+              height: '32px',
+              borderRadius: '6px',
+              background: 'rgba(56, 189, 248, 0.1)',
+              border: '1px solid rgba(56, 189, 248, 0.25)',
+              color: '#38bdf8',
+              textDecoration: 'none',
+              transition: 'all 0.2s',
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
+            </svg>
+          </a>
+          <a
+            href="https://www.youtube.com/@thePytoshka"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="YouTube-канал разработчика @thePytoshka"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '32px',
+              height: '32px',
+              borderRadius: '6px',
+              background: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              color: '#ef4444',
+              textDecoration: 'none',
+              transition: 'all 0.2s',
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+            </svg>
+          </a>
+        </div>
+
         {currentDemo && (
           <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginRight: '8px' }}>
             <span style={{ color: '#38bdf8', fontWeight: 700 }}>
