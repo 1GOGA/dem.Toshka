@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import './CinematicShowcaseView.css'
 
 interface CinematicShowcaseViewProps {
@@ -6,19 +6,10 @@ interface CinematicShowcaseViewProps {
   onOpenLibrary?: () => void
 }
 
-type PovType = 'hero' | 'enemy' | 'director'
-type HudType = 'real' | 'minimal' | 'clean'
-
 export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
   onOpenStudio,
   onOpenLibrary,
 }) => {
-  // Interactive Simulator States
-  const [povMode, setPovMode] = useState<PovType>('hero')
-  const [hudMode, setHudMode] = useState<HudType>('real')
-  const [showWatermark, setShowWatermark] = useState<boolean>(true)
-  const [showRadar, setShowRadar] = useState<boolean>(true)
-
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id)
     if (el) {
@@ -321,165 +312,12 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
       </section>
 
       {/* ====================================================================
-          3. INTERACTIVE POV & HUD SHOWCASE
-          ==================================================================== */}
-      <section id="interactive" className="section-padding">
-        <div className="showcase-container">
-          <div className="section-header">
-            <span className="section-tag crimson">// 03 INTERACTIVE REEL STUDIO</span>
-            <h2 className="section-title">Интерактивный симулятор кадра</h2>
-            <p className="section-subtitle">
-              Попробуйте переключить ракурсы и стили интерфейса прямо сейчас, чтобы увидеть,
-              как настраивается итоговое видео.
-            </p>
-          </div>
-
-          <div className="interactive-showcase-box">
-            {/* Control Switcher Bar */}
-            <div className="interactive-controls-bar">
-              {/* POV Mode */}
-              <div className="control-group">
-                <span className="control-group-label">РАКУРС POV:</span>
-                <div className="control-segmented-btn">
-                  <button
-                    type="button"
-                    className={`segment-btn ${povMode === 'hero' ? 'active' : ''}`}
-                    onClick={() => setPovMode('hero')}
-                  >
-                    👤 Свой POV (Hero)
-                  </button>
-                  <button
-                    type="button"
-                    className={`segment-btn ${povMode === 'enemy' ? 'active crimson-style' : ''}`}
-                    onClick={() => setPovMode('enemy')}
-                  >
-                    🎯 POV Соперника
-                  </button>
-                  <button
-                    type="button"
-                    className={`segment-btn ${povMode === 'director' ? 'active' : ''}`}
-                    onClick={() => setPovMode('director')}
-                  >
-                    🎥 Килл-кам
-                  </button>
-                </div>
-              </div>
-
-              {/* HUD Mode */}
-              <div className="control-group">
-                <span className="control-group-label">СТИЛЬ HUD:</span>
-                <div className="control-segmented-btn">
-                  <button
-                    type="button"
-                    className={`segment-btn ${hudMode === 'real' ? 'active' : ''}`}
-                    onClick={() => setHudMode('real')}
-                  >
-                    📺 REAL (OBS)
-                  </button>
-                  <button
-                    type="button"
-                    className={`segment-btn ${hudMode === 'minimal' ? 'active' : ''}`}
-                    onClick={() => setHudMode('minimal')}
-                  >
-                    ⚔️ Киллфид
-                  </button>
-                  <button
-                    type="button"
-                    className={`segment-btn ${hudMode === 'clean' ? 'active' : ''}`}
-                    onClick={() => setHudMode('clean')}
-                  >
-                    🎬 Clean No-HUD
-                  </button>
-                </div>
-              </div>
-
-              {/* Toggles */}
-              <div className="control-group">
-                <button
-                  type="button"
-                  className={`interactive-toggle-btn ${showWatermark ? 'active' : ''}`}
-                  onClick={() => setShowWatermark(!showWatermark)}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10" />
-                    <path d="M12 8v8" />
-                    <path d="M8 12h8" />
-                  </svg>
-                  Водяной знак
-                </button>
-
-                <button
-                  type="button"
-                  className={`interactive-toggle-btn ${showRadar ? 'active' : ''}`}
-                  onClick={() => setShowRadar(!showRadar)}
-                  disabled={hudMode === 'clean'}
-                  style={{ opacity: hudMode === 'clean' ? 0.4 : 1 }}
-                >
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10" />
-                    <line x1="12" y1="2" x2="12" y2="12" />
-                  </svg>
-                  Круглый радар
-                </button>
-              </div>
-            </div>
-
-            {/* Viewport Screen with Authentic CS2 in-game frame */}
-            <div className="interactive-viewport">
-              <img
-                src={
-                  hudMode === 'clean'
-                    ? (povMode === 'enemy' ? '/simulator/enemy_clean.jpg' : povMode === 'director' ? '/simulator/director_clean.jpg' : '/simulator/hero_clean.jpg')
-                    : hudMode === 'minimal'
-                    ? (povMode === 'enemy' ? '/simulator/enemy_minimal.jpg' : povMode === 'director' ? '/simulator/director_minimal.jpg' : '/simulator/hero_minimal.jpg')
-                    : (povMode === 'enemy' ? '/simulator/enemy_real.jpg' : povMode === 'director' ? '/simulator/director_real.jpg' : '/simulator/hero_real.jpg')
-                }
-                alt="CS2 Frame Preview"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'cover',
-                  display: 'block',
-                }}
-              />
-              <div className="interactive-viewport-vignette" />
-
-              {/* Watermark overlay when toggled on and not already baked into REAL frame */}
-              {showWatermark && hudMode !== 'real' && (
-                <div className="viewport-watermark">
-                  <img src="/logo_video.png" alt="dem.Toshka Watermark" />
-                </div>
-              )}
-            </div>
-
-            {/* Tactical Info Footer Bar */}
-            <div className="interactive-info-bar">
-              <div className="info-bar-left">
-                <span className="info-bar-indicator" />
-                <span>
-                  АКТИВНЫЙ РЕЖИМ:{' '}
-                  <strong style={{ color: '#fff' }}>
-                    {povMode === 'hero' ? 'СВОЙ POV (ATTACKER)' : povMode === 'enemy' ? 'POV ЖЕРТВЫ (ENEMY)' : 'ТУРНИРНЫЙ КИЛЛ-КАМ'}
-                  </strong>
-                  {' — '}
-                  {hudMode === 'real' ? 'REAL (ПОЛНЫЙ ИНТЕРФЕЙС)' : hudMode === 'minimal' ? 'ТОЛЬКО КИЛЛФИД' : 'ЧИСТЫЙ NO-HUD'}
-                </span>
-              </div>
-              <div>
-                <span>CS2 RENDER PIPELINE: 1920x1080 @ 60/120 FPS</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ====================================================================
-          4. HOW IT WORKS (3 CONNECTED STEPS)
+          3. HOW IT WORKS (3 CONNECTED STEPS)
           ==================================================================== */}
       <section id="workflow" className="section-padding">
         <div className="showcase-container">
           <div className="section-header">
-            <span className="section-tag">// 04 WORKFLOW PIPELINE</span>
+            <span className="section-tag">// 03 WORKFLOW PIPELINE</span>
             <h2 className="section-title">Пайплайн создания хайлайта</h2>
             <p className="section-subtitle">
               От сырой демки матча до готового видеоклипа без лишних манипуляций со сторонними программами.
@@ -530,12 +368,12 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
       </section>
 
       {/* ====================================================================
-          5. FREE ACCESS PHILOSOPHY
+          4. FREE ACCESS PHILOSOPHY
           ==================================================================== */}
       <section className="section-padding" style={{ borderBottom: 'none' }}>
         <div className="showcase-container">
           <div className="philosophy-banner">
-            <span className="section-tag">// 05 PHILOSOPHY</span>
+            <span className="section-tag">// 04 PHILOSOPHY</span>
             <h2 className="philosophy-title">Твои хайлайты. Без лишних барьеров.</h2>
             <p className="section-subtitle" style={{ maxWidth: '780px' }}>
               Мы верим, что создание крутых игровых видеороликов должно быть доступным,
@@ -575,12 +413,12 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
       </section>
 
       {/* ====================================================================
-          6. CREATOR SECTION (TELEGRAM & YOUTUBE)
+          5. CREATOR SECTION (TELEGRAM & YOUTUBE)
           ==================================================================== */}
       <section id="creator" className="section-padding">
         <div className="showcase-container">
           <div className="section-header">
-            <span className="section-tag crimson">// 06 CREATOR & COMMUNITY</span>
+            <span className="section-tag crimson">// 05 CREATOR & COMMUNITY</span>
             <h2 className="section-title">Сделано для тех, кто живёт CS2.</h2>
             <p className="section-subtitle">
               Следите за разработкой проекта <strong>dem.Toshka | pytoshka</strong>, участвуйте в обсуждении
@@ -676,9 +514,6 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                 <span className="footer-col-title">НАВИГАЦИЯ</span>
                 <button type="button" className="footer-link" onClick={() => scrollToSection('features')}>
                   Возможности
-                </button>
-                <button type="button" className="footer-link" onClick={() => scrollToSection('interactive')}>
-                  Интерактив
                 </button>
                 <button type="button" className="footer-link" onClick={() => scrollToSection('workflow')}>
                   Как это работает
