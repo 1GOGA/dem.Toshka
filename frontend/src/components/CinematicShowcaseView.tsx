@@ -132,7 +132,7 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                 {/* Layered Floating HUD Badges */}
                 <div className="hero-floating-hud-top">
                   <span className="floating-hud-badge">LIVE DEMO</span>
-                  <span className="floating-hud-title">de_mirage // TICK 64-128</span>
+                  <span className="floating-hud-title">de_mirage // SUBTICK</span>
                 </div>
 
                 <div className="hero-floating-killfeed">
@@ -424,98 +424,30 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
               </div>
             </div>
 
-            {/* Viewport Screen */}
+            {/* Viewport Screen with Authentic CS2 in-game frame */}
             <div className="interactive-viewport">
-              {/* Simulated CS2 Map Canvas Background */}
-              <div
-                className="interactive-scene-bg"
+              <img
+                src={
+                  hudMode === 'clean'
+                    ? (povMode === 'enemy' ? '/simulator/enemy_clean.jpg' : povMode === 'director' ? '/simulator/director_clean.jpg' : '/simulator/hero_clean.jpg')
+                    : hudMode === 'minimal'
+                    ? (povMode === 'enemy' ? '/simulator/enemy_minimal.jpg' : povMode === 'director' ? '/simulator/director_minimal.jpg' : '/simulator/hero_minimal.jpg')
+                    : (povMode === 'enemy' ? '/simulator/enemy_real.jpg' : povMode === 'director' ? '/simulator/director_real.jpg' : '/simulator/hero_real.jpg')
+                }
+                alt="CS2 Frame Preview"
                 style={{
-                  backgroundImage: `linear-gradient(to bottom, rgba(6,9,14,0.4), rgba(6,9,14,0.85)), url('/maps/de_mirage.png')`,
-                  backgroundSize: '160%',
-                  backgroundPosition: povMode === 'enemy' ? '40% 65%' : '60% 45%',
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  display: 'block',
                 }}
               />
               <div className="interactive-viewport-vignette" />
 
-              {/* Watermark in Top-Left */}
-              {showWatermark && (
+              {/* Watermark overlay when toggled on and not already baked into REAL frame */}
+              {showWatermark && hudMode !== 'real' && (
                 <div className="viewport-watermark">
                   <img src="/logo_video.png" alt="dem.Toshka Watermark" />
-                </div>
-              )}
-
-              {/* Circular CS2 Radar (Mirage) */}
-              {hudMode === 'real' && showRadar && (
-                <div className="viewport-radar">
-                  <img src="/maps/de_mirage.png" alt="Radar Map" className="radar-map-img" />
-                  <div className={`radar-player-dot ${povMode === 'enemy' ? 'enemy-style' : ''}`} />
-                  <div className="radar-player-vision" />
-                </div>
-              )}
-
-              {/* Top Scoreboard Bar (REAL HUD only) */}
-              {hudMode === 'real' && (
-                <div className="viewport-topbar">
-                  <div className="topbar-team ct">
-                    <span>CT</span>
-                    <span className="topbar-score">12</span>
-                  </div>
-                  <div className="topbar-timer">0:42</div>
-                  <div className="topbar-team t">
-                    <span className="topbar-score">11</span>
-                    <span>T</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Center Dynamic Crosshair */}
-              {hudMode !== 'clean' && (
-                <div className="viewport-crosshair">
-                  <div className="crosshair-cs2">
-                    <div className="crosshair-gap" />
-                  </div>
-                </div>
-              )}
-
-              {/* Killfeed (Shown in REAL and MINIMAL modes) */}
-              {hudMode !== 'clean' && (
-                <div className="viewport-killfeed">
-                  <div className="simulated-kill-pill">
-                    <span className={`sim-attacker ${povMode === 'enemy' ? 'enemy-pov' : ''}`}>
-                      {povMode === 'enemy' ? 's1mple' : 'pytoshka'}
-                    </span>
-                    <span className="sim-weapon">{povMode === 'enemy' ? 'M4A1-S' : 'AK-47'}</span>
-                    <span className="sim-hs-icon">⚡ HS</span>
-                    <span className="sim-victim">
-                      {povMode === 'enemy' ? 'pytoshka' : 's1mple'}
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Bottom Vitals & Ammo HUD (REAL mode only) */}
-              {hudMode === 'real' && (
-                <div className="viewport-bottom-hud">
-                  <div className="hud-vital-box">
-                    <div className="hud-stat">
-                      <span className="hud-stat-num">{povMode === 'enemy' ? '45' : '100'}</span>
-                      <span className="hud-stat-label">+ HP</span>
-                    </div>
-                    <div className="hud-stat">
-                      <span className="hud-stat-num">100</span>
-                      <span className="hud-stat-label">🛡️ ARMOR</span>
-                    </div>
-                  </div>
-
-                  <div className="hud-ammo-box">
-                    <div className="hud-ammo-num">
-                      {povMode === 'enemy' ? '20' : '27'}
-                      <span className="hud-ammo-reserve"> / 90</span>
-                    </div>
-                    <div className="hud-weapon-name">
-                      {povMode === 'enemy' ? 'M4A1-S | Printstream' : 'AK-47 | Head Shot'}
-                    </div>
-                  </div>
                 </div>
               )}
             </div>
@@ -633,8 +565,8 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                 <span className="pillar-icon">🖤</span>
                 <h3 className="pillar-heading">Сделано для сообщества</h3>
                 <p className="pillar-text">
-                  Разработка ведется независимым автором с любовью к киберспорту CS2,
-                  мувимейкингу и стильной эстетике темного аниме.
+                  Разработка ведется независимым автором с любовью к киберспорту CS2
+                  и мувимейкингу.
                 </p>
               </div>
             </div>
@@ -806,3 +738,4 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
 }
 
 export default CinematicShowcaseView
+
