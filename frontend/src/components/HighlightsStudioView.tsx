@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useEffect } from 'react'
+import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import type { ClipSettings, DemoSummary, HighlightItem, KillDTO, MontageDTO, PlayerDTO, RoundDTO, RoundReplayData } from '../types'
 import { Map2DRadar } from './Map2DRadar'
 import { TacticalReplayRadar } from './TacticalReplayRadar'
@@ -6,7 +6,6 @@ import { api } from '../api'
 import { VideoPlayerModal } from './VideoPlayerModal'
 import { TournamentHudModal } from './TournamentHudModal'
 import { PlayerAnalyticsModal } from './PlayerAnalyticsModal'
-import { Agent3DViewer } from './Agent3DViewer'
 import { InteractiveCrosshairPreview } from './InteractiveCrosshairPreview'
 import {
   FolderIcon,
@@ -23,7 +22,6 @@ import {
   CheckIcon,
   TrophyIcon,
   SkullIcon,
-  ShieldIcon,
   SparkleIcon,
   SlidersIcon,
   RadarIcon,
@@ -294,13 +292,13 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
 
 
   // Correlate kills for each highlight
-  const getHighlightKillDetails = (h: HighlightItem) => {
+  const getHighlightKillDetails = useCallback((h: HighlightItem) => {
     if (!kills || kills.length === 0) return null
     const matched = kills.filter(
       (k) => k.round_num === h.round_num && k.tick >= h.kill_start_tick && k.tick <= h.kill_end_tick + 128
     )
     return matched.length > 0 ? matched[0] : null
-  }
+  }, [kills])
 
   // Filtered highlights
   const filteredHighlights = useMemo(() => {
@@ -316,7 +314,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
       }
       return true
     })
-  }, [highlights, activePlayerFilter, activeTypeFilter, activeRoundFilter, weaponFilter, kills])
+  }, [highlights, activePlayerFilter, activeTypeFilter, activeRoundFilter, weaponFilter, getHighlightKillDetails])
 
   const filteredIds = useMemo(() => filteredHighlights.map((h) => h.id), [filteredHighlights])
   const allFilteredSelected = filteredIds.length > 0 && filteredIds.every((id) => selectedIds.has(id))
@@ -416,85 +414,74 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
   }
 
   return (
-    <div style={{ maxWidth: '1360px', margin: '0 auto', padding: '24px 20px' }}>
-      {/* Studio Header & Stepper */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: '320px 1fr',
-          gap: '32px',
-          alignItems: 'start',
-          marginBottom: '28px',
-        }}
-      >
-        {/* Left Column: Title & Steps */}
-        <div>
-          <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#f1f5f9', marginBottom: '8px', letterSpacing: '-0.02em' }}>
-            Студия нарезок
-          </h1>
-          <p style={{ fontSize: '13px', color: '#94a3b8', lineHeight: 1.5, marginBottom: '20px' }}>
-            Создавай нарезки из любимых моментов матча за пару кликов. Мы запишем и объединим выбранные моменты в единый плавный ролик.
-          </p>
-
-          {/* Stepper Wizard List */}
-          <div className="studio-stepper">
-            <div
-              className={`studio-step-item ${currentStep === 1 ? 'active' : currentStep > 1 ? 'completed' : ''}`}
-              onClick={() => setCurrentStep(1)}
-              style={{ cursor: 'pointer' }}
-            >
-              <span className="studio-step-badge">1</span>
-              <span>{t('studio.step1')}</span>
-            </div>
-            <div
-              className={`studio-step-item ${currentStep === 2 ? 'active' : currentStep > 2 ? 'completed' : ''}`}
-              onClick={() => activeDemo && setCurrentStep(2)}
-              style={{ opacity: activeDemo ? 1 : 0.4, cursor: activeDemo ? 'pointer' : 'default' }}
-            >
-              <span className="studio-step-badge">2</span>
-              <span>{t('studio.step2')}</span>
-            </div>
-            <div
-              className={`studio-step-item ${currentStep === 3 ? 'active' : currentStep > 3 ? 'completed' : ''}`}
-              onClick={() => activeDemo && setCurrentStep(3)}
-              style={{ opacity: activeDemo ? 1 : 0.4, cursor: activeDemo ? 'pointer' : 'default' }}
-            >
-              <span className="studio-step-badge">3</span>
-              <span>{t('studio.step3')}</span>
-            </div>
-            <div
-              className={`studio-step-item ${currentStep === 4 ? 'active' : ''}`}
-              onClick={() => activeDemo && selectedIds.size > 0 && setCurrentStep(4)}
-              style={{ opacity: activeDemo && selectedIds.size > 0 ? 1 : 0.4, cursor: activeDemo && selectedIds.size > 0 ? 'pointer' : 'default' }}
-            >
-              <span className="studio-step-badge">4</span>
-              <span>{t('studio.step4')}</span>
-            </div>
+    <div style={{ maxWidth: '1440px', margin: '0 auto', padding: '12px 18px' }}>
+      {/* Compact Studio Header Control Bar */}
+      <div className="studio-top-bar">
+        {/* Left: Compact Horizontal Stepper */}
+        <div className="studio-compact-stepper">
+          <div
+            className={`compact-step-pill ${currentStep === 1 ? 'active' : currentStep > 1 ? 'done' : ''}`}
+            onClick={() => setCurrentStep(1)}
+            title="Шаг 1: Выбор демки CS2"
+          >
+            <span className="step-num">1</span>
+            <span>{t('studio.step1').replace(/^\d+\.\s*/, '')}</span>
+          </div>
+          <span className="step-sep">➔</span>
+          <div
+            className={`compact-step-pill ${currentStep === 2 ? 'active' : currentStep > 2 ? 'done' : ''}`}
+            onClick={() => activeDemo && setCurrentStep(2)}
+            style={{ opacity: activeDemo ? 1 : 0.4, cursor: activeDemo ? 'pointer' : 'default' }}
+            title="Шаг 2: Выбор игрока"
+          >
+            <span className="step-num">2</span>
+            <span>{t('studio.step2').replace(/^\d+\.\s*/, '')}</span>
+          </div>
+          <span className="step-sep">➔</span>
+          <div
+            className={`compact-step-pill ${currentStep === 3 ? 'active' : currentStep > 3 ? 'done' : ''}`}
+            onClick={() => activeDemo && setCurrentStep(3)}
+            style={{ opacity: activeDemo ? 1 : 0.4, cursor: activeDemo ? 'pointer' : 'default' }}
+            title="Шаг 3: Моменты и 2D Радар"
+          >
+            <span className="step-num">3</span>
+            <span>{t('studio.step3').replace(/^\d+\.\s*/, '')}</span>
+            {selectedIds.size > 0 && <span className="step-count-badge">{selectedIds.size}</span>}
+          </div>
+          <span className="step-sep">➔</span>
+          <div
+            className={`compact-step-pill ${currentStep === 4 ? 'active' : ''}`}
+            onClick={() => activeDemo && selectedIds.size > 0 && setCurrentStep(4)}
+            style={{ opacity: activeDemo && selectedIds.size > 0 ? 1 : 0.4, cursor: activeDemo && selectedIds.size > 0 ? 'pointer' : 'default' }}
+            title="Шаг 4: Сборка и Настройки"
+          >
+            <span className="step-num">4</span>
+            <span>{t('studio.step4').replace(/^\d+\.\s*/, '')}</span>
           </div>
         </div>
 
-        {/* Right Column: Step Actions / Breadcrumbs */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '12px' }}>
+        {/* Right: Contextual Step Action Buttons */}
+        <div className="studio-top-actions">
           {currentStep === 2 && (
             <>
               <button
                 type="button"
                 className="btn btn-secondary"
                 onClick={() => setCurrentStep(1)}
-                style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600 }}
+                style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 600 }}
               >
-                ← {t('common.back')}
+                ← Сменить матч
               </button>
               <button
                 type="button"
-                className="btn btn-secondary"
+                className="btn btn-primary"
                 onClick={() => {
                   onSetPlayerFilter(null)
                   setCurrentStep(3)
                 }}
-                style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600 }}
+                style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 700 }}
               >
-                {t('studio.allPlayers')} →
+                Все игроки матча →
               </button>
             </>
           )}
@@ -505,18 +492,18 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 type="button"
                 className="btn btn-secondary"
                 onClick={() => setCurrentStep(2)}
-                style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600 }}
+                style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 600 }}
               >
-                ← {t('common.back')}
+                ← К игрокам
               </button>
               <button
                 type="button"
-                className="btn btn-success"
+                className="btn btn-primary"
                 onClick={() => setCurrentStep(4)}
                 disabled={selectedIds.size === 0}
-                style={{ padding: '8px 20px', fontSize: '13px', fontWeight: 700 }}
+                style={{ padding: '6px 16px', fontSize: '12px', fontWeight: 700 }}
               >
-                {t('common.next')}: {t('studio.step4')} ({selectedIds.size}) →
+                Далее: Настройки ({selectedIds.size}) ➔
               </button>
             </>
           )}
@@ -527,25 +514,25 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 type="button"
                 className="btn btn-secondary"
                 onClick={() => setCurrentStep(3)}
-                style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600 }}
+                style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 600 }}
               >
-                ← Назад к выбору моментов
+                ← К моментам
               </button>
               <button
                 type="button"
                 className="btn btn-accent card-interactive"
                 onClick={handleStartMontageCreation}
                 disabled={isCompiling || selectedIds.size === 0}
-                style={{ padding: '8px 22px', fontSize: '13px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                style={{ padding: '6px 18px', fontSize: '12px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
               >
                 {isCompiling ? (
                   <>
-                    <LoaderIcon size={14} color="#090d16" />
-                    <span>Запись и сборка...</span>
+                    <LoaderIcon size={13} color="#090d16" />
+                    <span>Сборка...</span>
                   </>
                 ) : (
                   <>
-                    <FilmIcon size={14} color="#090d16" />
+                    <FilmIcon size={13} color="#090d16" />
                     <span>Создать нарезку ({selectedIds.size})</span>
                   </>
                 )}
@@ -558,10 +545,10 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
               type="button"
               className="btn btn-secondary card-interactive"
               onClick={onOpenQueue}
-              style={{ padding: '8px 14px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              style={{ padding: '6px 12px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
-              <FilmIcon size={13} color="#94a3b8" />
-              <span>Очередь / Монтаж</span>
+              <FilmIcon size={12} color="#94a3b8" />
+              <span>Очередь</span>
             </button>
           )}
         </div>
@@ -572,7 +559,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
       {/* ==================================================================== */}
       {currentStep === 1 && (
         <div key="step-1" className="step-transition" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          {/* Drag & Drop Upload Zone */}
+          {/* Compact Drag & Drop Upload Zone */}
           <div
             onDragOver={(e) => {
               e.preventDefault()
@@ -598,10 +585,12 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
             onClick={() => fileInputRef.current?.click()}
             style={{
               border: isDraggingFile ? '2px dashed #38bdf8' : '1px dashed #334155',
-              backgroundColor: isDraggingFile ? 'rgba(56, 189, 248, 0.08)' : '#16181f',
-              borderRadius: '12px',
-              padding: '28px 20px',
-              textAlign: 'center',
+              backgroundColor: isDraggingFile ? 'rgba(56, 189, 248, 0.08)' : '#12151e',
+              borderRadius: '10px',
+              padding: '12px 18px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
               cursor: 'pointer',
               transition: 'all 0.2s ease',
             }}
@@ -626,22 +615,31 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 }
               }}
             />
-            <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
-              <FolderIcon size={38} color="#38bdf8" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <FolderIcon size={24} color="#38bdf8" />
+              <div>
+                <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {isIngestingDemo ? (
+                    <>
+                      <LoaderIcon size={14} color="#38bdf8" />
+                      <span>Загрузка и парсинг CS2 демки...</span>
+                    </>
+                  ) : (
+                    'Перетащите .dem файл сюда или нажмите для выбора'
+                  )}
+                </div>
+                <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                  Поддерживаются официальные демки CS2 (Matchmaking, Premier, Faceit, HLTV)
+                </div>
+              </div>
             </div>
-            <div style={{ fontSize: '15px', fontWeight: 700, color: '#f1f5f9', marginBottom: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-              {isIngestingDemo ? (
-                <>
-                  <LoaderIcon size={16} color="#38bdf8" />
-                  <span>Загрузка и анализ демки CS2...</span>
-                </>
-              ) : (
-                'Перетащите .dem файл сюда или нажмите для выбора'
-              )}
-            </div>
-            <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-              Поддерживаются официальные демки CS2 (Matchmaking, Premier, Faceit, HLTV)
-            </div>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              style={{ padding: '6px 14px', fontSize: '12px', pointerEvents: 'none' }}
+            >
+              Выбрать файл .dem
+            </button>
           </div>
 
           {/* Matches Table Card */}
@@ -766,169 +764,151 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
     )}
 
       {/* ==================================================================== */}
-      {/* STEP 2: CHOOSE PLAYER                                                */}
-      {/* ==================================================================== */}
+      {/* STEP 2: CHOOSE PLAYER */}
       {currentStep === 2 && (
-        <div key="step-2" className="step-transition" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div>
-              <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#f1f5f9', margin: '0 0 4px 0' }}>
-                Выберите игрока для нарезки
-              </h2>
-              <div style={{ fontSize: '13px', color: '#94a3b8' }}>
-                Матч: {(activeDemo?.map_name || 'Match').replace('de_', '').toUpperCase()} • Выберите игрока для фильтрации хайлайтов и отображения на 2D радаре
-              </div>
+        <div key="step-2" className="step-transition" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {/* Subheader Info Bar */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 4px' }}>
+            <div style={{ fontSize: '12.5px', color: '#94a3b8' }}>
+              Матч: <strong style={{ color: '#38bdf8' }}>{(activeDemo?.map_name || 'Match').replace('de_', '').toUpperCase()}</strong> ({activeDemo?.rounds_count || 0} раундов) • Кликните на игрока для фильтрации хайлайтов и отображения на 2D радаре
             </div>
             <button
               type="button"
               className="btn btn-secondary"
               onClick={() => setCurrentStep(1)}
-              style={{ fontSize: '12px', padding: '6px 12px' }}
+              style={{ fontSize: '11px', padding: '4px 10px' }}
             >
               ← Сменить матч
             </button>
           </div>
 
-          {/* Player Profile Showcase Banner */}
-          {inspectedPlayer && (
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '280px 1fr',
-                gap: '24px',
-                backgroundColor: '#12151e',
-                border: `1px solid ${(inspectedPlayer.team || '').toLowerCase().includes('ct') ? 'rgba(56, 189, 248, 0.35)' : 'rgba(245, 158, 11, 0.35)'}`,
-                borderRadius: '16px',
-                padding: '18px 22px',
-                alignItems: 'center',
-                boxShadow: '0 12px 35px rgba(0, 0, 0, 0.5)',
-              }}
-            >
-              <Agent3DViewer
-                team={inspectedPlayer.team}
-                playerName={inspectedPlayer.name}
-                role={(inspectedPlayer.team || '').toLowerCase().includes('ct') ? 'CT Specialist (Defense)' : 'Terrorist Operative (Attack)'}
-                height={220}
-                weapon={(inspectedPlayer.team || '').toLowerCase().includes('ct') ? 'M4A1-S' : 'AK-47'}
-              />
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span
-                    style={{
-                      fontSize: '11px',
-                      fontWeight: 800,
-                      letterSpacing: '0.06em',
-                      padding: '3px 10px',
-                      borderRadius: '5px',
-                      backgroundColor: (inspectedPlayer.team || '').toLowerCase().includes('ct') ? 'rgba(56, 189, 248, 0.2)' : 'rgba(245, 158, 11, 0.2)',
-                      color: (inspectedPlayer.team || '').toLowerCase().includes('ct') ? '#38bdf8' : '#f59e0b',
-                      border: `1px solid ${(inspectedPlayer.team || '').toLowerCase().includes('ct') ? 'rgba(56, 189, 248, 0.4)' : 'rgba(245, 158, 11, 0.4)'}`,
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '5px',
-                    }}
-                  >
-                    <SparkleIcon size={12} color={(inspectedPlayer.team || '').toLowerCase().includes('ct') ? '#38bdf8' : '#f59e0b'} />
-                    <span>ВЫБРАННЫЙ ИГРОК</span>
-                  </span>
-                  <span style={{ fontSize: '12px', color: '#64748b' }}>
-                    Нажмите на любого игрока в таблице ниже для смены выбора
-                  </span>
-                </div>
-
+          {/* Compact Inspected Player Strip with Streamlined Team Emblem */}
+          {inspectedPlayer && (() => {
+            const isCT = (inspectedPlayer.team || '').toLowerCase().includes('ct')
+            const playerKills = highlights.filter((h) => h.pov_steam_id === inspectedPlayer.steam_id).length
+            return (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '16px',
+                  backgroundColor: '#0e121c',
+                  border: `1px solid ${isCT ? 'rgba(56, 189, 248, 0.4)' : 'rgba(245, 158, 11, 0.4)'}`,
+                  borderRadius: '10px',
+                  padding: '8px 14px',
+                  boxShadow: '0 6px 20px rgba(0, 0, 0, 0.45)',
+                }}
+              >
+                {/* Left: Compact Team Logo Window (60x60) */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <h3 style={{ fontSize: '24px', fontWeight: 800, color: '#f1f5f9', margin: 0, letterSpacing: '-0.02em' }}>
-                    {inspectedPlayer.name}
-                  </h3>
-                  <span
+                  <div
                     style={{
-                      fontSize: '11px',
-                      fontWeight: 700,
-                      padding: '3px 10px',
-                      borderRadius: '4px',
-                      backgroundColor: (inspectedPlayer.team || '').toLowerCase().includes('ct') ? 'rgba(56, 189, 248, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                      color: (inspectedPlayer.team || '').toLowerCase().includes('ct') ? '#38bdf8' : '#f59e0b',
-                      border: `1px solid ${(inspectedPlayer.team || '').toLowerCase().includes('ct') ? 'rgba(56, 189, 248, 0.3)' : 'rgba(245, 158, 11, 0.3)'}`,
+                      width: '60px',
+                      height: '60px',
+                      borderRadius: '8px',
+                      backgroundColor: '#080a10',
+                      border: `1px solid ${isCT ? 'rgba(56, 189, 248, 0.5)' : 'rgba(245, 158, 11, 0.5)'}`,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'relative',
+                      boxShadow: `0 0 14px ${isCT ? 'rgba(56, 189, 248, 0.2)' : 'rgba(245, 158, 11, 0.2)'}`,
+                      flexShrink: 0,
                     }}
                   >
-                    {(inspectedPlayer.team || '').toUpperCase()}
-                  </span>
+                    <span style={{ fontSize: '20px', lineHeight: 1 }}>{isCT ? '🛡️' : '🎭'}</span>
+                    <span
+                      style={{
+                        fontSize: '9px',
+                        fontWeight: 800,
+                        fontFamily: 'JetBrains Mono, monospace',
+                        color: isCT ? '#38bdf8' : '#f59e0b',
+                        letterSpacing: '0.04em',
+                        marginTop: '2px',
+                      }}
+                    >
+                      {isCT ? 'CT' : 'TERROR'}
+                    </span>
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: '-4px',
+                        right: '-4px',
+                        fontSize: '7.5px',
+                        fontWeight: 800,
+                        background: isCT ? '#0284c7' : '#d97706',
+                        color: '#ffffff',
+                        padding: '1px 4px',
+                        borderRadius: '3px',
+                      }}
+                    >
+                      {isCT ? 'M4A1' : 'AK47'}
+                    </span>
+                  </div>
+
+                  {/* Middle: Player Details */}
+                  <div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
+                      <span
+                        style={{
+                          fontSize: '9px',
+                          fontWeight: 800,
+                          padding: '2px 6px',
+                          borderRadius: '4px',
+                          backgroundColor: isCT ? 'rgba(56, 189, 248, 0.18)' : 'rgba(245, 158, 11, 0.18)',
+                          color: isCT ? '#38bdf8' : '#f59e0b',
+                          border: `1px solid ${isCT ? 'rgba(56, 189, 248, 0.35)' : 'rgba(245, 158, 11, 0.35)'}`,
+                          letterSpacing: '0.04em',
+                        }}
+                      >
+                        ВЫБРАННЫЙ ИГРОК
+                      </span>
+                      <span style={{ fontSize: '17px', fontWeight: 800, color: '#f8fafc', letterSpacing: '-0.02em' }}>
+                        {inspectedPlayer.name}
+                      </span>
+                      <span
+                        style={{
+                          fontSize: '10px',
+                          fontWeight: 700,
+                          padding: '1px 5px',
+                          borderRadius: '3px',
+                          backgroundColor: isCT ? 'rgba(56, 189, 248, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+                          color: isCT ? '#38bdf8' : '#f59e0b',
+                        }}
+                      >
+                        {(inspectedPlayer.team || '').toUpperCase()}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11.5px', color: '#94a3b8' }}>
+                      <span>Раундов: <strong style={{ color: '#f1f5f9' }}>{activeDemo?.rounds_count || 0}</strong></span>
+                      <span>•</span>
+                      <span>Фрагов: <strong style={{ color: isCT ? '#38bdf8' : '#fbbf24' }}>{playerKills}</strong></span>
+                      <span>•</span>
+                      <span>Сторона: <strong style={{ color: isCT ? '#38bdf8' : '#f59e0b' }}>{isCT ? 'Спецназ (CT)' : 'Террористы (T)'}</strong></span>
+                    </div>
+                  </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                  <div
-                    style={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
-                      borderRadius: '8px',
-                      padding: '6px 12px',
-                      fontSize: '12px',
-                      color: '#94a3b8',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                    }}
-                  >
-                    <ActivityIcon size={13} color="#94a3b8" />
-                    <span>Раундов: <strong style={{ color: '#f1f5f9' }}>{activeDemo?.rounds_count || 0}</strong></span>
-                  </div>
-                  <div
-                    style={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
-                      borderRadius: '8px',
-                      padding: '6px 12px',
-                      fontSize: '12px',
-                      color: '#94a3b8',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                    }}
-                  >
-                    <CrosshairIcon size={13} color="#fbbf24" />
-                    <span>Фраг-эпизодов:{' '}
-                    <strong style={{ color: '#fbbf24' }}>
-                      {highlights.filter((h) => h.pov_steam_id === inspectedPlayer.steam_id).length}
-                    </strong></span>
-                  </div>
-                  <div
-                    style={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.04)',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
-                      borderRadius: '8px',
-                      padding: '6px 12px',
-                      fontSize: '12px',
-                      color: '#94a3b8',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                    }}
-                  >
-                    <ShieldIcon size={13} color={(inspectedPlayer.team || '').toLowerCase().includes('ct') ? '#38bdf8' : '#f59e0b'} />
-                    <span>Сторона:{' '}
-                    <strong style={{ color: (inspectedPlayer.team || '').toLowerCase().includes('ct') ? '#38bdf8' : '#f59e0b' }}>
-                      {(inspectedPlayer.team || '').toLowerCase().includes('ct') ? 'Спецназ (CT)' : 'Террористы (T)'}
-                    </strong></span>
-                  </div>
-                </div>
-
-                <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
+                {/* Right: Actions */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <button
                     type="button"
-                    className="btn btn-primary card-interactive"
-                    style={{ padding: '9px 22px', fontSize: '13px', fontWeight: 700 }}
+                    className="btn btn-primary"
                     onClick={() => {
                       onSetPlayerFilter(inspectedPlayer.steam_id)
                       setCurrentStep(3)
                     }}
+                    style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 700 }}
                   >
-                    Выбрать {inspectedPlayer.name} для нарезки →
+                    <span>Выбрать {inspectedPlayer.name} для нарезки</span>
+                    <span>➔</span>
                   </button>
                   <button
                     type="button"
-                    className="btn btn-secondary card-interactive"
-                    style={{ padding: '9px 18px', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}
+                    className="btn btn-secondary"
                     onClick={() =>
                       setSelectedPlayerForAnalytics({
                         steamIdOrName: inspectedPlayer.steam_id || inspectedPlayer.name,
@@ -936,16 +916,18 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         team: inspectedPlayer.team,
                       })
                     }
+                    style={{ padding: '6px 10px', fontSize: '11.5px' }}
+                    title="Аналитика раундов и ADR игрока"
                   >
-                    <ActivityIcon size={13} color="#38bdf8" />
-                    <span>PR Анализ & Ошибки</span>
+                    <ActivityIcon size={12} color="#38bdf8" />
+                    <span>PR Анализ</span>
                   </button>
                 </div>
               </div>
-            </div>
-          )}
+            )
+          })()}
 
-          {/* All Players Card */}
+          {/* All Players Bar (Slim) */}
           <div
             className="card-interactive"
             onClick={() => {
@@ -955,8 +937,8 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
             style={{
               backgroundColor: '#16181f',
               border: activePlayerFilter === null ? '2px solid #38bdf8' : '1px solid #232630',
-              borderRadius: '10px',
-              padding: '16px 20px',
+              borderRadius: '8px',
+              padding: '8px 14px',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
@@ -964,36 +946,22 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
               transition: 'all 0.15s ease',
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <div
-                style={{
-                  width: '42px',
-                  height: '42px',
-                  borderRadius: '10px',
-                  background: 'linear-gradient(135deg, #f59e0b, #ef4444)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <ZapIcon size={22} color="#ffffff" />
-              </div>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: '14px', color: '#f1f5f9' }}>
-                  Все игроки матча
-                </div>
-                <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                  Общий обзор всех ключевых моментов ({highlights.length} хайлайтов со всех игроков)
-                </div>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <ZapIcon size={15} color="#f59e0b" />
+              <span style={{ fontWeight: 700, fontSize: '13px', color: '#f1f5f9' }}>
+                Все игроки матча
+              </span>
+              <span style={{ fontSize: '11.5px', color: '#94a3b8' }}>
+                ({highlights.length} ключевых хайлайтов со всех 10 игроков)
+              </span>
             </div>
-            <button type="button" className="btn btn-primary" style={{ padding: '6px 16px', fontSize: '12px' }}>
-              Выбрать всех →
-            </button>
+            <span style={{ fontSize: '11.5px', color: '#38bdf8', fontWeight: 700 }}>
+              Выбрать всех ➔
+            </span>
           </div>
 
           {/* Player Cards Grid */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(235px, 1fr))', gap: '8px' }}>
             {players.map((p) => {
               const pHighlights = highlights.filter((h) => h.pov_steam_id === p.steam_id)
               const pAces = pHighlights.filter((h) => h.highlight_type === 'ace' || h.kill_count >= 5).length
@@ -1022,11 +990,11 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       : isMe
                       ? '1px solid rgba(245, 158, 11, 0.5)'
                       : '1px solid #232630',
-                    borderRadius: '10px',
-                    padding: '16px',
+                    borderRadius: '8px',
+                    padding: '10px 12px',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '12px',
+                    gap: '8px',
                     cursor: 'pointer',
                     transition: 'all 0.15s ease',
                   }}
