@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
-import type { ReplayPlayerState, ReplayKillItem, ReplayGrenadeItem } from '../types'
+import type { ReplayPlayerState, ReplayKillItem, ReplayGrenadeItem, ReplayBombData } from '../types'
 import { SkullIcon, SmokeIcon, FlameIcon, FlashIcon, GrenadeIcon } from './Icons'
 
 export interface TacticalReplayRadarProps {
@@ -11,6 +11,7 @@ export interface TacticalReplayRadarProps {
   players: ReplayPlayerState[]
   kills: ReplayKillItem[]
   grenades?: ReplayGrenadeItem[]
+  bomb?: ReplayBombData | null
   playerTrails?: Record<string, Array<{ x: number; y: number; is_alive: boolean }>>
   currentLevel?: 'upper' | 'lower'
   hasMultipleLevels?: boolean
@@ -30,6 +31,7 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
   players,
   kills,
   grenades = [],
+  bomb,
   playerTrails = {},
   currentLevel = 'upper',
   hasMultipleLevels = false,
@@ -46,6 +48,21 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
   const [dragStart, setDragStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
   const [hoveredKill, setHoveredKill] = useState<ReplayKillItem | null>(null)
   const [hoveredGrenade, setHoveredGrenade] = useState<ReplayGrenadeItem | null>(null)
+  const [nameDensity, setNameDensity] = useState<'auto' | 'compact' | 'minimal'>('auto')
+
+  // Dynamic scaling for nicknames so they shrink and remain unobtrusive when zooming in
+  const nameScale = useMemo(() => {
+    // Base inverse zoom exponential: at zoom 1.0 -> 1.0, at zoom 2.0 -> 0.39, at zoom 3.0 -> 0.22
+    const base = 1 / Math.pow(zoom, 1.35)
+    if (nameDensity === 'compact') return base * 0.7
+    if (nameDensity === 'minimal') return 0
+    return Math.max(0.2, base)
+  }, [zoom, nameDensity])
+
+  // Keep player dots legible without ballooning into oversized circles at high zoom
+  const dotScale = useMemo(() => {
+    return Math.max(0.55, 1 / Math.pow(zoom, 0.5))
+  }, [zoom])
 
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -132,6 +149,16 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
     })
   }, [grenades, currentTick, showGrenades])
 
+  // Active detonated grenades that require high-contrast countdown timers
+  const detonatedGrenades = useMemo(() => {
+    return activeGrenades.filter(
+      (g) =>
+        (g.type === 'smoke' || g.type === 'molotov') &&
+        currentTick >= g.detonate_tick &&
+        currentTick <= g.end_tick
+    )
+  }, [activeGrenades, currentTick])
+
   return (
     <div
       ref={containerRef}
@@ -161,6 +188,10 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
           0% { transform: scale(0.9); opacity: 0.95; }
           100% { transform: scale(2.5); opacity: 0; }
         }
+        @keyframes radarBombPing {
+          0% { transform: scale(0.9); opacity: 1; }
+          100% { transform: scale(2.2); opacity: 0; }
+        }
         @keyframes smokePulse {
           0%, 100% { opacity: 0.55; }
           50% { opacity: 0.28; }
@@ -173,9 +204,96 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
           0% { transform: scale(0.5); opacity: 1; }
           100% { transform: scale(2.2); opacity: 0; }
         }
+        @keyframes timerUrgentPulse {
+          0%, 100% { transform: scale(1); filter: brightness(1); }
+          50% { transform: scale(1.06); filter: brightness(1.35); }
+        }
       `}</style>
 
-      {/* Floating Zoom & Pan Controls */}
+      {/* Active Utility & Objective HUD Strip (Always readable timers at glance) */}
+      {(detonatedGrenades.length > 0 || (bomb && currentTick >= bomb.plant_tick && currentTick <= bomb.plant_tick + 40 * tickrate)) && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '10px',
+            left: '10px',
+            zIndex: 35,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            flexWrap: 'wrap',
+            maxWidth: 'calc(100% - 230px)',
+            pointerEvents: 'auto',
+          }}
+        >
+          {bomb && currentTick >= bomb.plant_tick && currentTick <= bomb.plant_tick + 40 * tickrate && (
+            <div
+              onClick={() => onJumpToTick?.(bomb.plant_tick)}
+              title="Бомба C4 установлена. Клик для перехода к моменту установки"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '3px 8px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(220, 38, 38, 0.95)',
+                border: '1.5px solid #ffffff',
+                boxShadow: '0 0 14px rgba(239, 68, 68, 0.9)',
+                color: '#ffffff',
+                fontSize: '11px',
+                fontWeight: 900,
+                fontFamily: 'monospace',
+                animation: 'radarBombPing 1s ease-out infinite',
+                cursor: 'pointer',
+              }}
+            >
+              <span>💣</span>
+              <span>ПЛЕНТ {bomb.site || 'CS2'}:</span>
+              <span style={{ color: '#fef08a' }}>
+                {Math.max(0, 40 - (currentTick - bomb.plant_tick) / tickrate).toFixed(1)}s
+              </span>
+            </div>
+          )}
+
+          {detonatedGrenades.map((g) => {
+            const remainingSec = Math.max(0, (g.end_tick - currentTick) / tickrate)
+            const isMolotov = g.type === 'molotov'
+            const isExpiring = isMolotov ? remainingSec <= 2.0 : remainingSec <= 4.0
+
+            return (
+              <div
+                key={`hud-util-${g.id}`}
+                onClick={() => onJumpToTick?.(g.detonate_tick)}
+                title={`Клик для перехода к подрыву: ${isMolotov ? 'Молотов' : 'Смок'} (${g.thrower_name})`}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '3px 7px',
+                  borderRadius: '6px',
+                  backgroundColor: 'rgba(11, 15, 23, 0.94)',
+                  backdropFilter: 'blur(8px)',
+                  border: `1.5px solid ${isExpiring ? '#ef4444' : isMolotov ? '#f97316' : '#38bdf8'}`,
+                  boxShadow: `0 2px 8px ${isExpiring ? 'rgba(239, 68, 68, 0.6)' : isMolotov ? 'rgba(249, 115, 22, 0.4)' : 'rgba(56, 189, 248, 0.3)'}`,
+                  color: '#ffffff',
+                  fontSize: '11px',
+                  fontWeight: 800,
+                  fontFamily: 'monospace',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                }}
+              >
+                <span>{isMolotov ? '🔥' : '💨'}</span>
+                <span style={{ color: isExpiring ? '#fca5a5' : isMolotov ? '#fed7aa' : '#94a3b8' }}>
+                  {isMolotov ? `${remainingSec.toFixed(1)}s` : `${Math.ceil(remainingSec)}s`}
+                </span>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Floating Controls Bar (Zoom, Pan & Nicknames) */}
       <div
         style={{
           position: 'absolute',
@@ -184,15 +302,52 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
           zIndex: 35,
           display: 'flex',
           alignItems: 'center',
-          gap: '4px',
-          backgroundColor: 'rgba(11, 15, 23, 0.92)',
-          backdropFilter: 'blur(8px)',
-          padding: '3px 8px',
-          borderRadius: '6px',
-          border: '1px solid rgba(56, 189, 248, 0.3)',
-          boxShadow: '0 4px 14px rgba(0, 0, 0, 0.6)',
+          gap: '6px',
         }}
       >
+        {/* Nickname Density Selector */}
+        <button
+          type="button"
+          onClick={() => {
+            setNameDensity((prev) => (prev === 'auto' ? 'compact' : prev === 'compact' ? 'minimal' : 'auto'))
+          }}
+          title={`Масштаб ников: ${nameDensity === 'auto' ? 'Авто (уменьшаются при зуме)' : nameDensity === 'compact' ? 'Мини (сокращённые)' : 'Скрыть (только точки)'}`}
+          style={{
+            backgroundColor: 'rgba(11, 15, 23, 0.92)',
+            backdropFilter: 'blur(8px)',
+            padding: '3px 8px',
+            borderRadius: '6px',
+            border: '1px solid rgba(56, 189, 248, 0.3)',
+            color: nameDensity === 'minimal' ? '#64748b' : '#38bdf8',
+            fontSize: '11px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.6)',
+          }}
+        >
+          <span>👥 Ники:</span>
+          <span style={{ color: nameDensity === 'minimal' ? '#94a3b8' : '#ffffff' }}>
+            {nameDensity === 'auto' ? 'Авто' : nameDensity === 'compact' ? 'Мини' : 'Выкл'}
+          </span>
+        </button>
+
+        {/* Zoom Controls */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            backgroundColor: 'rgba(11, 15, 23, 0.92)',
+            backdropFilter: 'blur(8px)',
+            padding: '3px 8px',
+            borderRadius: '6px',
+            border: '1px solid rgba(56, 189, 248, 0.3)',
+            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.6)',
+          }}
+        >
         <button
           type="button"
           onClick={handleZoomOut}
@@ -247,6 +402,7 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
         >
           +
         </button>
+        </div>
       </div>
 
       {/* Tooltip Overlay for Hovered Kill or Grenade */}
@@ -728,36 +884,40 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
                   fontSize: '9px',
                   fontWeight: 900,
                   color: '#ffffff',
+                  transform: `scale(${dotScale})`,
+                  transformOrigin: 'center center',
                 }}
               >
                 {isCT ? 'CT' : 'T'}
               </div>
 
               {/* Player Name & Health Pill */}
-              {isCurrentLevel && (
+              {isCurrentLevel && nameScale > 0 && (
                 <div
                   style={{
-                    marginTop: '3px',
-                    backgroundColor: 'rgba(9, 12, 18, 0.88)',
+                    marginTop: '2px',
+                    backgroundColor: 'rgba(9, 12, 18, 0.92)',
                     backdropFilter: 'blur(4px)',
-                    padding: '1px 5px',
+                    padding: nameDensity === 'compact' ? '1px 3px' : '1px 5px',
                     borderRadius: '4px',
-                    border: `1px solid ${color}55`,
-                    fontSize: '9.5px',
+                    border: `1px solid ${color}66`,
+                    fontSize: '9px',
                     fontWeight: 700,
                     color: '#f1f5f9',
                     whiteSpace: 'nowrap',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '4px',
-                    boxShadow: '0 2px 6px rgba(0,0,0,0.5)',
+                    gap: '3px',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.6)',
+                    transform: `scale(${nameScale})`,
+                    transformOrigin: 'top center',
                   }}
                 >
-                  <span>{p.name.slice(0, 9)}</span>
+                  <span>{nameDensity === 'compact' ? p.name.slice(0, 5) : p.name.slice(0, 9)}</span>
                   <span
                     style={{
                       color: p.health >= 50 ? '#22c55e' : p.health >= 20 ? '#f59e0b' : '#ef4444',
-                      fontSize: '9px',
+                      fontSize: '8.5px',
                     }}
                   >
                     {Math.round(p.health)}
@@ -767,6 +927,118 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
             </div>
           )
         })}
+
+        {/* ================================================================= */}
+        {/* ACTIVE UTILITY TIMERS & BADGES (CRISP HIGH-CONTRAST HTML LAYER)   */}
+        {/* ================================================================= */}
+        {showGrenades &&
+          detonatedGrenades.map((g) => {
+            const isSmoke = g.type === 'smoke'
+            const remainingSec = Math.max(0, (g.end_tick - currentTick) / tickrate)
+            const isExpiring = isSmoke ? remainingSec <= 4.0 : remainingSec <= 2.0
+            const timerScale = Math.max(0.65, 1 / Math.pow(zoom, 0.6))
+
+            return (
+              <div
+                key={`html-grenade-timer-${g.id}`}
+                onClick={() => onJumpToTick?.(g.detonate_tick)}
+                onMouseEnter={() => setHoveredGrenade(g)}
+                onMouseLeave={() => setHoveredGrenade(null)}
+                title={`${isSmoke ? '💨 Дым' : '🔥 Огонь'}: осталось ${isSmoke ? Math.ceil(remainingSec) : remainingSec.toFixed(1)}с. Бросил: ${g.thrower_name || 'Игрок'}`}
+                style={{
+                  position: 'absolute',
+                  left: `${Math.max(2, Math.min(98, g.x))}%`,
+                  top: `${Math.max(2, Math.min(98, g.y))}%`,
+                  transform: `translate(-50%, -50%) scale(${timerScale})`,
+                  zIndex: 22,
+                  pointerEvents: 'auto',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  padding: '2px 7px',
+                  borderRadius: '6px',
+                  backgroundColor: isExpiring ? 'rgba(220, 38, 38, 0.95)' : 'rgba(11, 15, 25, 0.94)',
+                  backdropFilter: 'blur(6px)',
+                  border: `1.5px solid ${isExpiring ? '#fca5a5' : isSmoke ? '#38bdf8' : '#f97316'}`,
+                  boxShadow: `0 0 12px ${isExpiring ? 'rgba(239, 68, 68, 0.9)' : isSmoke ? 'rgba(56, 189, 248, 0.6)' : 'rgba(249, 115, 22, 0.8)'}`,
+                  fontSize: '11px',
+                  fontWeight: 900,
+                  fontFamily: 'monospace',
+                  color: '#ffffff',
+                  whiteSpace: 'nowrap',
+                  animation: isExpiring ? 'timerUrgentPulse 0.6s ease-in-out infinite' : undefined,
+                  transition: 'border-color 0.2s, background-color 0.2s',
+                }}
+              >
+                <span>{isSmoke ? '💨' : '🔥'}</span>
+                <span style={{ color: isExpiring ? '#ffffff' : isSmoke ? '#e2e8f0' : '#fed7aa' }}>
+                  {isSmoke ? `${Math.ceil(remainingSec)}s` : `${remainingSec.toFixed(1)}s`}
+                </span>
+              </div>
+            )
+          })}
+
+        {/* ================================================================= */}
+        {/* PLANTED C4 BOMB TIMER & BEACON (IF PLANTED & ACTIVE)              */}
+        {/* ================================================================= */}
+        {bomb && currentTick >= bomb.plant_tick && currentTick <= bomb.plant_tick + 40 * tickrate && (
+          <div
+            style={{
+              position: 'absolute',
+              left: `${Math.max(2, Math.min(98, bomb.x))}%`,
+              top: `${Math.max(2, Math.min(98, bomb.y))}%`,
+              transform: `translate(-50%, -50%) scale(${Math.max(0.65, 1 / Math.pow(zoom, 0.6))})`,
+              zIndex: 26,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              pointerEvents: 'auto',
+              cursor: 'pointer',
+            }}
+            onClick={() => onJumpToTick?.(bomb.plant_tick)}
+            title={`💣 Бомба C4 установлена на Плент ${bomb.site || 'CS2'}. Клик для перехода к установке`}
+          >
+            {/* Pulsing Beacon Ring */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '-8px',
+                left: '-8px',
+                width: '38px',
+                height: '38px',
+                borderRadius: '50%',
+                border: '2px solid #ef4444',
+                animation: 'radarBombPing 1.2s cubic-bezier(0, 0, 0.2, 1) infinite',
+                pointerEvents: 'none',
+              }}
+            />
+            {/* Main C4 Badge */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '5px',
+                padding: '3px 8px',
+                borderRadius: '6px',
+                backgroundColor: 'rgba(220, 38, 38, 0.95)',
+                border: '2px solid #ffffff',
+                boxShadow: '0 0 16px rgba(239, 68, 68, 1)',
+                color: '#ffffff',
+                fontSize: '11px',
+                fontWeight: 900,
+                fontFamily: 'monospace',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              <span>💣</span>
+              <span>{bomb.site ? `ПЛЕНТ ${bomb.site}` : 'C4'}:</span>
+              <span style={{ color: '#fef08a' }}>
+                {Math.max(0, 40 - (currentTick - bomb.plant_tick) / tickrate).toFixed(1)}s
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* ================================================================= */}
         {/* KILL MARKERS (TEMPORAL DECAY TO ELIMINATE CLUTTER)               */}

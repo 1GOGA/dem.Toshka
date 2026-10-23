@@ -205,6 +205,15 @@ export interface ReplayGrenadeItem {
   trajectory?: Array<{ tick: number; x: number; y: number }>
 }
 
+export interface ReplayBombData {
+  plant_tick: number
+  site: string
+  planter_name: string
+  x: number
+  y: number
+  duration_seconds: number
+}
+
 export interface RoundReplayData {
   round_num: number
   map_name: string
@@ -218,6 +227,7 @@ export interface RoundReplayData {
   kills: ReplayKillItem[]
   players: Record<string, { steam_id: string; name: string; side: string }>
   grenades?: ReplayGrenadeItem[]
+  bomb?: ReplayBombData | null
 }
 
 export interface CompletedClipDTO {

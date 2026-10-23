@@ -81,27 +81,7 @@ export const Header: React.FC<HeaderProps> = ({
           <span>{t('nav.studio')}</span>
         </button>
 
-        {/* 3. Library (Demos Archive & Ingestion) */}
-        <button
-          className={`nav-tab ${activeTab === 'library' ? 'active' : ''}`}
-          onClick={() => onTabChange('library')}
-          title="Библиотека CS2 демок — импорт .dem, парсинг и переключение матчей"
-        >
-          <FolderIcon size={15} color={activeTab === 'library' ? '#38bdf8' : 'currentColor'} />
-          <span>{t('nav.library')}</span>
-        </button>
-
-        {/* 4. Match Overview & Analytics */}
-        <button
-          className={`nav-tab ${activeTab === 'overview' ? 'active' : ''}`}
-          onClick={() => onTabChange('overview')}
-          title="Аналитика матча — таблица счёта, ADR, HS%, раунды и фраги"
-        >
-          <ChartIcon size={15} color={activeTab === 'overview' ? '#38bdf8' : 'currentColor'} />
-          <span>{t('nav.match')}</span>
-        </button>
-
-        {/* 5. 2D Tactical Replay */}
+        {/* 3. 2D Tactical Replay (3-й слева: радар и таймеры раунда) */}
         <button
           className={`nav-tab ${activeTab === 'replay' ? 'active' : ''}`}
           onClick={() => onTabChange('replay')}
@@ -111,7 +91,17 @@ export const Header: React.FC<HeaderProps> = ({
           <span>{t('nav.replay')}</span>
         </button>
 
-        {/* 6. Clips & Montage */}
+        {/* 4. Match Overview & Analytics (4-й слева: статистика матча) */}
+        <button
+          className={`nav-tab ${activeTab === 'overview' ? 'active' : ''}`}
+          onClick={() => onTabChange('overview')}
+          title="Аналитика матча — таблица счёта, ADR, HS%, раунды и фраги"
+        >
+          <ChartIcon size={15} color={activeTab === 'overview' ? '#38bdf8' : 'currentColor'} />
+          <span>{t('nav.match')}</span>
+        </button>
+
+        {/* 5. Clips & Montage */}
         <button
           className={`nav-tab ${activeTab === 'clips' ? 'active' : ''}`}
           onClick={() => onTabChange('clips')}
@@ -119,6 +109,16 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <FilmIcon size={15} color={activeTab === 'clips' ? '#38bdf8' : 'currentColor'} />
           <span>{t('nav.clips')}</span>
+        </button>
+
+        {/* 6. Library (Ближе к Настройкам) */}
+        <button
+          className={`nav-tab ${activeTab === 'library' ? 'active' : ''}`}
+          onClick={() => onTabChange('library')}
+          title="Библиотека CS2 демок — импорт .dem, парсинг и переключение матчей"
+        >
+          <FolderIcon size={15} color={activeTab === 'library' ? '#38bdf8' : 'currentColor'} />
+          <span>{t('nav.library')}</span>
         </button>
 
         {/* 7. Settings */}

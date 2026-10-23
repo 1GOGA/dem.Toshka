@@ -211,6 +211,24 @@ def extract_round_replay_data(
     start_tick = int(ticks_df["tick"].min())
     end_tick = int(ticks_df["tick"].max())
 
+    # Skip freeze time (~10-15s where players stand still at spawn) so replay starts immediately
+    freeze_end = None
+    if hasattr(dem, "rounds") and dem.rounds is not None:
+        try:
+            round_info = dem.rounds.filter(dem.rounds["round_num"] == round_num)
+            if len(round_info) > 0:
+                fe = round_info.to_dicts()[0].get("freeze_end")
+                if fe is not None and int(fe) > start_tick and int(fe) < end_tick:
+                    freeze_end = int(fe)
+        except Exception as e:
+            logger.debug("Could not extract freeze_end from dem.rounds: %s", e)
+
+    if freeze_end is not None:
+        filtered_ticks = ticks_df.filter(ticks_df["tick"] >= freeze_end)
+        if len(filtered_ticks) > 0:
+            ticks_df = filtered_ticks
+            start_tick = int(ticks_df["tick"].min())
+
     # Build player metadata dictionary
     players_dict: dict[str, dict[str, Any]] = {}
     player_rows = (
@@ -370,6 +388,29 @@ def extract_round_replay_data(
         except Exception as ex:
             logger.warning("Error extracting grenades for round %s: %s", round_num, ex)
 
+    # 5. Extract planted bomb in this round if any
+    bomb_data: dict[str, Any] | None = None
+    if hasattr(dem, "bomb") and dem.bomb is not None:
+        try:
+            round_bomb = dem.bomb.filter(dem.bomb["round_num"] == round_num)
+            for b in round_bomb.to_dicts():
+                if b.get("event") == "plant":
+                    bx, by = world_to_radar_percent(
+                        float(b.get("X") or 0.0), float(b.get("Y") or 0.0), map_name
+                    )
+                    plant_tick = int(b.get("tick") or 0)
+                    bomb_data = {
+                        "plant_tick": plant_tick,
+                        "site": str(b.get("bombsite") or "").replace("Bombsite", ""),
+                        "planter_name": str(b.get("name") or "Terrorist"),
+                        "x": bx,
+                        "y": by,
+                        "duration_seconds": 40.0,
+                    }
+                    break
+        except Exception as ex:
+            logger.debug("Error extracting bomb for round %s: %s", round_num, ex)
+
     cal = get_map_calibration(map_name)
     res = {
         "round_num": round_num,
@@ -384,6 +425,7 @@ def extract_round_replay_data(
         "kills": kills_list,
         "players": players_dict,
         "grenades": grenades_list,
+        "bomb": bomb_data,
     }
     _REPLAY_DATA_CACHE[cache_key] = res
     return res

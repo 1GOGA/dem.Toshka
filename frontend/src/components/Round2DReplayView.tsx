@@ -375,6 +375,7 @@ export function Round2DReplayView({
               players={currentFrame?.players || []}
               kills={replayData?.kills || []}
               grenades={replayData?.grenades || []}
+              bomb={replayData?.bomb}
               playerTrails={playerTrails}
               currentLevel={currentLevel}
               hasMultipleLevels={hasMultipleLevels}

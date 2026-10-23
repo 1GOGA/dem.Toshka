@@ -1448,6 +1448,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     players={currentReplayFrame?.players || []}
                     kills={replayData?.kills || []}
                     grenades={replayData?.grenades || []}
+                    bomb={replayData?.bomb}
                     playerTrails={playerReplayTrails}
                     currentLevel={replayLevel}
                     hasMultipleLevels={Boolean(replayData?.levels && replayData.levels.length > 1)}
