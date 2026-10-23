@@ -307,7 +307,7 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>Частота кадров (FPS)</span>
                 <div style={{ display: 'flex', gap: '4px' }}>
-                  {([60, 120, 30] as const).map((fpsVal) => (
+                  {([30, 60, 120] as const).map((fpsVal) => (
                     <button
                       key={fpsVal}
                       type="button"

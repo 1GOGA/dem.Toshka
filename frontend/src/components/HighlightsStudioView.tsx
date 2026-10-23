@@ -2123,20 +2123,18 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   </div>
                   <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 600 }}>
                     {clipSettings?.perspective === 'dynamic_killcam'
-                      ? '⚡ Турнирный Килл-кам (2 сессии)'
-                      : clipSettings?.perspective === 'victim'
-                      ? '💀 Лицо жертвы'
-                      : '🎬 Главный герой (ГГ)'}
+                      ? '⚡ Килл-кам PRO (2 запуска CS2)'
+                      : '🎬 Главный герой (1 запуск CS2)'}
                   </span>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
                   {/* Option 1: Attacker (Hero) */}
                   <button
                     type="button"
                     className="btn card-interactive"
                     onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, perspective: 'attacker' })}
                     style={{
-                      padding: '10px',
+                      padding: '12px 14px',
                       textAlign: 'left',
                       backgroundColor: (!clipSettings?.perspective || clipSettings?.perspective === 'attacker') ? 'rgba(56, 189, 248, 0.12)' : '#12141c',
                       borderColor: (!clipSettings?.perspective || clipSettings?.perspective === 'attacker') ? '#38bdf8' : '#232734',
@@ -2147,15 +2145,19 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '4px',
+                      transition: 'all 0.15s ease',
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: (!clipSettings?.perspective || clipSettings?.perspective === 'attacker') ? '#38bdf8' : '#e2e8f0' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: (!clipSettings?.perspective || clipSettings?.perspective === 'attacker') ? '#38bdf8' : '#e2e8f0' }}>
                         🎬 Главный Герой
                       </span>
+                      {(!clipSettings?.perspective || clipSettings?.perspective === 'attacker') && (
+                        <span style={{ fontSize: '10px', color: '#38bdf8', fontWeight: 800 }}>✓ АКТИВЕН</span>
+                      )}
                     </div>
-                    <div style={{ fontSize: '9px', color: '#94a3b8', lineHeight: '1.2' }}>
-                      100% от автора фрагов (1 запуск CS2)
+                    <div style={{ fontSize: '10px', color: '#94a3b8', lineHeight: '1.3' }}>
+                      100% от автора фрагов без лишних перезаходов (1 запуск CS2)
                     </div>
                   </button>
 
@@ -2165,7 +2167,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     className="btn card-interactive"
                     onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, perspective: 'dynamic_killcam' })}
                     style={{
-                      padding: '10px',
+                      padding: '12px 14px',
                       textAlign: 'left',
                       backgroundColor: clipSettings?.perspective === 'dynamic_killcam' ? 'rgba(139, 92, 246, 0.15)' : '#12141c',
                       borderColor: clipSettings?.perspective === 'dynamic_killcam' ? '#8b5cf6' : '#232734',
@@ -2176,44 +2178,19 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       display: 'flex',
                       flexDirection: 'column',
                       gap: '4px',
+                      transition: 'all 0.15s ease',
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: clipSettings?.perspective === 'dynamic_killcam' ? '#a78bfa' : '#e2e8f0' }}>
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: clipSettings?.perspective === 'dynamic_killcam' ? '#a78bfa' : '#e2e8f0' }}>
                         ⚡ Килл-кам PRO
                       </span>
+                      {clipSettings?.perspective === 'dynamic_killcam' && (
+                        <span style={{ fontSize: '10px', color: '#a78bfa', fontWeight: 800 }}>✓ АКТИВЕН</span>
+                      )}
                     </div>
-                    <div style={{ fontSize: '9px', color: '#94a3b8', lineHeight: '1.2' }}>
-                      Смерти жертв ➔ Откат ➔ Триумф ГГ (2 запуска)
-                    </div>
-                  </button>
-
-                  {/* Option 3: Victim */}
-                  <button
-                    type="button"
-                    className="btn card-interactive"
-                    onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, perspective: 'victim' })}
-                    style={{
-                      padding: '10px',
-                      textAlign: 'left',
-                      backgroundColor: clipSettings?.perspective === 'victim' ? 'rgba(239, 68, 68, 0.15)' : '#12141c',
-                      borderColor: clipSettings?.perspective === 'victim' ? '#ef4444' : '#232734',
-                      borderWidth: '1px',
-                      borderStyle: 'solid',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '4px',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: '11px', fontWeight: 700, color: clipSettings?.perspective === 'victim' ? '#f87171' : '#e2e8f0' }}>
-                        💀 Только Жертва
-                      </span>
-                    </div>
-                    <div style={{ fontSize: '9px', color: '#94a3b8', lineHeight: '1.2' }}>
-                      Камера от лица погибших врагов
+                    <div style={{ fontSize: '10px', color: '#94a3b8', lineHeight: '1.3' }}>
+                      Смерти всех жертв ➔ Откат ➔ Триумф ГГ (ровно 2 запуска CS2)
                     </div>
                   </button>
                 </div>
@@ -2387,7 +2364,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>Частота кадров (FPS)</span>
                     <div style={{ display: 'flex', gap: '4px' }}>
-                      {([60, 120, 30] as const).map((fpsVal) => {
+                      {([30, 60, 120] as const).map((fpsVal) => {
                         const isSelected = (clipSettings?.fps || 60) === fpsVal
                         return (
                           <button
@@ -2677,39 +2654,15 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   </div>
                 </div>
 
-                {/* Switch 7: Preview Recording Window & Sound */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', backgroundColor: '#161922', borderRadius: '6px', border: '1px solid #232738' }}>
-                  <div>
-                    <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      {clipSettings?.previewRecording !== false ? <VolumeIcon size={13} color="#38bdf8" /> : <VolumeMuteIcon size={13} color="#94a3b8" />}
-                      <span>Окно CS2 и звук записи</span>
-                    </div>
-                    <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-                      {clipSettings?.previewRecording !== false ? 'Окно игры открыто, звук включен' : 'Тихий фоновый режим без звука CS2'}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '10px', fontWeight: 700, color: clipSettings?.previewRecording !== false ? '#38bdf8' : '#64748b' }}>
-                      {clipSettings?.previewRecording !== false ? 'ВКЛ' : 'ТИХИЙ'}
-                    </span>
-                    <label className="toggle-switch">
-                      <input
-                        type="checkbox"
-                        checked={clipSettings?.previewRecording !== false}
-                        onChange={(e) => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, previewRecording: e.target.checked })}
-                      />
-                      <span className="toggle-slider" />
-                    </label>
-                  </div>
-                </div>
+
               </div>
 
-              {/* 5. HUD SCALE & CROSSHAIR */}
+              {/* 5. HUD SCALE & TOURNAMENT OVERLAY */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', backgroundColor: '#12141c', padding: '14px', borderRadius: '8px', border: '1px solid #232734' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ fontSize: '12px', fontWeight: 700, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <CrosshairIcon size={14} color="#38bdf8" />
-                    <span>РАЗМЕР HUD И ПРИЦЕЛ</span>
+                    <SlidersIcon size={14} color="#38bdf8" />
+                    <span>МАСШТАБ HUD И ТУРНИРНЫЙ ОВЕРЛЕЙ</span>
                   </div>
                   <button
                     type="button"
@@ -2734,111 +2687,183 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   </button>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                  {/* HUD Scale */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>Размер HUD</span>
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      {[
-                        { scale: 0.95, label: '95% Компакт' },
-                        { scale: 1.0, label: '100% 1:1' },
-                        { scale: 1.15, label: '115% Кибер' },
-                      ].map((s) => (
-                        <button
-                          key={s.scale}
-                          type="button"
-                          className="btn card-interactive"
-                          onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, hudScale: s.scale })}
-                          style={{
-                            flex: 1,
-                            padding: '4px 4px',
-                            fontSize: '10px',
-                            fontWeight: 700,
-                            borderRadius: '4px',
-                            border: '1px solid #2d3748',
-                            backgroundColor: clipSettings?.hudScale === s.scale ? '#38bdf8' : '#1c2333',
-                            color: clipSettings?.hudScale === s.scale ? '#090d16' : '#cbd5e1',
-                            cursor: 'pointer',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {s.label}
-                        </button>
-                      ))}
-                    </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600, display: 'block' }}>Масштаб HUD в CS2</span>
+                    <span style={{ fontSize: '10px', color: '#94a3b8' }}>Размер полосок HP, радара и патронов</span>
                   </div>
-
-                  {/* Crosshair Preset */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>Прицел в CS2</span>
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      {[
-                        { p: 'default', label: 'Дефолт' },
-                        { p: 'pro_cyan', label: 'Pro Цветной' },
-                        { p: 'hidden', label: 'Скрыт' },
-                      ].map((c) => {
-                        const isSelected = (clipSettings?.crosshairPreset || 'default') === c.p
-                        return (
-                          <button
-                            key={c.p}
-                            type="button"
-                            className="btn card-interactive"
-                            onClick={() =>
-                              onUpdateSettings &&
-                              clipSettings &&
-                              onUpdateSettings({
-                                ...clipSettings,
-                                crosshairPreset: c.p as any,
-                                customCrosshair: c.p !== 'default' && c.p !== 'hidden',
-                              })
-                            }
-                            style={{
-                              flex: 1,
-                              padding: '4px 4px',
-                              fontSize: '10px',
-                              fontWeight: 700,
-                              borderRadius: '4px',
-                              border: '1px solid #2d3748',
-                              backgroundColor: isSelected ? '#38bdf8' : '#1c2333',
-                              color: isSelected ? '#090d16' : '#cbd5e1',
-                              cursor: 'pointer',
-                              whiteSpace: 'nowrap',
-                            }}
-                          >
-                            {c.label}
-                          </button>
-                        )
-                      })}
-                    </div>
+                  <div style={{ display: 'flex', gap: '6px' }}>
+                    {[
+                      { scale: 0.95, label: '95% Компакт' },
+                      { scale: 1.0, label: '100% 1:1' },
+                      { scale: 1.15, label: '115% Кибер' },
+                    ].map((s) => (
+                      <button
+                        key={s.scale}
+                        type="button"
+                        className="btn card-interactive"
+                        onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, hudScale: s.scale })}
+                        style={{
+                          padding: '5px 10px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          borderRadius: '4px',
+                          border: '1px solid #2d3748',
+                          backgroundColor: clipSettings?.hudScale === s.scale ? '#38bdf8' : '#1c2333',
+                          color: clipSettings?.hudScale === s.scale ? '#090d16' : '#cbd5e1',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {s.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
 
-                {/* Crosshair Color selection if Pro */}
+          {/* Right Column: Interactive Crosshair Preview & Montage Summary */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            {/* Live Interactive CS2 Viewport & Crosshair Simulator with Direct Style Selection */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <InteractiveCrosshairPreview
+                config={{
+                  preset: clipSettings?.crosshairPreset || 'pro_cyan',
+                  color: clipSettings?.crosshairColor || 'cyan',
+                  fov: clipSettings?.fov || 90,
+                  viewmodelFov: clipSettings?.viewmodelFov || 60,
+                  hudMode: clipSettings?.hudMode || 'full',
+                  customCrosshair: clipSettings?.customCrosshair,
+                }}
+                onChangeConfig={(newCfg) => {
+                  if (onUpdateSettings && clipSettings) {
+                    onUpdateSettings({
+                      ...clipSettings,
+                      crosshairColor: (newCfg.color as any) || clipSettings.crosshairColor,
+                    })
+                  }
+                }}
+              />
+
+              {/* Crosshair Controls Directly Under Preview */}
+              <div
+                style={{
+                  backgroundColor: '#161822',
+                  border: '1px solid #232738',
+                  borderRadius: '10px',
+                  padding: '14px 16px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <CrosshairIcon size={14} color="#38bdf8" />
+                    <span>Выбор прицела для записи</span>
+                  </div>
+                  <span style={{ fontSize: '10px', color: '#38bdf8', fontWeight: 600 }}>
+                    Превью обновляется сразу ↑
+                  </span>
+                </div>
+
+                {/* Preset buttons */}
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {[
+                    { p: 'default', label: '🎯 Дефолт CS2' },
+                    { p: 'pro_cyan', label: '⚡ Pro Цветной' },
+                    { p: 'hidden', label: '🚫 Без прицела' },
+                  ].map((c) => {
+                    const isSelected = (clipSettings?.crosshairPreset || 'default') === c.p
+                    return (
+                      <button
+                        key={c.p}
+                        type="button"
+                        className="btn card-interactive"
+                        onClick={() =>
+                          onUpdateSettings &&
+                          clipSettings &&
+                          onUpdateSettings({
+                            ...clipSettings,
+                            crosshairPreset: c.p as any,
+                            customCrosshair: c.p !== 'default' && c.p !== 'hidden',
+                          })
+                        }
+                        style={{
+                          flex: 1,
+                          padding: '7px 10px',
+                          fontSize: '11px',
+                          fontWeight: 700,
+                          borderRadius: '6px',
+                          border: isSelected ? '1px solid #38bdf8' : '1px solid #2d3748',
+                          backgroundColor: isSelected ? '#38bdf8' : '#1c2333',
+                          color: isSelected ? '#090d16' : '#cbd5e1',
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                          transition: 'all 0.15s ease',
+                        }}
+                      >
+                        {c.label}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Color Palette (Visible when Pro is selected) */}
                 {clipSettings?.crosshairPreset !== 'default' && clipSettings?.crosshairPreset !== 'hidden' && (
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', backgroundColor: '#0d1017', borderRadius: '6px', border: '1px solid #1e2433', marginTop: '2px' }}>
-                    <span style={{ fontSize: '11px', color: '#94a3b8' }}>Цвет прицела:</span>
-                    <div style={{ display: 'flex', gap: '8px' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '8px 12px',
+                      backgroundColor: '#0e111a',
+                      borderRadius: '6px',
+                      border: '1px solid #1e2434',
+                    }}
+                  >
+                    <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>
+                      Цвет прицела:
+                    </span>
+                    <div style={{ display: 'flex', gap: '10px' }}>
                       {[
-                        { name: 'cyan', hex: '#00ffff' },
-                        { name: 'green', hex: '#00ff00' },
-                        { name: 'yellow', hex: '#ffff00' },
-                        { name: 'white', hex: '#ffffff' },
-                        { name: 'pink', hex: '#ff00ff' },
+                        { name: 'cyan', hex: '#00ffff', label: 'Циан' },
+                        { name: 'green', hex: '#00ff00', label: 'Зелёный' },
+                        { name: 'yellow', hex: '#ffff00', label: 'Жёлтый' },
+                        { name: 'white', hex: '#ffffff', label: 'Белый' },
+                        { name: 'pink', hex: '#ff00ff', label: 'Розовый' },
                       ].map((col) => (
                         <button
                           key={col.name}
                           type="button"
-                          onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, crosshairColor: col.name as any })}
+                          onClick={() =>
+                            onUpdateSettings &&
+                            clipSettings &&
+                            onUpdateSettings({ ...clipSettings, crosshairColor: col.name as any })
+                          }
                           style={{
-                            width: '18px',
-                            height: '18px',
+                            width: '22px',
+                            height: '22px',
                             borderRadius: '50%',
                             backgroundColor: col.hex,
-                            border: (clipSettings?.crosshairColor || 'cyan') === col.name ? '2px solid #ffffff' : '1px solid #334155',
+                            border:
+                              (clipSettings?.crosshairColor || 'cyan') === col.name
+                                ? '2px solid #ffffff'
+                                : '1px solid #334155',
                             cursor: 'pointer',
-                            outline: (clipSettings?.crosshairColor || 'cyan') === col.name ? '2px solid #38bdf8' : 'none',
+                            outline:
+                              (clipSettings?.crosshairColor || 'cyan') === col.name
+                                ? '2px solid #38bdf8'
+                                : 'none',
+                            transform:
+                              (clipSettings?.crosshairColor || 'cyan') === col.name
+                                ? 'scale(1.2)'
+                                : 'scale(1.0)',
+                            transition: 'all 0.15s ease',
                           }}
-                          title={col.name}
+                          title={col.label}
                         />
                       ))}
                     </div>
@@ -2846,29 +2871,6 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 )}
               </div>
             </div>
-          </div>
-
-          {/* Right Column: Interactive Crosshair Preview & Montage Summary */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            {/* Live Interactive CS2 Viewport & Crosshair Simulator */}
-            <InteractiveCrosshairPreview
-              config={{
-                preset: clipSettings?.crosshairPreset || 'pro_cyan',
-                color: clipSettings?.crosshairColor || 'cyan',
-                fov: clipSettings?.fov || 90,
-                viewmodelFov: clipSettings?.viewmodelFov || 60,
-                hudMode: clipSettings?.hudMode || 'full',
-                customCrosshair: clipSettings?.customCrosshair,
-              }}
-              onChangeConfig={(newCfg) => {
-                if (onUpdateSettings && clipSettings) {
-                  onUpdateSettings({
-                    ...clipSettings,
-                    crosshairColor: (newCfg.color as any) || clipSettings.crosshairColor,
-                  })
-                }
-              }}
-            />
 
             <div
               style={{
