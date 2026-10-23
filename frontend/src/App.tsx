@@ -11,6 +11,8 @@ import { MatchOverviewView } from './components/MatchOverviewView'
 import { RenderQueueModal } from './components/RenderQueueModal'
 import { Round2DReplayView } from './components/Round2DReplayView'
 import { SettingsView } from './components/SettingsView'
+import { ChartIcon, RadarIcon } from './components/Icons'
+import { useTranslation } from './i18n'
 import type {
   ClipSettings,
   DemoSummary,
@@ -23,6 +25,7 @@ import type {
 } from './types'
 
 export function App() {
+  const { lang } = useTranslation()
   const [activeTab, setActiveTab] = useState<TabType>('showcase')
   const [demos, setDemos] = useState<DemoSummary[]>([])
   const [activeDemo, setActiveDemo] = useState<DemoSummary | null>(null)
@@ -119,6 +122,16 @@ export function App() {
       isMounted = false
     }
   }, [])
+
+  // Universal Tab Switcher with Smart Demo Auto-Selection
+  const handleTabChange = (tab: TabType) => {
+    // If navigating to studio, overview, or replay and no active demo is loaded yet,
+    // automatically select the first demo if any exist
+    if ((tab === 'studio' || tab === 'overview' || tab === 'replay') && !activeDemo && demos.length > 0) {
+      selectDemo(demos[0])
+    }
+    setActiveTab(tab)
+  }
 
   // Parse path
   const handleParsePath = async (path: string) => {
@@ -230,7 +243,7 @@ export function App() {
     <div className="app-root">
       <Header
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={handleTabChange}
         selectedCount={selectedHighlightIds.size}
         onOpenQueue={() => setIsQueueOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
@@ -241,41 +254,12 @@ export function App() {
         <div key={activeTab} className="scene-transition">
         {activeTab === 'showcase' && (
           <CinematicShowcaseView
-            onOpenStudio={() => {
-              if (demos.length > 0 && !activeDemo) {
-                selectDemo(demos[0])
-              }
-              setActiveTab('studio')
-            }}
-            onOpenLibrary={() => setActiveTab('library')}
+            onOpenStudio={() => handleTabChange('studio')}
+            onOpenLibrary={() => handleTabChange('library')}
           />
         )}
 
-        {activeTab === 'library' && (
-          <LibraryView
-            demos={demos}
-            activeDemoId={activeDemo?.id ?? null}
-            onSelectDemo={(demo) => {
-              selectDemo(demo)
-              setActiveTab('studio')
-            }}
-            onParsePath={handleParsePath}
-            onUploadDemo={handleUploadDemo}
-            isLoading={isLoading}
-            error={parseError}
-          />
-        )}
-
-        {activeTab === 'overview' && activeDemo && (
-          <MatchOverviewView
-            demo={activeDemo}
-            stats={stats}
-            rounds={rounds}
-            isLoading={isLoading}
-            onFilterPlayerHighlights={handleFilterPlayerHighlights}
-          />
-        )}
-
+        {/* 2. Highlights Studio: Flagship Workspace */}
         {activeTab === 'studio' && (
           <HighlightsStudioView
             highlights={highlights}
@@ -306,14 +290,87 @@ export function App() {
           />
         )}
 
-        {activeTab === 'replay' && activeDemo && (
-          <Round2DReplayView
-            demo={activeDemo}
-            rounds={rounds}
-            highlights={highlights}
+        {/* 3. Library: Demos archive */}
+        {activeTab === 'library' && (
+          <LibraryView
+            demos={demos}
+            activeDemoId={activeDemo?.id ?? null}
+            onSelectDemo={(demo) => {
+              selectDemo(demo)
+              setActiveTab('studio')
+            }}
+            onParsePath={handleParsePath}
+            onUploadDemo={handleUploadDemo}
+            isLoading={isLoading}
+            error={parseError}
           />
         )}
 
+        {/* 4. Match Overview & Analytics */}
+        {activeTab === 'overview' && (
+          activeDemo ? (
+            <MatchOverviewView
+              demo={activeDemo}
+              stats={stats}
+              rounds={rounds}
+              isLoading={isLoading}
+              onFilterPlayerHighlights={handleFilterPlayerHighlights}
+            />
+          ) : (
+            <div className="empty-tab-container">
+              <div className="empty-tab-icon">
+                <ChartIcon size={38} color="#38bdf8" />
+              </div>
+              <h2 className="empty-tab-title">{lang === 'ru' ? 'Матч ещё не выбран' : 'No Match Selected'}</h2>
+              <p className="empty-tab-desc">
+                {lang === 'ru'
+                  ? 'Для просмотра аналитики матча и таблицы счета выберите демку в Библиотеке или начните работу в Студии.'
+                  : 'To view match analytics and scoreboard, select a demo from the Library or launch the Studio.'}
+              </p>
+              <div className="empty-tab-actions">
+                <button type="button" className="btn btn-primary" onClick={() => handleTabChange('library')}>
+                  📁 {lang === 'ru' ? 'Открыть Библиотеку' : 'Open Library'}
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={() => handleTabChange('studio')}>
+                  🎬 {lang === 'ru' ? 'В Студию Хайлайтов' : 'Launch Studio'}
+                </button>
+              </div>
+            </div>
+          )
+        )}
+
+        {/* 5. 2D Tactical Replay */}
+        {activeTab === 'replay' && (
+          activeDemo ? (
+            <Round2DReplayView
+              demo={activeDemo}
+              rounds={rounds}
+              highlights={highlights}
+            />
+          ) : (
+            <div className="empty-tab-container">
+              <div className="empty-tab-icon">
+                <RadarIcon size={38} color="#10b981" />
+              </div>
+              <h2 className="empty-tab-title">{lang === 'ru' ? 'Тактический 2D Реплей' : 'Tactical 2D Replay'}</h2>
+              <p className="empty-tab-desc">
+                {lang === 'ru'
+                  ? 'Для просмотра интерактивной 2D карты, перемещений игроков и таймеров гранат выберите матч в Библиотеке.'
+                  : 'To inspect 2D radar, player paths, and smoke/fire timers, select a match from the Library.'}
+              </p>
+              <div className="empty-tab-actions">
+                <button type="button" className="btn btn-primary" onClick={() => handleTabChange('library')}>
+                  📁 {lang === 'ru' ? 'Открыть Библиотеку' : 'Open Library'}
+                </button>
+                <button type="button" className="btn btn-secondary" onClick={() => handleTabChange('studio')}>
+                  🎬 {lang === 'ru' ? 'В Студию Хайлайтов' : 'Launch Studio'}
+                </button>
+              </div>
+            </div>
+          )
+        )}
+
+        {/* 6. Clips & Montage */}
         {activeTab === 'clips' && (
           <ClipsMontageView
             onOpenFolder={() => api.openOutputFolder()}
@@ -322,6 +379,7 @@ export function App() {
           />
         )}
 
+        {/* 7. Settings */}
         {activeTab === 'settings' && (
           <SettingsView />
         )}

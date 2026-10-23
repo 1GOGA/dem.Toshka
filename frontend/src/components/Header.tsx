@@ -11,7 +11,7 @@ import {
   SettingsIcon,
 } from './Icons'
 
-export type TabType = 'showcase' | 'library' | 'overview' | 'replay' | 'studio' | 'clips' | 'settings'
+export type TabType = 'showcase' | 'studio' | 'library' | 'overview' | 'replay' | 'clips' | 'settings'
 
 interface HeaderProps {
   activeTab: TabType
@@ -34,7 +34,12 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="app-header">
-      <div className="brand" onClick={() => onTabChange('showcase')} style={{ cursor: 'pointer' }} title={t('brand.showcaseTooltip')}>
+      <div
+        className="brand"
+        onClick={() => onTabChange('showcase')}
+        style={{ cursor: 'pointer' }}
+        title={t('brand.showcaseTooltip')}
+      >
         <div className="brand-icon">
           <img
             src="/avatar.png"
@@ -55,75 +60,72 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      <nav className="nav-tabs">
-        {/* Showcase / Overview Tab */}
+      <nav className="nav-tabs" aria-label="Main Navigation">
+        {/* 1. Showcase / Home */}
         <button
           className={`nav-tab ${activeTab === 'showcase' ? 'active' : ''}`}
           onClick={() => onTabChange('showcase')}
-          style={{
-            borderColor: activeTab === 'showcase' ? '#38bdf8' : undefined,
-            color: activeTab === 'showcase' ? '#38bdf8' : undefined,
-          }}
+          title={t('brand.showcaseTooltip')}
         >
           <SparkleIcon size={15} color={activeTab === 'showcase' ? '#38bdf8' : 'currentColor'} />
           <span>{t('nav.showcase')}</span>
         </button>
 
-        {/* Library Tab */}
+        {/* 2. Highlights Studio (Primary App Workspace) */}
+        <button
+          className={`nav-tab nav-tab-studio ${activeTab === 'studio' ? 'active' : ''}`}
+          onClick={() => onTabChange('studio')}
+          title="Студия хайлайтов CS2 — выбор раундов, фильтры игроков, HLAE/OBS настройки и рендер"
+        >
+          <ClapperboardIcon size={15} color={activeTab === 'studio' ? '#38bdf8' : '#38bdf8'} />
+          <span>{t('nav.studio')}</span>
+        </button>
+
+        {/* 3. Library (Demos Archive & Ingestion) */}
         <button
           className={`nav-tab ${activeTab === 'library' ? 'active' : ''}`}
           onClick={() => onTabChange('library')}
+          title="Библиотека CS2 демок — импорт .dem, парсинг и переключение матчей"
         >
           <FolderIcon size={15} color={activeTab === 'library' ? '#38bdf8' : 'currentColor'} />
           <span>{t('nav.library')}</span>
         </button>
 
-        {/* Match Overview Tab */}
+        {/* 4. Match Overview & Analytics */}
         <button
           className={`nav-tab ${activeTab === 'overview' ? 'active' : ''}`}
           onClick={() => onTabChange('overview')}
-          disabled={!currentDemo}
-          style={{ opacity: currentDemo ? 1 : 0.4 }}
+          title="Аналитика матча — таблица счёта, ADR, HS%, раунды и фраги"
         >
           <ChartIcon size={15} color={activeTab === 'overview' ? '#38bdf8' : 'currentColor'} />
           <span>{t('nav.match')}</span>
         </button>
 
-        {/* 2D Replay Tab */}
+        {/* 5. 2D Tactical Replay */}
         <button
           className={`nav-tab ${activeTab === 'replay' ? 'active' : ''}`}
           onClick={() => onTabChange('replay')}
-          disabled={!currentDemo}
-          style={{ opacity: currentDemo ? 1 : 0.4 }}
+          title="Тактический 2D Реплей — радар, траектории игроков и таймеры гранат"
         >
           <RadarIcon size={15} color={activeTab === 'replay' ? '#38bdf8' : 'currentColor'} />
           <span>{t('nav.replay')}</span>
         </button>
 
-        {/* Highlights Studio Tab */}
-        <button
-          className={`nav-tab ${activeTab === 'studio' ? 'active' : ''}`}
-          onClick={() => onTabChange('studio')}
-          disabled={!currentDemo}
-          style={{ opacity: currentDemo ? 1 : 0.4 }}
-        >
-          <ClapperboardIcon size={15} color={activeTab === 'studio' ? '#38bdf8' : 'currentColor'} />
-          <span>{t('nav.studio')}</span>
-        </button>
-
-        {/* Clips & Montage Tab */}
+        {/* 6. Clips & Montage */}
         <button
           className={`nav-tab ${activeTab === 'clips' ? 'active' : ''}`}
           onClick={() => onTabChange('clips')}
+          title="Готовые клипы и монтаж — видеотека MP4 и объединение в ролики"
         >
           <FilmIcon size={15} color={activeTab === 'clips' ? '#38bdf8' : 'currentColor'} />
           <span>{t('nav.clips')}</span>
         </button>
 
-        {/* Settings Tab */}
+        {/* 7. Settings */}
         <button
           className={`nav-tab ${activeTab === 'settings' ? 'active' : ''}`}
           onClick={() => onTabChange('settings')}
+          title="Настройки — CS2 Config Shield, HLAE, каталоги сохранения и очистка"
         >
           <SettingsIcon size={15} color={activeTab === 'settings' ? '#38bdf8' : 'currentColor'} />
           <span>{t('nav.settings')}</span>
@@ -131,8 +133,8 @@ export const Header: React.FC<HeaderProps> = ({
       </nav>
 
       <div className="header-actions">
-        {/* Creator Links */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginRight: '8px' }}>
+        {/* Creator Socials */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <a
             href="https://t.me/thepytoshka"
             target="_blank"
@@ -144,8 +146,8 @@ export const Header: React.FC<HeaderProps> = ({
               justifyContent: 'center',
               width: '32px',
               height: '32px',
-              borderRadius: '6px',
-              background: 'rgba(56, 189, 248, 0.1)',
+              borderRadius: '7px',
+              background: 'rgba(56, 189, 248, 0.08)',
               border: '1px solid rgba(56, 189, 248, 0.25)',
               color: '#38bdf8',
               textDecoration: 'none',
@@ -167,8 +169,8 @@ export const Header: React.FC<HeaderProps> = ({
               justifyContent: 'center',
               width: '32px',
               height: '32px',
-              borderRadius: '6px',
-              background: 'rgba(239, 68, 68, 0.1)',
+              borderRadius: '7px',
+              background: 'rgba(239, 68, 68, 0.08)',
               border: '1px solid rgba(239, 68, 68, 0.25)',
               color: '#ef4444',
               textDecoration: 'none',
@@ -181,16 +183,32 @@ export const Header: React.FC<HeaderProps> = ({
           </a>
         </div>
 
-        {currentDemo && (
-          <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginRight: '8px' }}>
-            <span style={{ color: '#38bdf8', fontWeight: 700 }}>
+        {/* Active Demo Badge / Quick Ingestion Switcher */}
+        {currentDemo ? (
+          <div
+            className="header-demo-pill"
+            onClick={() => onTabChange('library')}
+            title="Активная демка. Нажмите для выбора другой в Библиотеке"
+          >
+            <span className="header-demo-map">
               {(currentDemo.map_name || 'Match').replace('de_', '').toUpperCase()}
             </span>
-            {' • '}
-            <span>{currentDemo.rounds_count}R</span>
+            <span className="header-demo-dot">•</span>
+            <span className="header-demo-rounds">{currentDemo.rounds_count}R</span>
           </div>
+        ) : (
+          <button
+            type="button"
+            className="header-no-demo-pill"
+            onClick={() => onTabChange('library')}
+            title="Нажмите, чтобы выбрать или загрузить демку в Библиотеке"
+          >
+            <FolderIcon size={12} color="#38bdf8" />
+            <span>Выбрать демку</span>
+          </button>
         )}
 
+        {/* Parameters Modal Trigger */}
         {onOpenSettings && (
           <button className="btn btn-secondary" onClick={onOpenSettings} title={t('header.parametersTooltip')}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -200,7 +218,8 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         )}
 
-        <button className="btn btn-queue" onClick={onOpenQueue}>
+        {/* Render Queue Modal Trigger */}
+        <button className="btn btn-queue" onClick={onOpenQueue} title="Очередь рендера и мониторинг задач">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
           </svg>

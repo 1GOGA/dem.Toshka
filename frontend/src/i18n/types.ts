@@ -77,6 +77,12 @@ export interface TranslationDictionary {
   'showcase.followDev': string
   'showcase.featuresBtn': string
   'showcase.openStudioBtn': string
+  'showcase.openInStudio': string
+  'showcase.stripTag': string
+  'showcase.stripTitle': string
+  'showcase.stripDesc': string
+  'showcase.stripStudioBtn': string
+  'showcase.stripLibraryBtn': string
   'showcase.archTitle': string
   'showcase.archValue': string
   'showcase.engineTitle': string

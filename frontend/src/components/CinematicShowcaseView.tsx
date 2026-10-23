@@ -52,43 +52,50 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
               </p>
 
               <div className="hero-cta-group">
+                {/* 1. PRIMARY STUDIO LAUNCHER BUTTON */}
+                {onOpenStudio && (
+                  <button
+                    type="button"
+                    onClick={onOpenStudio}
+                    className="btn-hero-studio-primary"
+                    title="Перейти в рабочий интерфейс студии хайлайтов"
+                  >
+                    <span className="btn-hero-studio-icon">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="5 3 19 12 5 21 5 3" />
+                      </svg>
+                    </span>
+                    <span>{t('showcase.openStudioBtn')}</span>
+                    <span className="btn-hero-studio-badge">⚡ 120 FPS</span>
+                    <span className="btn-hero-studio-arrow">➔</span>
+                  </button>
+                )}
+
+                {/* 2. TELEGRAM CHANNEL */}
                 <a
                   href="https://t.me/thepytoshka"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn-hero-primary"
-                  title="Официальный Telegram канал разработчика"
+                  className="btn-hero-telegram"
+                  title="Официальный Telegram канал разработчика @thepytoshka"
                 >
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
                   </svg>
-                  {t('showcase.followDev')}
+                  <span>{t('showcase.followDev')}</span>
                 </a>
 
+                {/* 3. EXPLORE FEATURES */}
                 <button
                   type="button"
                   onClick={() => scrollToSection('features')}
                   className="btn-hero-secondary"
                 >
-                  {t('showcase.featuresBtn')}
+                  <span>{t('showcase.featuresBtn')}</span>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
                   </svg>
                 </button>
-
-                {onOpenStudio && (
-                  <button
-                    type="button"
-                    onClick={onOpenStudio}
-                    className="btn-hero-studio"
-                    title="Перейти в рабочий интерфейс студии хайлайтов"
-                  >
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polygon points="5 3 19 12 5 21 5 3" />
-                    </svg>
-                    {t('showcase.openStudioBtn')}
-                  </button>
-                )}
               </div>
 
               {/* Technical Spec Row */}
@@ -128,6 +135,20 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                   <span className="floating-hud-title">de_mirage // SUBTICK</span>
                 </div>
 
+                {/* Floating Studio Quick Action Badge */}
+                {onOpenStudio && (
+                  <button
+                    type="button"
+                    className="hero-floating-studio-cta"
+                    onClick={onOpenStudio}
+                    title="Открыть этот момент в Студии хайлайтов"
+                  >
+                    <span className="live-pulse-dot" />
+                    <span>{t('showcase.openInStudio')}</span>
+                    <span>➔</span>
+                  </button>
+                )}
+
                 <div className="hero-floating-killfeed">
                   <div className="killfeed-row">
                     <span className="killfeed-attacker">pytoshka</span>
@@ -146,6 +167,47 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
           </div>
         </div>
       </section>
+
+      {/* ====================================================================
+          1.5. STUDIO FAST-TRACK ACTION STRIP
+          ==================================================================== */}
+      <div className="showcase-studio-strip">
+        <div className="showcase-container">
+          <div className="studio-strip-card">
+            <div className="studio-strip-left">
+              <span className="studio-strip-tag">{t('showcase.stripTag')}</span>
+              <h3 className="studio-strip-title">{t('showcase.stripTitle')}</h3>
+              <p className="studio-strip-desc">{t('showcase.stripDesc')}</p>
+            </div>
+            <div className="studio-strip-right">
+              {onOpenStudio && (
+                <button
+                  type="button"
+                  onClick={onOpenStudio}
+                  className="btn-strip-studio"
+                  title="Открыть рабочую студию хайлайтов"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <polygon points="5 3 19 12 5 21 5 3" />
+                  </svg>
+                  <span>{t('showcase.stripStudioBtn')}</span>
+                  <span>➔</span>
+                </button>
+              )}
+              {onOpenLibrary && (
+                <button
+                  type="button"
+                  onClick={onOpenLibrary}
+                  className="btn-strip-library"
+                  title="Перейти в Библиотеку сохраненных матчей"
+                >
+                  <span>{t('showcase.stripLibraryBtn')}</span>
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* ====================================================================
           2. FEATURE SHOWCASE (EDITORIAL CARDS)
@@ -262,7 +324,7 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
             <div className="feature-card">
               <div className="feature-card-header">
                 <span className="feature-index">SYS.05</span>
-                <span className="status-badge planned">В РАЗРАБОТКЕ</span>
+                <span className="status-badge ready">ГОТОВО В СТУДИИ</span>
               </div>
               <div className="feature-icon-wrap">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -273,12 +335,12 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
               </div>
               <h3 className="feature-title">История матчей и аналитика</h3>
               <p className="feature-text">
-                Внутренняя библиотека ранее сыгранных матчей, тепловые карты позиций на 2D радаре,
+                Внутренняя библиотека ранее сыгранных матчей, интерактивная 2D карта,
                 разбор выигранных дуэлей, ADR и объективный анализ полезности игрока по раундам.
               </p>
               <div className="feature-footer-tags">
                 <span className="tech-tag">MATCH ARCHIVE</span>
-                <span className="tech-tag">HEATMAPS</span>
+                <span className="tech-tag">2D REPLAY</span>
                 <span className="tech-tag">DUEL STATS</span>
               </div>
             </div>
@@ -567,4 +629,3 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
 }
 
 export default CinematicShowcaseView
-
