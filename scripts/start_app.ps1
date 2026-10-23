@@ -8,6 +8,13 @@ Set-Location $rootDir
 $Host.UI.RawUI.WindowTitle = "CS2 Highlights Studio — Launcher"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
+# Refresh PATH from user and system registry
+$userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+$machinePath = [System.Environment]::GetEnvironmentVariable("Path", "Machine")
+if ($userPath -or $machinePath) {
+    $env:PATH = "$userPath;$machinePath"
+}
+
 Clear-Host
 
 Write-Host "╔══════════════════════════════════════════════════════════════════════╗" -ForegroundColor DarkCyan
@@ -71,26 +78,32 @@ Write-Host "Запуск серверов в фоновом режиме..." -Fo
 
 $backendLog = Join-Path $rootDir "backend.log"
 $backendErr = Join-Path $rootDir "backend_err.log"
-$backendProc = Start-Process -FilePath $pythonExe `
-    -ArgumentList "-m", "uvicorn", "backend.api.main:app", "--host", "127.0.0.1", "--port", "8000" `
-    -WorkingDirectory $rootDir `
-    -RedirectStandardOutput $backendLog `
-    -RedirectStandardError $backendErr `
-    -WindowStyle Hidden `
-    -PassThru
+$backendParams = @{
+    FilePath               = $pythonExe
+    ArgumentList           = @("-m", "uvicorn", "backend.api.main:app", "--host", "127.0.0.1", "--port", "8000")
+    WorkingDirectory       = $rootDir
+    RedirectStandardOutput = $backendLog
+    RedirectStandardError  = $backendErr
+    WindowStyle            = "Hidden"
+    PassThru               = $true
+}
+$backendProc = Start-Process @backendParams
 
 Write-Host "  ✓ Backend API запущен (PID: $($backendProc.Id))" -ForegroundColor Cyan
 
 $frontendDir = Join-Path $rootDir "frontend"
 $frontendLog = Join-Path $rootDir "frontend.log"
 $frontendErr = Join-Path $rootDir "frontend_err.log"
-$frontendProc = Start-Process -FilePath "cmd.exe" `
-    -ArgumentList "/c", "npm run dev -- --host 127.0.0.1 --port 5173" `
-    -WorkingDirectory $frontendDir `
-    -RedirectStandardOutput $frontendLog `
-    -RedirectStandardError $frontendErr `
-    -WindowStyle Hidden `
-    -PassThru
+$frontendParams = @{
+    FilePath               = "cmd.exe"
+    ArgumentList           = @("/c", "npm run dev -- --host 127.0.0.1 --port 5173")
+    WorkingDirectory       = $frontendDir
+    RedirectStandardOutput = $frontendLog
+    RedirectStandardError  = $frontendErr
+    WindowStyle            = "Hidden"
+    PassThru               = $true
+}
+$frontendProc = Start-Process @frontendParams
 
 Write-Host "  ✓ Frontend Studio запущен (PID: $($frontendProc.Id))" -ForegroundColor Cyan
 

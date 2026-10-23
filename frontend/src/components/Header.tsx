@@ -1,5 +1,15 @@
 import React from 'react'
 import type { DemoSummary } from '../types'
+import { useTranslation } from '../i18n'
+import {
+  SparkleIcon,
+  FolderIcon,
+  ChartIcon,
+  RadarIcon,
+  ClapperboardIcon,
+  FilmIcon,
+  SettingsIcon,
+} from './Icons'
 
 export type TabType = 'showcase' | 'library' | 'overview' | 'replay' | 'studio' | 'clips' | 'settings'
 
@@ -20,19 +30,28 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSettings,
   currentDemo,
 }) => {
+  const { t } = useTranslation()
+
   return (
     <header className="app-header">
-      <div className="brand" onClick={() => onTabChange('showcase')} style={{ cursor: 'pointer' }} title="Главная витрина проекта dem.Toshka">
+      <div className="brand" onClick={() => onTabChange('showcase')} style={{ cursor: 'pointer' }} title={t('brand.showcaseTooltip')}>
         <div className="brand-icon">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <polygon points="5 3 19 12 5 21 5 3" />
-          </svg>
+          <img
+            src="/avatar.png"
+            alt="dem.Toshka"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              borderRadius: '7px',
+            }}
+          />
         </div>
         <div>
           <div className="brand-title">
             dem.Toshka <span style={{ color: '#38bdf8', fontWeight: 400 }}>|</span> pytoshka
           </div>
-          <div className="brand-subtitle">CS2 Highlights Studio</div>
+          <div className="brand-subtitle">{t('brand.subtitle')}</div>
         </div>
       </div>
 
@@ -46,10 +65,8 @@ export const Header: React.FC<HeaderProps> = ({
             color: activeTab === 'showcase' ? '#38bdf8' : undefined,
           }}
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-          </svg>
-          ✨ Обзор проекта
+          <SparkleIcon size={15} color={activeTab === 'showcase' ? '#38bdf8' : 'currentColor'} />
+          <span>{t('nav.showcase')}</span>
         </button>
 
         {/* Library Tab */}
@@ -57,11 +74,8 @@ export const Header: React.FC<HeaderProps> = ({
           className={`nav-tab ${activeTab === 'library' ? 'active' : ''}`}
           onClick={() => onTabChange('library')}
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-          </svg>
-          Library
+          <FolderIcon size={15} color={activeTab === 'library' ? '#38bdf8' : 'currentColor'} />
+          <span>{t('nav.library')}</span>
         </button>
 
         {/* Match Overview Tab */}
@@ -71,12 +85,8 @@ export const Header: React.FC<HeaderProps> = ({
           disabled={!currentDemo}
           style={{ opacity: currentDemo ? 1 : 0.4 }}
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="3" width="18" height="18" rx="2" />
-            <path d="M3 9h18" />
-            <path d="M9 21V9" />
-          </svg>
-          Match
+          <ChartIcon size={15} color={activeTab === 'overview' ? '#38bdf8' : 'currentColor'} />
+          <span>{t('nav.match')}</span>
         </button>
 
         {/* 2D Replay Tab */}
@@ -86,13 +96,8 @@ export const Header: React.FC<HeaderProps> = ({
           disabled={!currentDemo}
           style={{ opacity: currentDemo ? 1 : 0.4 }}
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="10" />
-            <circle cx="12" cy="12" r="4" />
-            <line x1="4.93" y1="4.93" x2="9.17" y2="9.17" />
-            <line x1="14.83" y1="14.83" x2="19.07" y2="19.07" />
-          </svg>
-          2D Replay
+          <RadarIcon size={15} color={activeTab === 'replay' ? '#38bdf8' : 'currentColor'} />
+          <span>{t('nav.replay')}</span>
         </button>
 
         {/* Highlights Studio Tab */}
@@ -102,12 +107,8 @@ export const Header: React.FC<HeaderProps> = ({
           disabled={!currentDemo}
           style={{ opacity: currentDemo ? 1 : 0.4 }}
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="m18 8 4 4-4 4" />
-            <path d="M6 16l-4-4 4-4" />
-            <path d="M14 4l-4 16" />
-          </svg>
-          Render Studio
+          <ClapperboardIcon size={15} color={activeTab === 'studio' ? '#38bdf8' : 'currentColor'} />
+          <span>{t('nav.studio')}</span>
         </button>
 
         {/* Clips & Montage Tab */}
@@ -115,13 +116,8 @@ export const Header: React.FC<HeaderProps> = ({
           className={`nav-tab ${activeTab === 'clips' ? 'active' : ''}`}
           onClick={() => onTabChange('clips')}
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18" />
-            <line x1="7" y1="2" x2="7" y2="22" />
-            <line x1="17" y1="2" x2="17" y2="22" />
-            <line x1="2" y1="12" x2="22" y2="12" />
-          </svg>
-          Clips & Montage
+          <FilmIcon size={15} color={activeTab === 'clips' ? '#38bdf8' : 'currentColor'} />
+          <span>{t('nav.clips')}</span>
         </button>
 
         {/* Settings Tab */}
@@ -129,11 +125,8 @@ export const Header: React.FC<HeaderProps> = ({
           className={`nav-tab ${activeTab === 'settings' ? 'active' : ''}`}
           onClick={() => onTabChange('settings')}
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-          </svg>
-          Settings
+          <SettingsIcon size={15} color={activeTab === 'settings' ? '#38bdf8' : 'currentColor'} />
+          <span>{t('nav.settings')}</span>
         </button>
       </nav>
 
@@ -144,7 +137,7 @@ export const Header: React.FC<HeaderProps> = ({
             href="https://t.me/thepytoshka"
             target="_blank"
             rel="noopener noreferrer"
-            title="Telegram-канал разработчика @thepytoshka"
+            title={t('header.telegramTooltip')}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -167,7 +160,7 @@ export const Header: React.FC<HeaderProps> = ({
             href="https://www.youtube.com/@thePytoshka"
             target="_blank"
             rel="noopener noreferrer"
-            title="YouTube-канал разработчика @thePytoshka"
+            title={t('header.youtubeTooltip')}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -199,11 +192,11 @@ export const Header: React.FC<HeaderProps> = ({
         )}
 
         {onOpenSettings && (
-          <button className="btn btn-secondary" onClick={onOpenSettings} title="Параметры видеоклипа">
+          <button className="btn btn-secondary" onClick={onOpenSettings} title={t('header.parametersTooltip')}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <circle cx="12" cy="12" r="3" />
             </svg>
-            Параметры
+            {t('header.parameters')}
           </button>
         )}
 
@@ -211,7 +204,7 @@ export const Header: React.FC<HeaderProps> = ({
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
           </svg>
-          Queue
+          {t('header.queue')}
           {selectedCount > 0 && <span className="queue-badge">{selectedCount}</span>}
         </button>
       </div>

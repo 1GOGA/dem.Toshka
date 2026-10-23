@@ -8,6 +8,17 @@ from typing import Optional
 
 
 @dataclass
+class KillcamVictimSegment:
+    """Specification of a victim's death moment for Tournament Killcam."""
+
+    victim_steam_id: Optional[str]
+    victim_name: Optional[str]
+    start_tick: int
+    end_tick: int
+    kill_tick: int
+
+
+@dataclass
 class RenderTask:
     """Specification for rendering a single highlight moment into an MP4 clip."""
 
@@ -37,14 +48,32 @@ class RenderTask:
     killfeed_only: Optional[bool] = None
     teamcounter_mode: Optional[bool] = None
     camera_switches: list[tuple[int, Optional[str], Optional[str]]] = field(default_factory=list)
-    # Tournament Killcam Replay (Victim death POV -> Rewind -> Hero POV)
+    # Tournament Killcam Replay (Victims' death chronicle -> Rewind -4s -> Hero master play)
     is_killcam_replay: bool = False
+    killcam_victims: list[KillcamVictimSegment] = field(default_factory=list)
     killcam_victim_steam_id: Optional[str] = None
     killcam_victim_name: Optional[str] = None
     killcam_victim_start_tick: Optional[int] = None
     killcam_victim_end_tick: Optional[int] = None
     killcam_hero_start_tick: Optional[int] = None
     watermark: bool = True
+    preview_recording: bool = True
+
+    def get_effective_killcam_victims(self) -> list[KillcamVictimSegment]:
+        """Return list of victim death segments to record, falling back to legacy single-victim fields."""
+        if self.killcam_victims:
+            return self.killcam_victims
+        if self.killcam_victim_steam_id and self.killcam_victim_start_tick and self.killcam_victim_end_tick:
+            return [
+                KillcamVictimSegment(
+                    victim_steam_id=self.killcam_victim_steam_id,
+                    victim_name=self.killcam_victim_name,
+                    start_tick=self.killcam_victim_start_tick,
+                    end_tick=self.killcam_victim_end_tick,
+                    kill_tick=self.killcam_victim_end_tick,
+                )
+            ]
+        return []
 
     @property
     def duration_seconds(self) -> float:

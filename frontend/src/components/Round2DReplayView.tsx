@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { api } from '../api'
 import type { DemoSummary, HighlightItem, RoundDTO, RoundReplayData } from '../types'
+import { PlayIcon, PauseIcon, CrosshairIcon } from './Icons'
+import { TacticalReplayRadar } from './TacticalReplayRadar'
 
 interface Round2DReplayViewProps {
   demo: DemoSummary | null
@@ -20,6 +22,7 @@ export function Round2DReplayView({
   const [error, setError] = useState<string | null>(null)
   const [showTrails, setShowTrails] = useState(true)
   const [showShots, setShowShots] = useState(true)
+  const [showGrenades, setShowGrenades] = useState(true)
 
   // Playback state
   const [currentFrameIndex, setCurrentFrameIndex] = useState(0)
@@ -188,6 +191,7 @@ export function Round2DReplayView({
               <button
                 key={r.round_num}
                 type="button"
+                className="badge-interactive"
                 onClick={() => setSelectedRoundNum(r.round_num)}
                 style={{
                   padding: '4px 10px',
@@ -338,6 +342,16 @@ export function Round2DReplayView({
                   <span>Выстрелы</span>
                 </label>
 
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: '#cbd5e1' }}>
+                  <input
+                    type="checkbox"
+                    checked={showGrenades}
+                    onChange={(e) => setShowGrenades(e.target.checked)}
+                    style={{ accentColor: '#10b981', cursor: 'pointer' }}
+                  />
+                  <span>Гранаты (Дымы/Огонь)</span>
+                </label>
+
                 <div style={{ width: '1px', height: '14px', backgroundColor: '#232733' }} />
 
                 <span style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#60a5fa', fontWeight: 600 }}>
@@ -351,225 +365,25 @@ export function Round2DReplayView({
               </div>
             </div>
 
-            {/* 2D Vector Radar Map Container */}
-            <div
-              style={{
-                position: 'relative',
-                width: '100%',
-                aspectRatio: '1 / 1',
-                maxHeight: '640px',
-                margin: '0 auto',
-                backgroundColor: '#0c0e13',
-                borderRadius: '8px',
-                border: '1px solid #1a1d27',
-                overflow: 'hidden',
-                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
-              }}
-            >
-              {/* Official Radar Image Backdrop */}
-              {radarImageUrl && (
-                <img
-                  src={radarImageUrl}
-                  alt={demo?.map_name || 'CS2 Radar'}
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'contain',
-                    pointerEvents: 'none',
-                    opacity: 0.92,
-                    filter: 'brightness(0.95) contrast(1.08)',
-                    zIndex: 1,
-                  }}
-                />
-              )}
-
-              {/* Tactical Vectors, Rings, Trails & Kill Lines */}
-              <svg
-                viewBox="0 0 1000 1000"
-                style={{
-                  width: '100%',
-                  height: '100%',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  pointerEvents: 'none',
-                  zIndex: 2,
-                }}
-              >
-                {/* Subtle Radar Concentric Distance Rings */}
-                <circle cx="500" cy="500" r="460" fill="none" stroke="#38bdf8" strokeWidth="0.8" strokeDasharray="6 6" opacity="0.12" />
-                <circle cx="500" cy="500" r="280" fill="none" stroke="#38bdf8" strokeWidth="0.8" strokeDasharray="6 6" opacity="0.1" />
-
-                {/* Player Movement Breadcrumb Trails */}
-                {showTrails &&
-                  Object.entries(playerTrails).map(([steamId, points]) => {
-                    if (points.length < 2) return null
-                    const pInfo = replayData?.players[steamId]
-                    const isCT = pInfo?.side === 'ct'
-                    const stroke = isCT ? '#3b82f6' : '#f97316'
-                    const polyPoints = points.map((pt) => `${pt.x * 10},${pt.y * 10}`).join(' ')
-                    return (
-                      <polyline
-                        key={`trail-${steamId}`}
-                        points={polyPoints}
-                        fill="none"
-                        stroke={stroke}
-                        strokeWidth="2.5"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeOpacity="0.45"
-                        strokeDasharray="4 2"
-                      />
-                    )
-                  })}
-
-                {/* Active Gunfire Muzzle Burst & Tracer Beams */}
-                {showShots &&
-                  pastKills
-                    .filter((k) => Math.abs(k.tick - (currentFrame?.tick || 0)) < (replayData?.tickrate || 64) * 2.0)
-                    .map((k, i) => (
-                      <g key={`shot-${i}`}>
-                        <line
-                          x1={k.attacker_x * 10}
-                          y1={k.attacker_y * 10}
-                          x2={k.victim_x * 10}
-                          y2={k.victim_y * 10}
-                          stroke="#facc15"
-                          strokeWidth="3.5"
-                          strokeOpacity="0.9"
-                        />
-                        <circle
-                          cx={k.attacker_x * 10}
-                          cy={k.attacker_y * 10}
-                          r="14"
-                          fill="rgba(250, 204, 21, 0.4)"
-                          stroke="#facc15"
-                          strokeWidth="2"
-                        />
-                      </g>
-                    ))}
-
-                {/* Kill Vectors Lines */}
-                {pastKills.map((k, i) => (
-                  <line
-                    key={`kill-line-${i}`}
-                    x1={k.attacker_x * 10}
-                    y1={k.attacker_y * 10}
-                    x2={k.victim_x * 10}
-                    y2={k.victim_y * 10}
-                    stroke={k.attacker_side === 'ct' ? '#38bdf8' : '#f97316'}
-                    strokeWidth="1.5"
-                    strokeDasharray="4 3"
-                    opacity="0.5"
-                  />
-                ))}
-              </svg>
-
-              {/* Real Player Markers (HTML Overlays on Radar) */}
-              {currentFrame?.players.map((p) => {
-                const isCurrentLevel = hasMultipleLevels ? p.level === currentLevel : true
-                const opacity = isCurrentLevel ? (p.is_alive ? 1 : 0.3) : 0.2
-                const isCT = p.side === 'ct'
-                const color = isCT ? '#3b82f6' : '#f97316'
-
-                return (
-                  <div
-                    key={p.steam_id}
-                    style={{
-                      position: 'absolute',
-                      left: `${p.x}%`,
-                      top: `${p.y}%`,
-                      transform: 'translate(-50%, -50%)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      pointerEvents: 'none',
-                      opacity,
-                      transition: 'left 0.12s linear, top 0.12s linear, opacity 0.2s ease',
-                      zIndex: isCurrentLevel ? 10 : 2,
-                    }}
-                  >
-                    {/* Player Dot */}
-                    <div
-                      style={{
-                        width: '18px',
-                        height: '18px',
-                        borderRadius: '50%',
-                        backgroundColor: color,
-                        border: '2px solid #ffffff',
-                        boxShadow: `0 0 10px ${color}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '9px',
-                        fontWeight: 800,
-                        color: '#ffffff',
-                      }}
-                    >
-                      {p.is_alive ? (isCT ? 'CT' : 'T') : '✕'}
-                    </div>
-
-                    {/* Name & HP Tag */}
-                    {isCurrentLevel && (
-                      <div
-                        style={{
-                          marginTop: '3px',
-                          backgroundColor: 'rgba(10, 12, 16, 0.85)',
-                          padding: '1px 5px',
-                          borderRadius: '3px',
-                          border: `1px solid ${color}44`,
-                          fontSize: '10px',
-                          fontWeight: 600,
-                          color: '#f1f5f9',
-                          whiteSpace: 'nowrap',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                        }}
-                      >
-                        <span>{p.name.slice(0, 10)}</span>
-                        {p.is_alive && (
-                          <span style={{ color: p.health < 40 ? '#ef4444' : '#22c55e', fontSize: '9px' }}>
-                            {Math.round(p.health)}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-
-              {/* Kill Skull Markers */}
-              {pastKills.map((k, i) => (
-                <div
-                  key={`skull-${i}`}
-                  style={{
-                    position: 'absolute',
-                    left: `${k.victim_x}%`,
-                    top: `${k.victim_y}%`,
-                    transform: 'translate(-50%, -50%)',
-                    width: '14px',
-                    height: '14px',
-                    borderRadius: '50%',
-                    backgroundColor: 'rgba(239, 68, 68, 0.7)',
-                    border: '1px solid #ef4444',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '9px',
-                    color: '#ffffff',
-                    fontWeight: 800,
-                    zIndex: 5,
-                    pointerEvents: 'none',
-                  }}
-                >
-                  ☠
-                </div>
-              ))}
-            </div>
+            {/* 2D Tactical Vector Radar Map with Granular Utility & Clean Death Decay */}
+            <TacticalReplayRadar
+              radarImageUrl={radarImageUrl}
+              mapName={demo?.map_name || 'CS2 Map'}
+              currentTick={currentFrame?.tick || 0}
+              tickrate={replayData?.tickrate || 128}
+              startTick={replayData?.start_tick || 0}
+              players={currentFrame?.players || []}
+              kills={replayData?.kills || []}
+              grenades={replayData?.grenades || []}
+              playerTrails={playerTrails}
+              currentLevel={currentLevel}
+              hasMultipleLevels={hasMultipleLevels}
+              showTrails={showTrails}
+              showShots={showShots}
+              showGrenades={showGrenades}
+              onJumpToTick={handleJumpToTick}
+              maxContainerHeight="640px"
+            />
 
             {/* Timeline Scrubber & Controls */}
             <div
@@ -609,6 +423,7 @@ export function Round2DReplayView({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <button
                     type="button"
+                    className="card-interactive"
                     onClick={() => setIsPlaying(!isPlaying)}
                     style={{
                       padding: '6px 16px',
@@ -624,11 +439,22 @@ export function Round2DReplayView({
                       gap: '6px',
                     }}
                   >
-                    {isPlaying ? '⏸ Пауза' : '▶ Воспроизведение'}
+                    {isPlaying ? (
+                      <>
+                        <PauseIcon size={12} color="#ef4444" />
+                        <span>Пауза</span>
+                      </>
+                    ) : (
+                      <>
+                        <PlayIcon size={12} color="#38bdf8" />
+                        <span>Воспроизведение</span>
+                      </>
+                    )}
                   </button>
 
                   <button
                     type="button"
+                    className="card-interactive"
                     onClick={() => {
                       setCurrentFrameIndex(0)
                       setIsPlaying(false)
@@ -640,10 +466,11 @@ export function Round2DReplayView({
                       border: '1px solid #232734',
                       color: '#94a3b8',
                       fontSize: '12px',
+                      fontWeight: 600,
                       cursor: 'pointer',
                     }}
                   >
-                    ⏮ В начало
+                    В начало
                   </button>
                 </div>
 
@@ -767,7 +594,7 @@ export function Round2DReplayView({
                         <span style={{ color: '#fbbf24', fontSize: '10px' }}>
                           [{k.weapon.replace('weapon_', '')}]
                         </span>
-                        {k.headshot && <span>🎯</span>}
+                        {k.headshot && <CrosshairIcon size={12} color="#ef4444" />}
                         <span style={{ color: '#94a3b8' }}>→</span>
                         <span style={{ color: k.victim_side === 'ct' ? '#60a5fa' : '#fb923c' }}>
                           {k.victim_name}

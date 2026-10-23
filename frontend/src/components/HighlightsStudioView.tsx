@@ -1,12 +1,36 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react'
 import type { ClipSettings, DemoSummary, HighlightItem, KillDTO, MontageDTO, PlayerDTO, RoundDTO, RoundReplayData } from '../types'
 import { Map2DRadar } from './Map2DRadar'
+import { TacticalReplayRadar } from './TacticalReplayRadar'
 import { api } from '../api'
 import { VideoPlayerModal } from './VideoPlayerModal'
 import { TournamentHudModal } from './TournamentHudModal'
 import { PlayerAnalyticsModal } from './PlayerAnalyticsModal'
 import { Agent3DViewer } from './Agent3DViewer'
 import { InteractiveCrosshairPreview } from './InteractiveCrosshairPreview'
+import {
+  FolderIcon,
+  VolumeIcon,
+  VolumeMuteIcon,
+  FilmIcon,
+  CrosshairIcon,
+  ActivityIcon,
+  PlayIcon,
+  PauseIcon,
+  LoaderIcon,
+  WarningIcon,
+  ZapIcon,
+  CheckIcon,
+  TrophyIcon,
+  SkullIcon,
+  ShieldIcon,
+  SparkleIcon,
+  SlidersIcon,
+  RadarIcon,
+  CameraIcon,
+  EyeIcon,
+} from './Icons'
+import { useTranslation } from '../i18n'
 
 
 
@@ -65,18 +89,17 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
   kills = [],
   demoRounds = [],
   onUploadDemo,
-  onParsePath,
+  onParsePath: _onParsePath,
 }) => {
+  const { t } = useTranslation()
   // 4-step wizard: 1 = Choose match, 2 = Choose player, 3 = Choose moments (2D Map), 4 = Compile montage
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(activeDemo ? 2 : 1)
   const [hoveredHighlightId, setHoveredHighlightId] = useState<string | null>(null)
   const [weaponFilter, setWeaponFilter] = useState<string | null>(null)
   const [aspectRatio, setAspectRatio] = useState<'16:9' | '4:3'>('16:9')
-  const [step4Tab, setStep4Tab] = useState<'screen' | 'radar' | 'hud' | 'camera'>('screen')
 
   // Drag & drop demo state
   const [isDraggingFile, setIsDraggingFile] = useState(false)
-  const [localPathInput, setLocalPathInput] = useState('')
   const [isIngestingDemo, setIsIngestingDemo] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null)
 
@@ -91,6 +114,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
   const [replaySpeed, setReplaySpeed] = useState<number>(1)
   const [replayShowTrails, setReplayShowTrails] = useState<boolean>(true)
   const [replayShowShots, setReplayShowShots] = useState<boolean>(true)
+  const [replayShowGrenades, setReplayShowGrenades] = useState<boolean>(true)
   const [replayLevel, setReplayLevel] = useState<'upper' | 'lower'>('upper')
   const replayTimerRef = useRef<number | null>(null)
 
@@ -150,10 +174,6 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
     return replayData.frames[Math.min(replayFrameIndex, replayData.frames.length - 1)]
   }, [replayData, replayFrameIndex])
 
-  const pastReplayKills = useMemo(() => {
-    if (!replayData || !currentReplayFrame) return []
-    return replayData.kills.filter((k) => k.tick <= currentReplayFrame.tick)
-  }, [replayData, currentReplayFrame])
 
   const playerReplayTrails = useMemo(() => {
     if (!replayData || !replayData.frames || replayData.frames.length === 0) return {}
@@ -423,32 +443,32 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
               onClick={() => setCurrentStep(1)}
               style={{ cursor: 'pointer' }}
             >
-              <span className="studio-step-badge">Шаг 1</span>
-              <span>Выбор демки</span>
+              <span className="studio-step-badge">1</span>
+              <span>{t('studio.step1')}</span>
             </div>
             <div
               className={`studio-step-item ${currentStep === 2 ? 'active' : currentStep > 2 ? 'completed' : ''}`}
               onClick={() => activeDemo && setCurrentStep(2)}
               style={{ opacity: activeDemo ? 1 : 0.4, cursor: activeDemo ? 'pointer' : 'default' }}
             >
-              <span className="studio-step-badge">Шаг 2</span>
-              <span>Выбор игрока</span>
+              <span className="studio-step-badge">2</span>
+              <span>{t('studio.step2')}</span>
             </div>
             <div
               className={`studio-step-item ${currentStep === 3 ? 'active' : currentStep > 3 ? 'completed' : ''}`}
               onClick={() => activeDemo && setCurrentStep(3)}
               style={{ opacity: activeDemo ? 1 : 0.4, cursor: activeDemo ? 'pointer' : 'default' }}
             >
-              <span className="studio-step-badge">Шаг 3</span>
-              <span>Моменты и 2D Радар</span>
+              <span className="studio-step-badge">3</span>
+              <span>{t('studio.step3')}</span>
             </div>
             <div
               className={`studio-step-item ${currentStep === 4 ? 'active' : ''}`}
               onClick={() => activeDemo && selectedIds.size > 0 && setCurrentStep(4)}
               style={{ opacity: activeDemo && selectedIds.size > 0 ? 1 : 0.4, cursor: activeDemo && selectedIds.size > 0 ? 'pointer' : 'default' }}
             >
-              <span className="studio-step-badge">Шаг 4</span>
-              <span>Сборка и Запись</span>
+              <span className="studio-step-badge">4</span>
+              <span>{t('studio.step4')}</span>
             </div>
           </div>
         </div>
@@ -463,7 +483,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 onClick={() => setCurrentStep(1)}
                 style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600 }}
               >
-                ← Назад к матчам
+                ← {t('common.back')}
               </button>
               <button
                 type="button"
@@ -474,7 +494,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 }}
                 style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600 }}
               >
-                Все игроки (Пропустить) →
+                {t('studio.allPlayers')} →
               </button>
             </>
           )}
@@ -487,7 +507,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 onClick={() => setCurrentStep(2)}
                 style={{ padding: '8px 16px', fontSize: '13px', fontWeight: 600 }}
               >
-                ← Назад к выбору игрока
+                ← {t('common.back')}
               </button>
               <button
                 type="button"
@@ -496,7 +516,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 disabled={selectedIds.size === 0}
                 style={{ padding: '8px 20px', fontSize: '13px', fontWeight: 700 }}
               >
-                Далее: Сборка и Настройки ({selectedIds.size}) →
+                {t('common.next')}: {t('studio.step4')} ({selectedIds.size}) →
               </button>
             </>
           )}
@@ -513,12 +533,22 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
               </button>
               <button
                 type="button"
-                className="btn btn-accent"
+                className="btn btn-accent card-interactive"
                 onClick={handleStartMontageCreation}
                 disabled={isCompiling || selectedIds.size === 0}
-                style={{ padding: '8px 22px', fontSize: '13px', fontWeight: 700 }}
+                style={{ padding: '8px 22px', fontSize: '13px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '8px' }}
               >
-                {isCompiling ? '⏳ Запись и сборка...' : `🎬 Создать нарезку (${selectedIds.size})`}
+                {isCompiling ? (
+                  <>
+                    <LoaderIcon size={14} color="#090d16" />
+                    <span>Запись и сборка...</span>
+                  </>
+                ) : (
+                  <>
+                    <FilmIcon size={14} color="#090d16" />
+                    <span>Создать нарезку ({selectedIds.size})</span>
+                  </>
+                )}
               </button>
             </>
           )}
@@ -526,11 +556,12 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
           {onOpenQueue && (
             <button
               type="button"
-              className="btn btn-secondary"
+              className="btn btn-secondary card-interactive"
               onClick={onOpenQueue}
-              style={{ padding: '8px 14px', fontSize: '12px' }}
+              style={{ padding: '8px 14px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
-              🎞 Очередь / Монтаж
+              <FilmIcon size={13} color="#94a3b8" />
+              <span>Очередь / Монтаж</span>
             </button>
           )}
         </div>
@@ -540,7 +571,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
       {/* STEP 1: CHOOSE MATCH                                                 */}
       {/* ==================================================================== */}
       {currentStep === 1 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div key="step-1" className="step-transition" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           {/* Drag & Drop Upload Zone */}
           <div
             onDragOver={(e) => {
@@ -595,56 +626,23 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 }
               }}
             />
-            <div style={{ fontSize: '32px', marginBottom: '8px' }}>📂</div>
-            <div style={{ fontSize: '15px', fontWeight: 700, color: '#f1f5f9', marginBottom: '4px' }}>
-              {isIngestingDemo ? '⏳ Загрузка и анализ демки CS2...' : 'Перетащите .dem файл сюда или нажмите для выбора'}
+            <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+              <FolderIcon size={38} color="#38bdf8" />
+            </div>
+            <div style={{ fontSize: '15px', fontWeight: 700, color: '#f1f5f9', marginBottom: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+              {isIngestingDemo ? (
+                <>
+                  <LoaderIcon size={16} color="#38bdf8" />
+                  <span>Загрузка и анализ демки CS2...</span>
+                </>
+              ) : (
+                'Перетащите .dem файл сюда или нажмите для выбора'
+              )}
             </div>
             <div style={{ fontSize: '12px', color: '#94a3b8' }}>
               Поддерживаются официальные демки CS2 (Matchmaking, Premier, Faceit, HLTV)
             </div>
           </div>
-
-          {/* Local Path Input Row */}
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault()
-              if (localPathInput.trim() && onParsePath) {
-                setIsIngestingDemo(true)
-                try {
-                  await onParsePath(localPathInput.trim())
-                  setCurrentStep(2)
-                } finally {
-                  setIsIngestingDemo(false)
-                }
-              }
-            }}
-            style={{ display: 'flex', gap: '10px' }}
-          >
-            <input
-              type="text"
-              value={localPathInput}
-              onChange={(e) => setLocalPathInput(e.target.value)}
-              placeholder="Или укажите локальный путь: C:\CS2\match.dem"
-              disabled={isIngestingDemo}
-              style={{
-                flex: 1,
-                backgroundColor: '#16181f',
-                border: '1px solid #232630',
-                borderRadius: '8px',
-                padding: '10px 14px',
-                color: '#f1f5f9',
-                fontSize: '13px',
-              }}
-            />
-            <button
-              type="submit"
-              className="btn btn-secondary"
-              disabled={isIngestingDemo || !localPathInput.trim()}
-              style={{ padding: '10px 18px', fontSize: '13px', whiteSpace: 'nowrap' }}
-            >
-              {isIngestingDemo ? 'Анализ...' : 'Проанализировать путь'}
-            </button>
-          </form>
 
           {/* Matches Table Card */}
           <div
@@ -712,7 +710,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         </div>
                         <div>
                           <div>{cleanMap}</div>
-                          <div style={{ fontSize: '11px', color: '#64748b' }}>{d.tickrate} Tickrate</div>
+                          <div style={{ fontSize: '11px', color: '#64748b' }}>CS2 Subtick</div>
                         </div>
                       </div>
                     </td>
@@ -734,17 +732,20 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       </span>
                     </td>
                     <td style={{ padding: '14px 16px', color: '#94a3b8' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                        <span>🎮</span> Valve CS2
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <CrosshairIcon size={14} color="#38bdf8" /> Valve CS2
                       </span>
                     </td>
                     <td style={{ padding: '14px 16px', color: '#f1f5f9', fontWeight: 600 }}>
-                      ⭐ {d.highlights_count} моментов
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <SparkleIcon size={13} color="#f59e0b" />
+                        <span>{d.highlights_count} моментов</span>
+                      </span>
                     </td>
                     <td style={{ padding: '14px 20px', textAlign: 'right' }}>
                       <button
                         type="button"
-                        className="btn btn-primary"
+                        className="btn btn-primary card-interactive"
                         style={{ padding: '5px 14px', fontSize: '12px' }}
                         onClick={(e) => {
                           e.stopPropagation()
@@ -768,7 +769,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
       {/* STEP 2: CHOOSE PLAYER                                                */}
       {/* ==================================================================== */}
       {currentStep === 2 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div key="step-2" className="step-transition" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <h2 style={{ fontSize: '18px', fontWeight: 700, color: '#f1f5f9', margin: '0 0 4px 0' }}>
@@ -823,9 +824,13 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       backgroundColor: (inspectedPlayer.team || '').toLowerCase().includes('ct') ? 'rgba(56, 189, 248, 0.2)' : 'rgba(245, 158, 11, 0.2)',
                       color: (inspectedPlayer.team || '').toLowerCase().includes('ct') ? '#38bdf8' : '#f59e0b',
                       border: `1px solid ${(inspectedPlayer.team || '').toLowerCase().includes('ct') ? 'rgba(56, 189, 248, 0.4)' : 'rgba(245, 158, 11, 0.4)'}`,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
                     }}
                   >
-                    ⭐ ВЫБРАННЫЙ ИГРОК
+                    <SparkleIcon size={12} color={(inspectedPlayer.team || '').toLowerCase().includes('ct') ? '#38bdf8' : '#f59e0b'} />
+                    <span>ВЫБРАННЫЙ ИГРОК</span>
                   </span>
                   <span style={{ fontSize: '12px', color: '#64748b' }}>
                     Нажмите на любого игрока в таблице ниже для смены выбора
@@ -860,9 +865,13 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       padding: '6px 12px',
                       fontSize: '12px',
                       color: '#94a3b8',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
                     }}
                   >
-                    ⏱️ Раундов: <strong style={{ color: '#f1f5f9' }}>{activeDemo?.rounds_count || 0}</strong>
+                    <ActivityIcon size={13} color="#94a3b8" />
+                    <span>Раундов: <strong style={{ color: '#f1f5f9' }}>{activeDemo?.rounds_count || 0}</strong></span>
                   </div>
                   <div
                     style={{
@@ -872,12 +881,16 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       padding: '6px 12px',
                       fontSize: '12px',
                       color: '#94a3b8',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
                     }}
                   >
-                    🎯 Фраг-эпизодов:{' '}
+                    <CrosshairIcon size={13} color="#fbbf24" />
+                    <span>Фраг-эпизодов:{' '}
                     <strong style={{ color: '#fbbf24' }}>
                       {highlights.filter((h) => h.pov_steam_id === inspectedPlayer.steam_id).length}
-                    </strong>
+                    </strong></span>
                   </div>
                   <div
                     style={{
@@ -887,19 +900,23 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       padding: '6px 12px',
                       fontSize: '12px',
                       color: '#94a3b8',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
                     }}
                   >
-                    🛡️ Сторона:{' '}
+                    <ShieldIcon size={13} color={(inspectedPlayer.team || '').toLowerCase().includes('ct') ? '#38bdf8' : '#f59e0b'} />
+                    <span>Сторона:{' '}
                     <strong style={{ color: (inspectedPlayer.team || '').toLowerCase().includes('ct') ? '#38bdf8' : '#f59e0b' }}>
                       {(inspectedPlayer.team || '').toLowerCase().includes('ct') ? 'Спецназ (CT)' : 'Террористы (T)'}
-                    </strong>
+                    </strong></span>
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', gap: '12px', marginTop: '4px' }}>
                   <button
                     type="button"
-                    className="btn btn-primary"
+                    className="btn btn-primary card-interactive"
                     style={{ padding: '9px 22px', fontSize: '13px', fontWeight: 700 }}
                     onClick={() => {
                       onSetPlayerFilter(inspectedPlayer.steam_id)
@@ -910,7 +927,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   </button>
                   <button
                     type="button"
-                    className="btn btn-secondary"
+                    className="btn btn-secondary card-interactive"
                     style={{ padding: '9px 18px', fontSize: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}
                     onClick={() =>
                       setSelectedPlayerForAnalytics({
@@ -920,7 +937,8 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       })
                     }
                   >
-                    <span>📊</span> FACEIT Анализ & Ошибки
+                    <ActivityIcon size={13} color="#38bdf8" />
+                    <span>PR Анализ & Ошибки</span>
                   </button>
                 </div>
               </div>
@@ -929,6 +947,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
 
           {/* All Players Card */}
           <div
+            className="card-interactive"
             onClick={() => {
               onSetPlayerFilter(null)
               setCurrentStep(3)
@@ -955,10 +974,9 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '20px',
                 }}
               >
-                🔥
+                <ZapIcon size={22} color="#ffffff" />
               </div>
               <div>
                 <div style={{ fontWeight: 700, fontSize: '14px', color: '#f1f5f9' }}>
@@ -988,6 +1006,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
               return (
                 <div
                   key={p.steam_id || p.name}
+                  className="card-interactive"
                   onClick={() => {
                     onSetPlayerFilter(p.steam_id)
                     setCurrentStep(3)
@@ -1048,9 +1067,13 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                                 backgroundColor: 'rgba(245, 158, 11, 0.2)',
                                 color: '#fbbf24',
                                 border: '1px solid rgba(245, 158, 11, 0.4)',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px',
                               }}
                             >
-                              ⭐ ВЫ
+                              <SparkleIcon size={9} color="#fbbf24" />
+                              <span>ВЫ</span>
                             </span>
                           )}
                         </div>
@@ -1076,18 +1099,21 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   {/* Highlights breakdown tags */}
                   <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', fontSize: '11px' }}>
                     {pAces > 0 && (
-                      <span style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>
-                        ⭐ {pAces} ACE
+                      <span style={{ backgroundColor: 'rgba(245, 158, 11, 0.15)', color: '#fbbf24', padding: '1px 6px', borderRadius: '4px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <TrophyIcon size={11} color="#fbbf24" />
+                        <span>{pAces} ACE</span>
                       </span>
                     )}
                     {pMultikills > 0 && (
-                      <span style={{ backgroundColor: 'rgba(139, 92, 246, 0.15)', color: '#c084fc', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>
-                        🎯 {pMultikills} Мультикилл
+                      <span style={{ backgroundColor: 'rgba(139, 92, 246, 0.15)', color: '#c084fc', padding: '1px 6px', borderRadius: '4px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <SkullIcon size={11} color="#c084fc" />
+                        <span>{pMultikills} Мультикилл</span>
                       </span>
                     )}
                     {pClutches > 0 && (
-                      <span style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#34d399', padding: '1px 6px', borderRadius: '4px', fontWeight: 600 }}>
-                        ⚡ {pClutches} Клатч
+                      <span style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#34d399', padding: '1px 6px', borderRadius: '4px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                        <ZapIcon size={11} color="#34d399" />
+                        <span>{pClutches} Клатч</span>
                       </span>
                     )}
                     {pHighlights.length === 0 && (
@@ -1099,7 +1125,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
                     <button
                       type="button"
-                      className="btn btn-secondary"
+                      className="btn btn-secondary card-interactive"
                       style={{
                         flex: 1,
                         padding: '6px 8px',
@@ -1118,13 +1144,14 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                           team: p.team,
                         })
                       }}
-                      title={`Подробный разбор ошибок и FACEIT аналитика для ${p.name}`}
+                      title={`Подробный разбор ошибок и PR аналитика для ${p.name}`}
                     >
-                      <span>📊</span> Разбор & Ошибки
+                      <ActivityIcon size={12} color="#38bdf8" />
+                      <span>Разбор & Ошибки</span>
                     </button>
                     <button
                       type="button"
-                      className="btn btn-primary"
+                      className="btn btn-primary card-interactive"
                       style={{
                         flex: 1,
                         padding: '6px 8px',
@@ -1207,13 +1234,14 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
       {/* STEP 3: CHOOSE MOMENTS (2D MAP + KILLFEED TABLE)                     */}
       {/* ==================================================================== */}
       {currentStep === 3 && (
-        <div style={{ display: 'grid', gridTemplateColumns: '480px 1fr', gap: '24px', alignItems: 'start' }}>
+        <div key="step-3" className="step-transition" style={{ display: 'grid', gridTemplateColumns: '480px 1fr', gap: '24px', alignItems: 'start' }}>
           {/* Left Column: 2D Radar Map & Round Replay Player */}
           <div>
             {/* Mode Switcher: Static Highlight Markers vs Full 2D Round Player */}
             <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', backgroundColor: '#10131a', padding: '4px', borderRadius: '8px', border: '1px solid #232738' }}>
               <button
                 type="button"
+                className="card-interactive"
                 onClick={() => setRadarTab('markers')}
                 style={{
                   flex: 1,
@@ -1232,10 +1260,12 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   gap: '6px',
                 }}
               >
-                <span>🎯</span> Маркеры хайлайтов
+                <CrosshairIcon size={13} color={radarTab === 'markers' ? '#090d16' : '#94a3b8'} />
+                <span>Маркеры хайлайтов</span>
               </button>
               <button
                 type="button"
+                className="card-interactive"
                 onClick={() => setRadarTab('replay')}
                 style={{
                   flex: 1,
@@ -1254,7 +1284,8 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   gap: '6px',
                 }}
               >
-                <span>▶️</span> 2D Плеер раунда
+                <PlayIcon size={12} color={radarTab === 'replay' ? '#090d16' : '#94a3b8'} />
+                <span>2D Плеер раунда</span>
               </button>
             </div>
 
@@ -1272,7 +1303,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
 
                 {/* Quick Map Tips */}
                 <div style={{ marginTop: '12px', padding: '10px 14px', backgroundColor: '#131622', border: '1px solid #23283c', borderRadius: '8px', fontSize: '11px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>💡</span>
+                  <SparkleIcon size={14} color="#38bdf8" />
                   <span>Кликните на маркер фраг-эпизода для выбора, или переключитесь на <strong>«2D Плеер раунда»</strong> для покадрового просмотра.</span>
                 </div>
               </div>
@@ -1393,7 +1424,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     </div>
                   )}
 
-                  {/* Trails & Shots Toggles */}
+                  {/* Trails, Shots & Grenades Toggles */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '11px', color: '#94a3b8' }}>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
                       <input
@@ -1413,241 +1444,51 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       />
                       <span>Выстрелы</span>
                     </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={replayShowGrenades}
+                        onChange={(e) => setReplayShowGrenades(e.target.checked)}
+                        style={{ accentColor: '#10b981', cursor: 'pointer' }}
+                      />
+                      <span>Гранаты</span>
+                    </label>
                   </div>
                 </div>
 
-                {/* 2D Canvas Area (450x450 Square) */}
-                <div
-                  style={{
-                    position: 'relative',
-                    width: '100%',
-                    aspectRatio: '1 / 1',
-                    backgroundColor: '#0a0c10',
-                    borderRadius: '8px',
-                    border: '1px solid #1a1e28',
-                    overflow: 'hidden',
-                  }}
-                >
+                {/* 2D Canvas Area (Strict 1:1 Square) */}
+                <div style={{ position: 'relative', width: '100%', maxWidth: 'min(100%, 540px)', margin: '0 auto' }}>
                   {isReplayLoading && (
-                    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', backgroundColor: 'rgba(10, 12, 16, 0.85)', zIndex: 10, color: '#38bdf8', fontSize: '12px' }}>
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', backgroundColor: 'rgba(10, 12, 16, 0.85)', zIndex: 50, color: '#38bdf8', fontSize: '12px', borderRadius: '10px' }}>
                       <div className="spinner" style={{ width: '24px', height: '24px' }} />
                       <span>Загрузка тактических тиков раунда...</span>
                     </div>
                   )}
 
                   {replayError && (
-                    <div style={{ position: 'absolute', inset: 0, padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#f87171', fontSize: '12px', textAlign: 'center', zIndex: 10 }}>
+                    <div style={{ position: 'absolute', inset: 0, padding: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(239, 68, 68, 0.1)', color: '#f87171', fontSize: '12px', textAlign: 'center', zIndex: 50, borderRadius: '10px' }}>
                       {replayError}
                     </div>
                   )}
 
-                  {/* Official Radar Image Backdrop */}
-                  {replayRadarImageUrl && (
-                    <img
-                      src={replayRadarImageUrl}
-                      alt={activeDemo?.map_name || 'CS2 Radar'}
-                      style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'contain',
-                        pointerEvents: 'none',
-                        opacity: 0.92,
-                        filter: 'brightness(0.95) contrast(1.08)',
-                        zIndex: 1,
-                      }}
-                    />
-                  )}
-
-                  {/* SVG Layer: Rings, Breadcrumb Trails & Gunfire */}
-                  <svg
-                    viewBox="0 0 1000 1000"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      pointerEvents: 'none',
-                      zIndex: 2,
-                    }}
-                  >
-                    {/* Concentric distance rings */}
-                    <circle cx="500" cy="500" r="460" fill="none" stroke="#38bdf8" strokeWidth="0.8" strokeDasharray="6 6" opacity="0.12" />
-                    <circle cx="500" cy="500" r="280" fill="none" stroke="#38bdf8" strokeWidth="0.8" strokeDasharray="6 6" opacity="0.1" />
-
-                    {/* Movement Trails */}
-                    {replayShowTrails &&
-                      Object.entries(playerReplayTrails).map(([steamId, points]) => {
-                        if (points.length < 2) return null
-                        const pInfo = replayData?.players[steamId]
-                        const isCT = pInfo?.side === 'ct'
-                        const stroke = isCT ? '#3b82f6' : '#f97316'
-                        const polyPoints = points.map((pt) => `${pt.x * 10},${pt.y * 10}`).join(' ')
-                        return (
-                          <polyline
-                            key={`trail-${steamId}`}
-                            points={polyPoints}
-                            fill="none"
-                            stroke={stroke}
-                            strokeWidth="2.5"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeOpacity="0.45"
-                            strokeDasharray="4 2"
-                          />
-                        )
-                      })}
-
-                    {/* Active Gunfire Muzzle Burst & Tracer Beams */}
-                    {replayShowShots &&
-                      pastReplayKills
-                        .filter((k) => Math.abs(k.tick - (currentReplayFrame?.tick || 0)) < (replayData?.tickrate || 64) * 2.0)
-                        .map((k, i) => (
-                          <g key={`shot-${i}`}>
-                            <line
-                              x1={k.attacker_x * 10}
-                              y1={k.attacker_y * 10}
-                              x2={k.victim_x * 10}
-                              y2={k.victim_y * 10}
-                              stroke="#facc15"
-                              strokeWidth="3.5"
-                              strokeOpacity="0.9"
-                            />
-                            <circle
-                              cx={k.attacker_x * 10}
-                              cy={k.attacker_y * 10}
-                              r="12"
-                              fill="rgba(250, 204, 21, 0.4)"
-                              stroke="#facc15"
-                              strokeWidth="2"
-                            />
-                          </g>
-                        ))}
-
-                    {/* Kill Vector Lines */}
-                    {pastReplayKills.map((k, i) => (
-                      <line
-                        key={`kill-line-${i}`}
-                        x1={k.attacker_x * 10}
-                        y1={k.attacker_y * 10}
-                        x2={k.victim_x * 10}
-                        y2={k.victim_y * 10}
-                        stroke={k.attacker_side === 'ct' ? '#38bdf8' : '#f97316'}
-                        strokeWidth="1.5"
-                        strokeDasharray="4 3"
-                        opacity="0.5"
-                      />
-                    ))}
-                  </svg>
-
-                  {/* Real Living Player Dots & HP Tags */}
-                  {currentReplayFrame?.players.map((p) => {
-                    const isCurrentLevel = replayData?.levels && replayData.levels.length > 1 ? p.level === replayLevel : true
-                    const opacity = isCurrentLevel ? (p.is_alive ? 1 : 0.3) : 0.2
-                    const isCT = p.side === 'ct'
-                    const color = isCT ? '#3b82f6' : '#f97316'
-
-                    return (
-                      <div
-                        key={p.steam_id}
-                        style={{
-                          position: 'absolute',
-                          left: `${p.x}%`,
-                          top: `${p.y}%`,
-                          transform: 'translate(-50%, -50%)',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          alignItems: 'center',
-                          pointerEvents: 'none',
-                          opacity,
-                          transition: 'left 0.12s linear, top 0.12s linear',
-                          zIndex: isCurrentLevel ? 10 : 2,
-                        }}
-                      >
-                        {/* Dot */}
-                        <div
-                          style={{
-                            width: '16px',
-                            height: '16px',
-                            borderRadius: '50%',
-                            backgroundColor: color,
-                            border: '2px solid #ffffff',
-                            boxShadow: `0 0 8px ${color}`,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: '8px',
-                            fontWeight: 800,
-                            color: '#ffffff',
-                          }}
-                        >
-                          {p.is_alive ? (isCT ? 'CT' : 'T') : '✕'}
-                        </div>
-
-                        {/* Name & HP Tag */}
-                        {isCurrentLevel && (
-                          <div
-                            style={{
-                              marginTop: '2px',
-                              backgroundColor: 'rgba(10, 12, 16, 0.85)',
-                              padding: '1px 4px',
-                              borderRadius: '3px',
-                              border: `1px solid ${color}44`,
-                              fontSize: '9px',
-                              fontWeight: 600,
-                              color: '#f1f5f9',
-                              whiteSpace: 'nowrap',
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '3px',
-                            }}
-                          >
-                            <span>{p.name.slice(0, 8)}</span>
-                            {p.is_alive && (
-                              <span style={{ color: p.health < 40 ? '#ef4444' : '#22c55e', fontSize: '8px' }}>
-                                {Math.round(p.health)}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
-
-                  {/* Kill Skull Markers */}
-                  {pastReplayKills.map((k, i) => (
-                    <div
-                      key={`skull-${i}`}
-                      onClick={() => handleJumpToReplayTick(k.tick)}
-                      title={`Килл: ${k.attacker_name} ➔ ${k.victim_name}. Клик для перехода к тику`}
-                      style={{
-                        position: 'absolute',
-                        left: `${k.victim_x}%`,
-                        top: `${k.victim_y}%`,
-                        transform: 'translate(-50%, -50%)',
-                        width: '14px',
-                        height: '14px',
-                        borderRadius: '50%',
-                        backgroundColor: 'rgba(239, 68, 68, 0.85)',
-                        border: '1.5px solid #ffffff',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '9px',
-                        color: '#ffffff',
-                        fontWeight: 800,
-                        zIndex: 15,
-                        cursor: 'pointer',
-                        pointerEvents: 'auto',
-                        boxShadow: '0 0 6px rgba(239, 68, 68, 0.8)',
-                      }}
-                    >
-                      ☠
-                    </div>
-                  ))}
+                  <TacticalReplayRadar
+                    radarImageUrl={replayRadarImageUrl}
+                    mapName={activeDemo?.map_name || 'CS2 Map'}
+                    currentTick={currentReplayFrame?.tick || 0}
+                    tickrate={replayData?.tickrate || 128}
+                    startTick={replayData?.start_tick || 0}
+                    players={currentReplayFrame?.players || []}
+                    kills={replayData?.kills || []}
+                    grenades={replayData?.grenades || []}
+                    playerTrails={playerReplayTrails}
+                    currentLevel={replayLevel}
+                    hasMultipleLevels={Boolean(replayData?.levels && replayData.levels.length > 1)}
+                    showTrails={replayShowTrails}
+                    showShots={replayShowShots}
+                    showGrenades={replayShowGrenades}
+                    onJumpToTick={handleJumpToReplayTick}
+                    maxContainerHeight="540px"
+                  />
                 </div>
 
                 {/* Timeline Scrubber & Media Player Controls */}
@@ -1691,6 +1532,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
 
                       <button
                         type="button"
+                        className="card-interactive"
                         onClick={() => setIsReplayPlaying(!isReplayPlaying)}
                         style={{
                           padding: '6px 14px',
@@ -1703,10 +1545,20 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                           cursor: 'pointer',
                           display: 'flex',
                           alignItems: 'center',
-                          gap: '4px',
+                          gap: '6px',
                         }}
                       >
-                        {isReplayPlaying ? '⏸ Пауза' : '▶ Плей'}
+                        {isReplayPlaying ? (
+                          <>
+                            <PauseIcon size={12} color="#090d16" />
+                            <span>Пауза</span>
+                          </>
+                        ) : (
+                          <>
+                            <PlayIcon size={12} color="#090d16" />
+                            <span>Плей</span>
+                          </>
+                        )}
                       </button>
 
                       <button
@@ -1817,7 +1669,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 {activePlayerFilter && activeDemo && (
                   <button
                     type="button"
-                    className="btn btn-secondary"
+                    className="btn btn-secondary card-interactive"
                     style={{
                       padding: '5px 10px',
                       fontSize: '12px',
@@ -1838,9 +1690,10 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         })
                       }
                     }}
-                    title="Открыть FACEIT аналитику и тактический аудит ошибок выбранного игрока"
+                    title="Открыть тактический разбор и PR рейтинг выбранного игрока"
                   >
-                    <span>📊</span> Разбор игрока
+                    <ActivityIcon size={12} color="#38bdf8" />
+                    <span>Разбор игрока</span>
                   </button>
                 )}
 
@@ -1907,7 +1760,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
 
                 <button
                   type="button"
-                  className="btn btn-secondary"
+                  className="btn btn-secondary card-interactive"
                   onClick={() => {
                     if (allFilteredSelected) onClearFiltered(filteredIds)
                     else onSelectAllFiltered(filteredIds)
@@ -1974,8 +1827,8 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       {playerHighlights.length > 0 && (
                         <button
                           type="button"
-                          className="btn btn-primary"
-                          style={{ padding: '6px 14px', fontSize: '11px', backgroundColor: teamColor, color: '#090d16', border: 'none', fontWeight: 700 }}
+                          className="btn btn-primary card-interactive"
+                          style={{ padding: '6px 14px', fontSize: '11px', backgroundColor: teamColor, color: '#090d16', border: 'none', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '5px' }}
                           onClick={() => {
                             playerHighlights.forEach((h) => {
                               if (!selectedIds.has(h.id)) onToggleHighlight(h.id)
@@ -1984,12 +1837,13 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                             setCurrentStep(3)
                           }}
                         >
-                          ✨ Выбрать моменты {selectedPlayer.name} ({playerHighlights.length}) →
+                          <SparkleIcon size={12} color="#090d16" />
+                          <span>Выбрать моменты {selectedPlayer.name} ({playerHighlights.length}) →</span>
                         </button>
                       )}
                       <button
                         type="button"
-                        className="btn btn-secondary"
+                        className="btn btn-secondary card-interactive"
                         style={{ padding: '6px 10px', fontSize: '11px' }}
                         onClick={() => onSetPlayerFilter(null)}
                       >
@@ -2106,7 +1960,9 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
 
                         {/* Headshot badge */}
                         {kill?.headshot && (
-                          <span title="Headshot" style={{ fontSize: '12px' }}>🎯</span>
+                          <span title="Headshot" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                            <CrosshairIcon size={12} color="#ef4444" />
+                          </span>
                         )}
 
                         {/* Victim avatar & name */}
@@ -2149,7 +2005,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         </span>
                         <button
                           type="button"
-                          className="btn btn-secondary"
+                          className="btn btn-secondary card-interactive"
                           onClick={(e) => {
                             e.stopPropagation()
                             if (!selectedIds.has(h.id)) {
@@ -2158,9 +2014,10 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                             setCurrentStep(4)
                           }}
                           title="Выбрать и перейти к настройке записи этого момента"
-                          style={{ padding: '2px 8px', fontSize: '11px', borderRadius: '4px' }}
+                          style={{ padding: '3px 8px', fontSize: '11px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                         >
-                          🎬 Запись →
+                          <FilmIcon size={11} color="#94a3b8" />
+                          <span>Запись →</span>
                         </button>
                       </div>
                     </div>
@@ -2233,7 +2090,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
       {/* STEP 4: COMPILE MONTAGE (SETTINGS CARDS & EXPORT)                    */}
       {/* ==================================================================== */}
       {currentStep === 4 && (
-        <div style={{ display: 'grid', gridTemplateColumns: '460px 1fr', gap: '32px', alignItems: 'start' }}>
+        <div key="step-4" className="step-transition" style={{ display: 'grid', gridTemplateColumns: 'minmax(500px, 1.15fr) minmax(420px, 0.95fr)', gap: '28px', alignItems: 'start' }}>
           {/* Left Column: Settings Cards */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {/* Montage Title Input */}
@@ -2264,7 +2121,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
               />
             </div>
 
-            {/* Settings Card */}
+            {/* Main Settings Card */}
             <div
               style={{
                 backgroundColor: '#16181f',
@@ -2273,474 +2130,467 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 padding: '20px',
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '18px',
+                gap: '16px',
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #232630', paddingBottom: '12px' }}>
                 <div>
-                  <div style={{ fontSize: '15px', fontWeight: 700, color: '#f1f5f9' }}>
-                    ⚙️ Параметры видео и экспорта CS2
+                  <div style={{ fontSize: '15px', fontWeight: 700, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <SlidersIcon size={16} color="#38bdf8" />
+                    <span>Параметры видео и экспорта CS2</span>
                   </div>
-                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-                    Формат 4:3, стили 2D радара, турнирный HUD и режиссер POV
+                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+                    Режиссер POV, киберспортивный 4:3, стили радара и тактические тумблеры
                   </div>
                 </div>
               </div>
 
-              {/* Settings Navigation Tabs */}
-              <div
-                style={{
-                  display: 'flex',
-                  gap: '6px',
-                  backgroundColor: '#0d1017',
-                  padding: '4px',
-                  borderRadius: '8px',
-                  border: '1px solid #232838',
-                  overflowX: 'auto',
-                }}
-              >
-                {[
-                  { id: 'screen', label: '🎮 Экран и 4:3', desc: 'Разрешение, FPS' },
-                  { id: 'radar', label: '🗺️ Карта и Радар', desc: '130% Огромный, BLAST' },
-                  { id: 'hud', label: '🏆 HUD и Киллфид', desc: '115% Масштаб, X-Ray' },
-                  { id: 'camera', label: '🎥 Камера и Прицел', desc: 'POV, Прицелы' },
-                ].map((tab) => {
-                  const isAct = step4Tab === tab.id
-                  return (
+              {/* 1. POV DIRECTOR */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <CameraIcon size={14} color="#38bdf8" />
+                    <span>РЕЖИССЕР КАМЕРЫ (POV)</span>
+                  </div>
+                  <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 600 }}>
+                    {clipSettings?.perspective === 'dynamic_killcam'
+                      ? '⚡ Турнирный Килл-кам (2 сессии)'
+                      : clipSettings?.perspective === 'victim'
+                      ? '💀 Лицо жертвы'
+                      : '🎬 Главный герой (ГГ)'}
+                  </span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                  {/* Option 1: Attacker (Hero) */}
+                  <button
+                    type="button"
+                    className="btn card-interactive"
+                    onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, perspective: 'attacker' })}
+                    style={{
+                      padding: '10px',
+                      textAlign: 'left',
+                      backgroundColor: (!clipSettings?.perspective || clipSettings?.perspective === 'attacker') ? 'rgba(56, 189, 248, 0.12)' : '#12141c',
+                      borderColor: (!clipSettings?.perspective || clipSettings?.perspective === 'attacker') ? '#38bdf8' : '#232734',
+                      borderWidth: '1px',
+                      borderStyle: 'solid',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: (!clipSettings?.perspective || clipSettings?.perspective === 'attacker') ? '#38bdf8' : '#e2e8f0' }}>
+                        🎬 Главный Герой
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '9px', color: '#94a3b8', lineHeight: '1.2' }}>
+                      100% от автора фрагов (1 запуск CS2)
+                    </div>
+                  </button>
+
+                  {/* Option 2: Dynamic Killcam */}
+                  <button
+                    type="button"
+                    className="btn card-interactive"
+                    onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, perspective: 'dynamic_killcam' })}
+                    style={{
+                      padding: '10px',
+                      textAlign: 'left',
+                      backgroundColor: clipSettings?.perspective === 'dynamic_killcam' ? 'rgba(139, 92, 246, 0.15)' : '#12141c',
+                      borderColor: clipSettings?.perspective === 'dynamic_killcam' ? '#8b5cf6' : '#232734',
+                      borderWidth: '1px',
+                      borderStyle: 'solid',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: clipSettings?.perspective === 'dynamic_killcam' ? '#a78bfa' : '#e2e8f0' }}>
+                        ⚡ Килл-кам PRO
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '9px', color: '#94a3b8', lineHeight: '1.2' }}>
+                      Смерти жертв ➔ Откат ➔ Триумф ГГ (2 запуска)
+                    </div>
+                  </button>
+
+                  {/* Option 3: Victim */}
+                  <button
+                    type="button"
+                    className="btn card-interactive"
+                    onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, perspective: 'victim' })}
+                    style={{
+                      padding: '10px',
+                      textAlign: 'left',
+                      backgroundColor: clipSettings?.perspective === 'victim' ? 'rgba(239, 68, 68, 0.15)' : '#12141c',
+                      borderColor: clipSettings?.perspective === 'victim' ? '#ef4444' : '#232734',
+                      borderWidth: '1px',
+                      borderStyle: 'solid',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '4px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                      <span style={{ fontSize: '11px', fontWeight: 700, color: clipSettings?.perspective === 'victim' ? '#f87171' : '#e2e8f0' }}>
+                        💀 Только Жертва
+                      </span>
+                    </div>
+                    <div style={{ fontSize: '9px', color: '#94a3b8', lineHeight: '1.2' }}>
+                      Камера от лица погибших врагов
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* 2. SCREEN, FORMAT, RESOLUTION, FPS & FOV */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', backgroundColor: '#12141c', padding: '14px', borderRadius: '8px', border: '1px solid #232734' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <CrosshairIcon size={14} color="#38bdf8" />
+                  <span>ФОРМАТ, РАЗРЕШЕНИЕ И УГОЛ ОБЗОРА (FOV)</span>
+                </div>
+
+                {/* Aspect Ratio */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <span style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'block' }}>Формат экрана CS2</span>
+                    <span style={{ fontSize: '10px', color: '#94a3b8' }}>4:3 расширяет модельки врагов на 33%</span>
+                  </div>
+                  <div style={{ display: 'flex', gap: '4px', backgroundColor: '#0e1118', padding: '2px', borderRadius: '6px', border: '1px solid #232734' }}>
                     <button
-                      key={tab.id}
                       type="button"
-                      onClick={() => setStep4Tab(tab.id as any)}
+                      className="card-interactive"
+                      onClick={() => {
+                        setAspectRatio('4:3')
+                        if (onUpdateSettings && clipSettings) {
+                          onUpdateSettings({ ...clipSettings, aspectRatio: '4:3', resolution: '1280x960' })
+                        }
+                      }}
                       style={{
-                        flex: 1,
-                        minWidth: '120px',
-                        padding: '8px 10px',
-                        borderRadius: '6px',
+                        padding: '5px 12px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        borderRadius: '4px',
                         border: 'none',
                         cursor: 'pointer',
-                        backgroundColor: isAct ? '#1e2638' : 'transparent',
-                        color: isAct ? '#38bdf8' : '#94a3b8',
-                        borderBottom: isAct ? '2px solid #38bdf8' : '2px solid transparent',
-                        transition: 'all 0.15s ease',
-                        textAlign: 'left',
+                        backgroundColor: (clipSettings?.aspectRatio === '4:3' || aspectRatio === '4:3') ? '#38bdf8' : 'transparent',
+                        color: (clipSettings?.aspectRatio === '4:3' || aspectRatio === '4:3') ? '#090d16' : '#94a3b8',
                       }}
                     >
-                      <div style={{ fontSize: '11px', fontWeight: isAct ? 800 : 600 }}>{tab.label}</div>
-                      <div style={{ fontSize: '9px', opacity: 0.7 }}>{tab.desc}</div>
+                      4:3 (Киберспорт)
                     </button>
-                  )
-                })}
-              </div>
-
-              {/* TAB 1: SCREEN & 4:3 */}
-              {step4Tab === 'screen' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  {/* Format & Resolution Block */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <span style={{ fontSize: '13px', color: '#f1f5f9', fontWeight: 600, display: 'block' }}>Формат экрана CS2</span>
-                        <span style={{ fontSize: '11px', color: '#94a3b8' }}>4:3 делает модели врагов шире на 33%</span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '4px', backgroundColor: '#0e1118', padding: '2px', borderRadius: '6px', border: '1px solid #232734' }}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAspectRatio('4:3')
-                            if (onUpdateSettings && clipSettings) {
-                              onUpdateSettings({ ...clipSettings, aspectRatio: '4:3', resolution: '1280x960' })
-                            }
-                          }}
-                          style={{
-                            padding: '5px 12px',
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            borderRadius: '4px',
-                            border: 'none',
-                            cursor: 'pointer',
-                            backgroundColor: (clipSettings?.aspectRatio === '4:3' || aspectRatio === '4:3') ? '#38bdf8' : 'transparent',
-                            color: (clipSettings?.aspectRatio === '4:3' || aspectRatio === '4:3') ? '#090d16' : '#94a3b8',
-                          }}
-                        >
-                          🎮 4:3 (Киберспорт)
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAspectRatio('16:9')
-                            if (onUpdateSettings && clipSettings) {
-                              onUpdateSettings({ ...clipSettings, aspectRatio: '16:9', resolution: '1080p' })
-                            }
-                          }}
-                          style={{
-                            padding: '5px 12px',
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            borderRadius: '4px',
-                            border: 'none',
-                            cursor: 'pointer',
-                            backgroundColor: (clipSettings?.aspectRatio !== '4:3' && aspectRatio !== '4:3') ? '#38bdf8' : 'transparent',
-                            color: (clipSettings?.aspectRatio !== '4:3' && aspectRatio !== '4:3') ? '#090d16' : '#94a3b8',
-                          }}
-                        >
-                          🖥️ 16:9 (Широкий)
-                        </button>
-                      </div>
-                    </div>
-
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#12141c', padding: '10px 12px', borderRadius: '8px', border: '1px solid #232734' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600 }}>
-                          {(clipSettings?.aspectRatio === '4:3' || aspectRatio === '4:3') ? 'Разрешение 4:3' : 'Разрешение 16:9'}
-                        </span>
-                        <span style={{ fontSize: '10px', color: '#94a3b8' }}>
-                          {(clipSettings?.aspectRatio === '4:3' || aspectRatio === '4:3')
-                            ? '1280x960 — стандарт киберспортсменов (s1mple, m0NESY)'
-                            : '1920x1080 — стандартное Full HD'}
-                        </span>
-                      </div>
-
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        {(clipSettings?.aspectRatio === '4:3' || aspectRatio === '4:3') ? (
-                          <>
-                            <button
-                              type="button"
-                              className="btn"
-                              onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, resolution: '1280x960', aspectRatio: '4:3' })}
-                              style={{
-                                padding: '5px 10px',
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                backgroundColor: (clipSettings?.resolution === '1280x960' || !clipSettings?.resolution || clipSettings?.resolution === '1080p') ? '#38bdf8' : '#1c2333',
-                                color: (clipSettings?.resolution === '1280x960' || !clipSettings?.resolution || clipSettings?.resolution === '1080p') ? '#090d16' : '#cbd5e1',
-                                border: '1px solid #2d3748',
-                                borderRadius: '4px',
-                              }}
-                              title="1280x960 — выбор 80% профессионалов CS2"
-                            >
-                              1280x960 ⭐
-                            </button>
-                            <button
-                              type="button"
-                              className="btn"
-                              onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, resolution: '1440x1080', aspectRatio: '4:3' })}
-                              style={{
-                                padding: '5px 10px',
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                backgroundColor: clipSettings?.resolution === '1440x1080' ? '#38bdf8' : '#1c2333',
-                                color: clipSettings?.resolution === '1440x1080' ? '#090d16' : '#cbd5e1',
-                                border: '1px solid #2d3748',
-                                borderRadius: '4px',
-                              }}
-                              title="1440x1080 — повышенная четкость Stretched"
-                            >
-                              1440x1080
-                            </button>
-                            <button
-                              type="button"
-                              className="btn"
-                              onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, resolution: '1024x768', aspectRatio: '4:3' })}
-                              style={{
-                                padding: '5px 10px',
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                backgroundColor: clipSettings?.resolution === '1024x768' ? '#38bdf8' : '#1c2333',
-                                color: clipSettings?.resolution === '1024x768' ? '#090d16' : '#cbd5e1',
-                                border: '1px solid #2d3748',
-                                borderRadius: '4px',
-                              }}
-                              title="1024x768 — классический 4:3 формат"
-                            >
-                              1024x768
-                            </button>
-                          </>
-                        ) : (
-                          <>
-                            <button
-                              type="button"
-                              className="btn"
-                              onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, resolution: '1080p', aspectRatio: '16:9' })}
-                              style={{
-                                padding: '5px 10px',
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                backgroundColor: (clipSettings?.resolution === '1080p' || clipSettings?.resolution === '1920x1080') ? '#38bdf8' : '#1c2333',
-                                color: (clipSettings?.resolution === '1080p' || clipSettings?.resolution === '1920x1080') ? '#090d16' : '#cbd5e1',
-                                border: '1px solid #2d3748',
-                                borderRadius: '4px',
-                              }}
-                            >
-                              1080p Full HD
-                            </button>
-                            <button
-                              type="button"
-                              className="btn"
-                              onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, resolution: '720p', aspectRatio: '16:9' })}
-                              style={{
-                                padding: '5px 10px',
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                backgroundColor: clipSettings?.resolution === '720p' ? '#38bdf8' : '#1c2333',
-                                color: clipSettings?.resolution === '720p' ? '#090d16' : '#cbd5e1',
-                                border: '1px solid #2d3748',
-                                borderRadius: '4px',
-                              }}
-                            >
-                              720p HD
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* FPS & Smoothness */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#12141c', padding: '10px 12px', borderRadius: '8px', border: '1px solid #232734', marginTop: '10px' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600 }}>Частота кадров (FPS)</span>
-                        <span style={{ fontSize: '10px', color: '#94a3b8' }}>120 FPS для сверхплавных замедлений; 60 FPS — стандарт CS2</span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        {([120, 60, 30] as const).map((fpsVal) => {
-                          const isSelected = (clipSettings?.fps || 60) === fpsVal
-                          return (
-                            <button
-                              key={fpsVal}
-                              type="button"
-                              className="btn"
-                              onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, fps: fpsVal })}
-                              style={{
-                                padding: '5px 10px',
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                backgroundColor: isSelected ? '#38bdf8' : '#1c2333',
-                                color: isSelected ? '#090d16' : '#cbd5e1',
-                                border: '1px solid #2d3748',
-                                borderRadius: '4px',
-                              }}
-                            >
-                              {fpsVal === 120 ? '⚡ 120 FPS' : `${fpsVal} FPS`}
-                            </button>
-                          )
-                        })}
-                      </div>
-                    </div>
+                    <button
+                      type="button"
+                      className="card-interactive"
+                      onClick={() => {
+                        setAspectRatio('16:9')
+                        if (onUpdateSettings && clipSettings) {
+                          onUpdateSettings({ ...clipSettings, aspectRatio: '16:9', resolution: '1080p' })
+                        }
+                      }}
+                      style={{
+                        padding: '5px 12px',
+                        fontSize: '11px',
+                        fontWeight: 700,
+                        borderRadius: '4px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        backgroundColor: (clipSettings?.aspectRatio !== '4:3' && aspectRatio !== '4:3') ? '#38bdf8' : 'transparent',
+                        color: (clipSettings?.aspectRatio !== '4:3' && aspectRatio !== '4:3') ? '#090d16' : '#94a3b8',
+                      }}
+                    >
+                      16:9 (Широкий)
+                    </button>
                   </div>
                 </div>
-              )}
 
-              {/* TAB 2: RADAR & MINIMAP */}
-              {step4Tab === 'radar' && (
-                <div style={{ padding: '14px', backgroundColor: '#121316', borderRadius: '8px', border: '1px solid #232630' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
-                    <div>
-                      <span style={{ fontSize: '13px', color: '#f1f5f9', fontWeight: 600 }}>2D Радар в игре (CS2)</span>
-                      <div style={{ fontSize: '11px', color: '#64748b' }}>Масштаб и ориентация мини-карты на записи</div>
-                    </div>
-                    <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 600 }}>
-                      {clipSettings?.radarMode === 'broadcast'
-                        ? '📡 Турнирный BLAST'
-                        : clipSettings?.radarMode === 'hidden'
-                        ? '🚫 Без радара'
-                        : '🧭 Круглый CS2'}
+                {/* Resolution buttons */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #1c202d', paddingTop: '8px' }}>
+                  <div>
+                    <span style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'block' }}>
+                      {(clipSettings?.aspectRatio === '4:3' || aspectRatio === '4:3') ? 'Разрешение 4:3' : 'Разрешение 16:9'}
+                    </span>
+                    <span style={{ fontSize: '10px', color: '#94a3b8' }}>
+                      {(clipSettings?.aspectRatio === '4:3' || aspectRatio === '4:3') ? '1280x960 — выбор s1mple & m0NESY' : '1920x1080 — стандарт Full HD'}
                     </span>
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', alignItems: 'stretch' }}>
-                    {[
-                      { id: 'player_focus', label: '🧭 Круглый CS2', desc: 'Динамика за игроком' },
-                      { id: 'broadcast', label: '📡 Турнирный', desc: 'Обзор всей карты' },
-                      { id: 'hidden', label: '🚫 Без радара', desc: 'Чистый экран' },
-                    ].map((r) => {
-                      const isSelected = (clipSettings?.radarMode || 'player_focus') === r.id
-                      return (
+                  <div style={{ display: 'flex', gap: '5px' }}>
+                    {(clipSettings?.aspectRatio === '4:3' || aspectRatio === '4:3') ? (
+                      <>
                         <button
-                          key={r.id}
                           type="button"
-                          className="btn"
-                          onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, radarMode: r.id as any })}
+                          className="btn card-interactive"
+                          onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, resolution: '1280x960', aspectRatio: '4:3' })}
                           style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            alignItems: 'flex-start',
-                            justifyContent: 'flex-start',
-                            padding: '10px 10px',
-                            textAlign: 'left',
-                            minWidth: 0,
-                            width: '100%',
-                            boxSizing: 'border-box',
-                            backgroundColor: isSelected ? '#10b98122' : '#16181f',
-                            borderColor: isSelected ? '#10b981' : '#2b2e38',
-                            borderWidth: '1px',
-                            borderStyle: 'solid',
-                            borderRadius: '8px',
-                            color: '#f1f5f9',
+                            padding: '4px 8px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            backgroundColor: (clipSettings?.resolution === '1280x960' || !clipSettings?.resolution || clipSettings?.resolution === '1080p') ? '#38bdf8' : '#1c2333',
+                            color: (clipSettings?.resolution === '1280x960' || !clipSettings?.resolution || clipSettings?.resolution === '1080p') ? '#090d16' : '#cbd5e1',
+                            border: '1px solid #2d3748',
+                            borderRadius: '4px',
                           }}
                         >
-                          <div style={{ fontSize: '11px', fontWeight: 700, color: isSelected ? '#34d399' : '#e2e8f0', whiteSpace: 'nowrap' }}>{r.label}</div>
-                          <div style={{ fontSize: '10px', color: '#64748b', marginTop: '3px', lineHeight: '1.2' }}>{r.desc}</div>
+                          1280x960
                         </button>
-                      )
-                    })}
+                        <button
+                          type="button"
+                          className="btn card-interactive"
+                          onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, resolution: '1440x1080', aspectRatio: '4:3' })}
+                          style={{
+                            padding: '4px 8px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            backgroundColor: clipSettings?.resolution === '1440x1080' ? '#38bdf8' : '#1c2333',
+                            color: clipSettings?.resolution === '1440x1080' ? '#090d16' : '#cbd5e1',
+                            border: '1px solid #2d3748',
+                            borderRadius: '4px',
+                          }}
+                        >
+                          1440x1080
+                        </button>
+                        <button
+                          type="button"
+                          className="btn card-interactive"
+                          onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, resolution: '1024x768', aspectRatio: '4:3' })}
+                          style={{
+                            padding: '4px 8px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            backgroundColor: clipSettings?.resolution === '1024x768' ? '#38bdf8' : '#1c2333',
+                            color: clipSettings?.resolution === '1024x768' ? '#090d16' : '#cbd5e1',
+                            border: '1px solid #2d3748',
+                            borderRadius: '4px',
+                          }}
+                        >
+                          1024x768
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          className="btn card-interactive"
+                          onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, resolution: '1080p', aspectRatio: '16:9' })}
+                          style={{
+                            padding: '4px 10px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            backgroundColor: (clipSettings?.resolution === '1080p' || clipSettings?.resolution === '1920x1080') ? '#38bdf8' : '#1c2333',
+                            color: (clipSettings?.resolution === '1080p' || clipSettings?.resolution === '1920x1080') ? '#090d16' : '#cbd5e1',
+                            border: '1px solid #2d3748',
+                            borderRadius: '4px',
+                          }}
+                        >
+                          1080p Full HD
+                        </button>
+                        <button
+                          type="button"
+                          className="btn card-interactive"
+                          onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, resolution: '720p', aspectRatio: '16:9' })}
+                          style={{
+                            padding: '4px 10px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            backgroundColor: clipSettings?.resolution === '720p' ? '#38bdf8' : '#1c2333',
+                            color: clipSettings?.resolution === '720p' ? '#090d16' : '#cbd5e1',
+                            border: '1px solid #2d3748',
+                            borderRadius: '4px',
+                          }}
+                        >
+                          720p HD
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
-              )}
 
-              {/* TAB 3: HUD & KILLFEED */}
-              {step4Tab === 'hud' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  <div style={{ padding: '14px', backgroundColor: '#121316', borderRadius: '8px', border: '1px solid #232630' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <div>
-                        <span style={{ fontSize: '13px', color: '#f1f5f9', fontWeight: 600 }}>HUD интерфейс и Масштаб</span>
-                        <div style={{ fontSize: '11px', color: '#64748b' }}>Игровой интерфейс, киллфид и внешние оверлеи</div>
-                      </div>
-                      <button
-                        type="button"
-                        className="btn"
-                        onClick={() => setIsTournamentHudModalOpen(true)}
-                        style={{
-                          padding: '4px 8px',
-                          fontSize: '11px',
-                          backgroundColor: '#f59e0b22',
-                          color: '#fbbf24',
-                          border: '1px solid #f59e0b66',
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                          fontWeight: 600,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                        }}
-                      >
-                        🏆 Турнирный HUD (Lexogrine / GSI)...
-                      </button>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-                      {[
-                        { mode: 'real', label: '🎥 REAL (OBS Запись)', sub: 'От первого лица, без X-Ray и спектатор-плашки' },
-                        { mode: 'full', label: '📺 Spectator Pro', sub: 'Турнирный спектатор: HP, патроны, счет' },
-                        { mode: 'none', label: '🎬 No HUD', sub: 'Чисто для оверлеев и мувиков' },
-                      ].map((h) => {
-                        const isSelected = (clipSettings?.hudMode || 'full') === h.mode
+                {/* FPS & FOV row */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', borderTop: '1px solid #1c202d', paddingTop: '8px' }}>
+                  {/* FPS */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>Частота кадров (FPS)</span>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      {([60, 120, 30] as const).map((fpsVal) => {
+                        const isSelected = (clipSettings?.fps || 60) === fpsVal
                         return (
                           <button
-                            key={h.mode}
+                            key={fpsVal}
                             type="button"
-                            className="btn"
-                            onClick={() => {
-                              if (onUpdateSettings && clipSettings) {
-                                const isReal = h.mode === 'real'
-                                onUpdateSettings({
-                                  ...clipSettings,
-                                  hudMode: h.mode as any,
-                                  hudScale: isReal ? 1.0 : (clipSettings.hudScale || 0.95),
-                                  ...(isReal ? { xray: false, radarMode: 'player_focus' } : {}),
-                                })
-                              }
-                            }}
+                            className="btn card-interactive"
+                            onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, fps: fpsVal })}
                             style={{
-                              padding: '10px 8px',
-                              textAlign: 'left',
-                              backgroundColor: isSelected ? (h.mode === 'real' ? '#0284c725' : '#6366f122') : '#16181f',
-                              borderColor: isSelected ? (h.mode === 'real' ? '#38bdf8' : '#6366f1') : '#2b2e38',
-                              borderWidth: '1px',
-                              borderStyle: 'solid',
-                              borderRadius: '6px',
-                              color: '#f1f5f9',
+                              flex: 1,
+                              padding: '4px 6px',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              backgroundColor: isSelected ? '#38bdf8' : '#1c2333',
+                              color: isSelected ? '#090d16' : '#cbd5e1',
+                              border: '1px solid #2d3748',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
                             }}
                           >
-                            <div style={{ fontSize: '11px', fontWeight: 700, color: isSelected ? (h.mode === 'real' ? '#38bdf8' : '#818cf8') : '#e2e8f0' }}>{h.label}</div>
-                            <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>{h.sub}</div>
+                            {fpsVal === 120 ? '120⚡' : `${fpsVal}`}
                           </button>
                         )
                       })}
                     </div>
-                    {clipSettings?.hudMode === 'real' && (
-                      <div style={{ marginTop: '10px', padding: '10px 12px', backgroundColor: '#0284c715', border: '1px solid #0284c744', borderRadius: '6px', fontSize: '11px', color: '#bae6fd', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span>🎥</span>
-                        <span><strong>Режим REAL:</strong> Запись выглядит 1:1 как при живой игре через OBS. Скрыта спектаторская полоса внизу (аватар и ник игрока), X-Ray отключен, обычный центрированный круглый радар. Все патроны, здоровье, деньги и киллфид активны.</span>
-                      </div>
-                    )}
-
-                    {/* Advanced HUD Toggles */}
-                    <div style={{ backgroundColor: '#0c0e14', border: '1px solid #1c202d', borderRadius: '8px', padding: '12px', marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                      <div style={{ fontSize: '11px', fontWeight: 800, color: '#38bdf8', letterSpacing: '0.04em' }}>
-                        ⚙️ РАСШИРЕННЫЕ НАСТРОЙКИ HUD (ТУМБЛЕРЫ)
-                      </div>
-
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px' }}>
-                        {/* Overhead Name Tags */}
-                        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', backgroundColor: '#131622', borderRadius: '6px', cursor: 'pointer', border: '1px solid #23283c' }}>
-                          <span style={{ fontSize: '11px', color: '#e2e8f0', fontWeight: 600 }}>👤 Ники над головами</span>
-                          <input
-                            type="checkbox"
-                            checked={clipSettings?.overheadMode !== false}
-                            onChange={(e) => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, overheadMode: e.target.checked })}
-                            style={{ accentColor: '#38bdf8', width: '15px', height: '15px', cursor: 'pointer' }}
-                          />
-                        </label>
-
-                        {/* Killfeed only */}
-                        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', backgroundColor: '#131622', borderRadius: '6px', cursor: 'pointer', border: '1px solid #23283c' }}>
-                          <span style={{ fontSize: '11px', color: '#e2e8f0', fontWeight: 600 }}>⚔️ Только киллфид</span>
-                          <input
-                            type="checkbox"
-                            checked={Boolean(clipSettings?.killfeedOnly)}
-                            onChange={(e) => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, killfeedOnly: e.target.checked })}
-                            style={{ accentColor: '#38bdf8', width: '15px', height: '15px', cursor: 'pointer' }}
-                          />
-                        </label>
-
-                        {/* Alive counter mode: numbers vs avatars */}
-                        <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', backgroundColor: '#131622', borderRadius: '6px', cursor: 'pointer', border: '1px solid #23283c' }}>
-                          <span style={{ fontSize: '11px', color: '#e2e8f0', fontWeight: 600 }}>🔢 Живые цифрой (5 v 3)</span>
-                          <input
-                            type="checkbox"
-                            checked={Boolean(clipSettings?.teamcounterMode)}
-                            onChange={(e) => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, teamcounterMode: e.target.checked })}
-                            style={{ accentColor: '#38bdf8', width: '15px', height: '15px', cursor: 'pointer' }}
-                          />
-                        </label>
-
-                        {/* HUD Scale */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', backgroundColor: '#131622', borderRadius: '6px', border: '1px solid #23283c' }}>
-                          <span style={{ fontSize: '11px', color: '#e2e8f0', fontWeight: 600 }}>📏 Размер HUD</span>
-                          <div style={{ display: 'flex', gap: '4px' }}>
-                            {[
-                              { scale: 0.95, label: '95%' },
-                              { scale: 1.0, label: '100%' },
-                              { scale: 1.15, label: '115%' },
-                            ].map((s) => (
-                              <button
-                                key={s.scale}
-                                type="button"
-                                onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, hudScale: s.scale })}
-                                style={{
-                                  padding: '2px 5px',
-                                  fontSize: '10px',
-                                  fontWeight: 700,
-                                  borderRadius: '4px',
-                                  border: clipSettings?.hudScale === s.scale ? '1px solid #38bdf8' : '1px solid #2b3244',
-                                  backgroundColor: clipSettings?.hudScale === s.scale ? 'rgba(56, 189, 248, 0.2)' : 'transparent',
-                                  color: clipSettings?.hudScale === s.scale ? '#38bdf8' : '#94a3b8',
-                                  cursor: 'pointer',
-                                }}
-                              >
-                                {s.label}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
                   </div>
 
-                  {/* X-Ray toggle */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#121316', padding: '12px 14px', borderRadius: '8px', border: '1px solid #232630' }}>
-                    <div>
-                      <div style={{ fontSize: '13px', color: '#f1f5f9', fontWeight: 600 }}>Силуэты сквозь стены (X-Ray)</div>
-                      <div style={{ fontSize: '11px', color: '#64748b' }}>Подсветка игроков через стены spec_show_xray</div>
+                  {/* FOV (Field of View) */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>Угол обзора (FOV)</span>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      {[
+                        { val: 68, label: '68° Дефолт' },
+                        { val: 90, label: '90° Pro' },
+                        { val: 100, label: '100° Wide' },
+                      ].map((f) => {
+                        const isSelected = (clipSettings?.fov || 90) === f.val
+                        return (
+                          <button
+                            key={f.val}
+                            type="button"
+                            className="btn card-interactive"
+                            onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, fov: f.val })}
+                            style={{
+                              flex: 1,
+                              padding: '4px 4px',
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              backgroundColor: isSelected ? '#38bdf8' : '#1c2333',
+                              color: isSelected ? '#090d16' : '#cbd5e1',
+                              border: '1px solid #2d3748',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {f.label}
+                          </button>
+                        )
+                      })}
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. RADAR / MINIMAP */}
+              <div style={{ backgroundColor: '#12141c', padding: '14px', borderRadius: '8px', border: '1px solid #232734' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <RadarIcon size={14} color="#38bdf8" />
+                    <span>МИНИ-КАРТА / 2D РАДАР</span>
+                  </div>
+                  <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 600 }}>
+                    {clipSettings?.radarMode === 'broadcast'
+                      ? 'Турнирный BLAST'
+                      : clipSettings?.radarMode === 'hidden'
+                      ? 'Скрыт'
+                      : 'Круглый (Слежение)'}
+                  </span>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                  {[
+                    { id: 'player_focus', label: 'Круглый (Слежение)', desc: 'Центр на игроке, стандарт OBS' },
+                    { id: 'broadcast', label: 'Турнирный BLAST', desc: 'Вся карта как на трансляциях' },
+                    { id: 'hidden', label: 'Без радара', desc: 'Скрыт для чистого экрана' },
+                  ].map((r) => {
+                    const isSelected = (clipSettings?.radarMode || 'player_focus') === r.id
+                    return (
+                      <button
+                        key={r.id}
+                        type="button"
+                        className="btn card-interactive"
+                        onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, radarMode: r.id as any })}
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'flex-start',
+                          padding: '8px 10px',
+                          textAlign: 'left',
+                          backgroundColor: isSelected ? 'rgba(16, 185, 129, 0.15)' : '#16181f',
+                          borderColor: isSelected ? '#10b981' : '#282d3c',
+                          borderWidth: '1px',
+                          borderStyle: 'solid',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <div style={{ fontSize: '11px', fontWeight: 700, color: isSelected ? '#34d399' : '#e2e8f0' }}>{r.label}</div>
+                        <div style={{ fontSize: '9px', color: '#64748b', marginTop: '2px', lineHeight: '1.2' }}>{r.desc}</div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* 4. TACTICAL TOGGLES LIST [ON / OFF] */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', backgroundColor: '#12141c', padding: '14px', borderRadius: '8px', border: '1px solid #232734' }}>
+                <div style={{ fontSize: '12px', fontWeight: 700, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                  <SlidersIcon size={14} color="#38bdf8" />
+                  <span>ТАКТИЧЕСКИЕ ТУМБЛЕРЫ [ВКЛ / ВЫКЛ]</span>
+                </div>
+
+                {/* Switch 1: REAL OBS Mode */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', backgroundColor: '#161922', borderRadius: '6px', border: '1px solid #232738' }}>
+                  <div>
+                    <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <CameraIcon size={13} color="#38bdf8" />
+                      <span>Режим REAL OBS (Вид живого матча)</span>
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#94a3b8' }}>
+                      1:1 как при живой игре: скрывает нижнюю спектатор-плашку и анимированные аватары
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: clipSettings?.hudMode === 'real' ? '#38bdf8' : '#64748b' }}>
+                      {clipSettings?.hudMode === 'real' ? 'ВКЛ' : 'ВЫКЛ'}
+                    </span>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={clipSettings?.hudMode === 'real'}
+                        onChange={(e) => {
+                          if (onUpdateSettings && clipSettings) {
+                            const isReal = e.target.checked
+                            onUpdateSettings({
+                              ...clipSettings,
+                              hudMode: isReal ? 'real' : 'full',
+                              hudScale: isReal ? 1.0 : (clipSettings.hudScale || 0.95),
+                              ...(isReal ? { xray: false, radarMode: 'player_focus' } : {}),
+                            })
+                          }
+                        }}
+                      />
+                      <span className="toggle-slider" />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Switch 2: X-Ray */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', backgroundColor: '#161922', borderRadius: '6px', border: '1px solid #232738' }}>
+                  <div>
+                    <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <EyeIcon size={13} color="#38bdf8" />
+                      <span>Силуэты сквозь стены (X-Ray)</span>
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#94a3b8' }}>
+                      Подсветка контуров игроков через препятствия (spec_show_xray)
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: clipSettings?.xray !== false ? '#38bdf8' : '#64748b' }}>
+                      {clipSettings?.xray !== false ? 'ВКЛ' : 'ВЫКЛ'}
+                    </span>
                     <label className="toggle-switch">
                       <input
                         type="checkbox"
@@ -2750,20 +2600,103 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       <span className="toggle-slider" />
                     </label>
                   </div>
+                </div>
 
-                  {/* Watermark Logo toggle */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#121316', padding: '12px 14px', borderRadius: '8px', border: '1px solid #232630' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <img
-                        src="/logo_video.png"
-                        alt="dem.Toshka"
-                        style={{ height: '24px', maxWidth: '75px', objectFit: 'contain', filter: 'drop-shadow(0 0 4px rgba(56, 189, 248, 0.4))' }}
-                      />
-                      <div>
-                        <div style={{ fontSize: '13px', color: '#f1f5f9', fontWeight: 600 }}>Водяной знак dem.Toshka (слева сверху)</div>
-                        <div style={{ fontSize: '11px', color: '#64748b' }}>Фирменный логотип-водяной знак на финальном видео</div>
-                      </div>
+                {/* Switch 3: Overhead Names */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', backgroundColor: '#161922', borderRadius: '6px', border: '1px solid #232738' }}>
+                  <div>
+                    <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <CrosshairIcon size={13} color="#38bdf8" />
+                      <span>Ники над головами</span>
                     </div>
+                    <div style={{ fontSize: '10px', color: '#94a3b8' }}>
+                      Имена и шкала здоровья над персонажами (cl_teamid_overhead_mode)
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: clipSettings?.overheadMode !== false ? '#38bdf8' : '#64748b' }}>
+                      {clipSettings?.overheadMode !== false ? 'ВКЛ' : 'ВЫКЛ'}
+                    </span>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={clipSettings?.overheadMode !== false}
+                        onChange={(e) => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, overheadMode: e.target.checked })}
+                      />
+                      <span className="toggle-slider" />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Switch 4: Killfeed Only */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', backgroundColor: '#161922', borderRadius: '6px', border: '1px solid #232738' }}>
+                  <div>
+                    <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <SkullIcon size={13} color="#38bdf8" />
+                      <span>Только Киллфид (Чистый экран)</span>
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#94a3b8' }}>
+                      Скрывает полосы патронов и HP, оставляя только уведомления о фрагах
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: clipSettings?.killfeedOnly ? '#38bdf8' : '#64748b' }}>
+                      {clipSettings?.killfeedOnly ? 'ВКЛ' : 'ВЫКЛ'}
+                    </span>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(clipSettings?.killfeedOnly)}
+                        onChange={(e) => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, killfeedOnly: e.target.checked })}
+                      />
+                      <span className="toggle-slider" />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Switch 5: 5v3 Counter */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', backgroundColor: '#161922', borderRadius: '6px', border: '1px solid #232738' }}>
+                  <div>
+                    <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <ActivityIcon size={13} color="#38bdf8" />
+                      <span>Счётчик живых (5 v 3 цифрами)</span>
+                    </div>
+                    <div style={{ fontSize: '10px', color: '#94a3b8' }}>
+                      Компактные цифры счета живых игроков сверху вместо больших аватаров
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: clipSettings?.teamcounterMode ? '#38bdf8' : '#64748b' }}>
+                      {clipSettings?.teamcounterMode ? 'ВКЛ' : 'ВЫКЛ'}
+                    </span>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(clipSettings?.teamcounterMode)}
+                        onChange={(e) => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, teamcounterMode: e.target.checked })}
+                      />
+                      <span className="toggle-slider" />
+                    </label>
+                  </div>
+                </div>
+
+                {/* Switch 6: Watermark */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', backgroundColor: '#161922', borderRadius: '6px', border: '1px solid #232738' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <img
+                      src="/logo_video.png"
+                      alt="dem.Toshka"
+                      style={{ height: '18px', maxWidth: '55px', objectFit: 'contain' }}
+                    />
+                    <div>
+                      <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600 }}>Водяной знак dem.Toshka</div>
+                      <div style={{ fontSize: '10px', color: '#94a3b8' }}>Фирменный полупрозрачный логотип слева сверху</div>
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: clipSettings?.watermark !== false ? '#38bdf8' : '#64748b' }}>
+                      {clipSettings?.watermark !== false ? 'ВКЛ' : 'ВЫКЛ'}
+                    </span>
                     <label className="toggle-switch">
                       <input
                         type="checkbox"
@@ -2774,120 +2707,113 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     </label>
                   </div>
                 </div>
-              )}
 
-              {/* TAB 4: CAMERA POV & CROSSHAIR */}
-              {step4Tab === 'camera' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {/* POV Camera Director Mode */}
-                  <div style={{ padding: '14px', backgroundColor: '#121316', borderRadius: '8px', border: '1px solid #232630' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '13px', color: '#f1f5f9', fontWeight: 600 }}>Режиссер POV камеры</span>
-                      <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 600 }}>
-                        {clipSettings?.perspective === 'dynamic_killcam'
-                          ? '🎬 Килл-кам активен'
-                          : clipSettings?.perspective === 'victim'
-                          ? '💀 Жертва'
-                          : '👑 Главный герой (ГГ)'}
-                      </span>
+                {/* Switch 7: Preview Recording Window & Sound */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', backgroundColor: '#161922', borderRadius: '6px', border: '1px solid #232738' }}>
+                  <div>
+                    <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      {clipSettings?.previewRecording !== false ? <VolumeIcon size={13} color="#38bdf8" /> : <VolumeMuteIcon size={13} color="#94a3b8" />}
+                      <span>Окно CS2 и звук записи</span>
                     </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
-                      <button
-                        type="button"
-                        className="btn"
-                        onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, perspective: 'attacker' })}
-                        style={{
-                          padding: '8px 10px',
-                          fontSize: '11px',
-                          textAlign: 'left',
-                          backgroundColor: (!clipSettings?.perspective || clipSettings?.perspective === 'attacker') ? '#3b82f622' : '#16181f',
-                          borderColor: (!clipSettings?.perspective || clipSettings?.perspective === 'attacker') ? '#3b82f6' : '#2b2e38',
-                          borderRadius: '6px',
-                          borderWidth: '1px',
-                          borderStyle: 'solid',
-                          color: '#f1f5f9',
-                        }}
-                      >
-                        <div style={{ fontWeight: 700, color: '#60a5fa' }}>👑 Главный герой (ГГ)</div>
-                        <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px' }}>Камера от лица автора фрагов</div>
-                      </button>
-                      <button
-                        type="button"
-                        className="btn"
-                        onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, perspective: 'dynamic_killcam' })}
-                        style={{
-                          padding: '8px 10px',
-                          fontSize: '11px',
-                          textAlign: 'left',
-                          backgroundColor: clipSettings?.perspective === 'dynamic_killcam' ? '#8b5cf622' : '#16181f',
-                          borderColor: clipSettings?.perspective === 'dynamic_killcam' ? '#8b5cf6' : '#2b2e38',
-                          borderRadius: '6px',
-                          borderWidth: '1px',
-                          borderStyle: 'solid',
-                          color: '#f1f5f9',
-                        }}
-                      >
-                        <div style={{ fontWeight: 700, color: '#c084fc' }}>🎬 Турнирный Килл-кам</div>
-                        <div style={{ fontSize: '10px', color: '#94a3b8', marginTop: '2px' }}>Жертва ➔ ГГ за 2+ сек до выстрела</div>
-                      </button>
+                    <div style={{ fontSize: '10px', color: '#94a3b8' }}>
+                      {clipSettings?.previewRecording !== false ? 'Окно игры открыто, звук включен' : 'Тихий фоновый режим без звука CS2'}
                     </div>
-                    <button
-                      type="button"
-                      className="btn"
-                      onClick={() =>
-                        onUpdateSettings &&
-                        clipSettings &&
-                        onUpdateSettings({ ...clipSettings, perspective: clipSettings.perspective === 'victim' ? 'attacker' : 'victim' })
-                      }
-                      style={{
-                        width: '100%',
-                        padding: '6px 10px',
-                        fontSize: '11px',
-                        backgroundColor: clipSettings?.perspective === 'victim' ? '#ef444422' : '#16181f',
-                        borderColor: clipSettings?.perspective === 'victim' ? '#ef4444' : '#2b2e38',
-                        borderRadius: '6px',
-                        borderWidth: '1px',
-                        borderStyle: 'solid',
-                        color: '#f1f5f9',
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                      }}
-                    >
-                      <span style={{ color: clipSettings?.perspective === 'victim' ? '#f87171' : '#94a3b8' }}>💀 Записать всю нарезку только от лица жертвы</span>
-                      <span style={{ fontSize: '10px', fontWeight: 700, color: clipSettings?.perspective === 'victim' ? '#ef4444' : '#64748b' }}>
-                        {clipSettings?.perspective === 'victim' ? 'ВКЛЮЧЕНО' : 'ВЫКЛ'}
-                      </span>
-                    </button>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: clipSettings?.previewRecording !== false ? '#38bdf8' : '#64748b' }}>
+                      {clipSettings?.previewRecording !== false ? 'ВКЛ' : 'ТИХИЙ'}
+                    </span>
+                    <label className="toggle-switch">
+                      <input
+                        type="checkbox"
+                        checked={clipSettings?.previewRecording !== false}
+                        onChange={(e) => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, previewRecording: e.target.checked })}
+                      />
+                      <span className="toggle-slider" />
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              {/* 5. HUD SCALE & CROSSHAIR */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', backgroundColor: '#12141c', padding: '14px', borderRadius: '8px', border: '1px solid #232734' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <CrosshairIcon size={14} color="#38bdf8" />
+                    <span>РАЗМЕР HUD И ПРИЦЕЛ</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn card-interactive"
+                    onClick={() => setIsTournamentHudModalOpen(true)}
+                    style={{
+                      padding: '3px 8px',
+                      fontSize: '10px',
+                      backgroundColor: 'rgba(245, 158, 11, 0.15)',
+                      color: '#fbbf24',
+                      border: '1px solid rgba(245, 158, 11, 0.4)',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px',
+                    }}
+                  >
+                    <TrophyIcon size={11} color="#fbbf24" />
+                    <span>Турнирный HUD (GSI)...</span>
+                  </button>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  {/* HUD Scale */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>Размер HUD</span>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      {[
+                        { scale: 0.95, label: '95% Компакт' },
+                        { scale: 1.0, label: '100% 1:1' },
+                        { scale: 1.15, label: '115% Кибер' },
+                      ].map((s) => (
+                        <button
+                          key={s.scale}
+                          type="button"
+                          className="btn card-interactive"
+                          onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, hudScale: s.scale })}
+                          style={{
+                            flex: 1,
+                            padding: '4px 4px',
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            borderRadius: '4px',
+                            border: '1px solid #2d3748',
+                            backgroundColor: clipSettings?.hudScale === s.scale ? '#38bdf8' : '#1c2333',
+                            color: clipSettings?.hudScale === s.scale ? '#090d16' : '#cbd5e1',
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
 
-                  {/* Crosshair Preset Selector */}
-                  <div style={{ padding: '14px', backgroundColor: '#121316', borderRadius: '8px', border: '1px solid #232630' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <div>
-                        <div style={{ fontSize: '13px', color: '#f1f5f9', fontWeight: 600 }}>🎯 Прицел в CS2</div>
-                        <div style={{ fontSize: '11px', color: '#64748b' }}>Родной прицел игры или кастомный прицел игрока</div>
-                      </div>
-                      <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 600 }}>
-                        {clipSettings?.crosshairPreset === 'default'
-                          ? 'Дефолтный CS2'
-                          : clipSettings?.crosshairPreset === 'hidden'
-                          ? 'Скрыт'
-                          : 'Прицел игрока (Pro)'}
-                      </span>
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '10px' }}>
+                  {/* Crosshair Preset */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>Прицел в CS2</span>
+                    <div style={{ display: 'flex', gap: '4px' }}>
                       {[
-                        { p: 'default', label: '🎮 Дефолтный CS2', desc: 'Родной прицел игры' },
-                        { p: 'pro_cyan', label: '🎯 Прицел игрока (Pro)', desc: 'Кастомный с цветом' },
-                        { p: 'hidden', label: '🚫 Без прицела', desc: 'Скрыть прицел' },
+                        { p: 'default', label: 'Дефолт' },
+                        { p: 'pro_cyan', label: 'Pro Цветной' },
+                        { p: 'hidden', label: 'Скрыт' },
                       ].map((c) => {
                         const isSelected = (clipSettings?.crosshairPreset || 'default') === c.p
                         return (
                           <button
                             key={c.p}
                             type="button"
-                            className="btn"
+                            className="btn card-interactive"
                             onClick={() =>
                               onUpdateSettings &&
                               clipSettings &&
@@ -2898,57 +2824,58 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                               })
                             }
                             style={{
-                              padding: '8px 10px',
-                              textAlign: 'left',
-                              backgroundColor: isSelected ? '#38bdf822' : '#16181f',
-                              borderColor: isSelected ? '#38bdf8' : '#2b2e38',
-                              borderWidth: '1px',
-                              borderStyle: 'solid',
-                              borderRadius: '6px',
-                              color: isSelected ? '#38bdf8' : '#cbd5e1',
+                              flex: 1,
+                              padding: '4px 4px',
+                              fontSize: '10px',
+                              fontWeight: 700,
+                              borderRadius: '4px',
+                              border: '1px solid #2d3748',
+                              backgroundColor: isSelected ? '#38bdf8' : '#1c2333',
+                              color: isSelected ? '#090d16' : '#cbd5e1',
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap',
                             }}
                           >
-                            <div style={{ fontSize: '11px', fontWeight: 700 }}>{c.label}</div>
-                            <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>{c.desc}</div>
+                            {c.label}
                           </button>
                         )
                       })}
                     </div>
-
-                    {/* Color selection if custom crosshair is chosen */}
-                    {clipSettings?.crosshairPreset !== 'default' && clipSettings?.crosshairPreset !== 'hidden' && (
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', backgroundColor: '#0d1017', borderRadius: '6px', border: '1px solid #1e2433' }}>
-                        <span style={{ fontSize: '11px', color: '#94a3b8' }}>Цвет прицела:</span>
-                        <div style={{ display: 'flex', gap: '8px' }}>
-                          {[
-                            { name: 'cyan', hex: '#00ffff' },
-                            { name: 'green', hex: '#00ff00' },
-                            { name: 'yellow', hex: '#ffff00' },
-                            { name: 'white', hex: '#ffffff' },
-                            { name: 'magenta', hex: '#ff00ff' },
-                          ].map((col) => (
-                            <button
-                              key={col.name}
-                              type="button"
-                              onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, crosshairColor: col.name as any })}
-                              style={{
-                                width: '20px',
-                                height: '20px',
-                                borderRadius: '50%',
-                                backgroundColor: col.hex,
-                                border: (clipSettings?.crosshairColor || 'cyan') === col.name ? '2px solid #ffffff' : '1px solid #334155',
-                                cursor: 'pointer',
-                                outline: (clipSettings?.crosshairColor || 'cyan') === col.name ? '2px solid #38bdf8' : 'none',
-                              }}
-                              title={col.name}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
-              )}
+
+                {/* Crosshair Color selection if Pro */}
+                {clipSettings?.crosshairPreset !== 'default' && clipSettings?.crosshairPreset !== 'hidden' && (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', backgroundColor: '#0d1017', borderRadius: '6px', border: '1px solid #1e2433', marginTop: '2px' }}>
+                    <span style={{ fontSize: '11px', color: '#94a3b8' }}>Цвет прицела:</span>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      {[
+                        { name: 'cyan', hex: '#00ffff' },
+                        { name: 'green', hex: '#00ff00' },
+                        { name: 'yellow', hex: '#ffff00' },
+                        { name: 'white', hex: '#ffffff' },
+                        { name: 'pink', hex: '#ff00ff' },
+                      ].map((col) => (
+                        <button
+                          key={col.name}
+                          type="button"
+                          onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, crosshairColor: col.name as any })}
+                          style={{
+                            width: '18px',
+                            height: '18px',
+                            borderRadius: '50%',
+                            backgroundColor: col.hex,
+                            border: (clipSettings?.crosshairColor || 'cyan') === col.name ? '2px solid #ffffff' : '1px solid #334155',
+                            cursor: 'pointer',
+                            outline: (clipSettings?.crosshairColor || 'cyan') === col.name ? '2px solid #38bdf8' : 'none',
+                          }}
+                          title={col.name}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -2983,6 +2910,81 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
               }}
             >
 
+              {/* Recording Mode / Sound & Window Live Toggle */}
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  backgroundColor: '#0f1219',
+                  border: '1px solid #232938',
+                  borderRadius: '8px',
+                  padding: '10px 14px',
+                  marginBottom: '16px',
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '32px', height: '32px', borderRadius: '8px', backgroundColor: clipSettings?.previewRecording !== false ? 'rgba(56, 189, 248, 0.15)' : 'rgba(100, 116, 139, 0.15)' }}>
+                    {clipSettings?.previewRecording !== false ? (
+                      <VolumeIcon size={18} color="#38bdf8" />
+                    ) : (
+                      <VolumeMuteIcon size={18} color="#94a3b8" />
+                    )}
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#f1f5f9' }}>
+                      {clipSettings?.previewRecording !== false
+                        ? 'Режим записи: Видеть и слышать CS2'
+                        : 'Режим записи: Тихий фоновый'}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#64748b' }}>
+                      {clipSettings?.previewRecording !== false
+                        ? 'Окно игры открыто на экране, воспроизводятся звуки выстрелов и эффекты'
+                        : 'Звук CS2 отключен (volume 0), чтобы не мешать работе за ПК'}
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  className="card-interactive"
+                  onClick={() => {
+                    if (onUpdateSettings && clipSettings) {
+                      onUpdateSettings({
+                        ...clipSettings,
+                        previewRecording: clipSettings.previewRecording === false,
+                      })
+                    }
+                  }}
+                  style={{
+                    backgroundColor: clipSettings?.previewRecording !== false ? 'rgba(56, 189, 248, 0.15)' : 'rgba(100, 116, 139, 0.15)',
+                    border: `1px solid ${clipSettings?.previewRecording !== false ? '#38bdf8' : '#475569'}`,
+                    color: clipSettings?.previewRecording !== false ? '#38bdf8' : '#94a3b8',
+                    padding: '6px 12px',
+                    borderRadius: '6px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                  }}
+                >
+                  {clipSettings?.previewRecording !== false ? (
+                    <>
+                      <VolumeIcon size={13} color="#38bdf8" />
+                      <span>Звук и Окно: ВКЛ</span>
+                    </>
+                  ) : (
+                    <>
+                      <VolumeMuteIcon size={13} color="#94a3b8" />
+                      <span>Тихий режим</span>
+                    </>
+                  )}
+                </button>
+              </div>
+
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <div>
                   <div style={{ fontSize: '15px', fontWeight: 700, color: '#f1f5f9' }}>
@@ -2995,12 +2997,22 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
 
                 <button
                   type="button"
-                  className="btn btn-accent"
+                  className="btn btn-accent card-interactive"
                   onClick={handleStartMontageCreation}
                   disabled={isCompiling || selectedHighlights.length === 0}
-                  style={{ padding: '8px 20px', fontSize: '13px', fontWeight: 700 }}
+                  style={{ padding: '8px 20px', fontSize: '13px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '8px' }}
                 >
-                  {isCompiling ? '⏳ Запись...' : '🎬 Создать нарезку'}
+                  {isCompiling ? (
+                    <>
+                      <LoaderIcon size={13} color="#090d16" />
+                      <span>Запись...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FilmIcon size={13} color="#090d16" />
+                      <span>Создать нарезку</span>
+                    </>
+                  )}
                 </button>
               </div>
 
@@ -3016,8 +3028,9 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#38bdf8' }}>
-                      ⏳ {compilationStatus || 'Идет обработка...'}
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#38bdf8', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <LoaderIcon size={12} color="#38bdf8" />
+                      <span>{compilationStatus || 'Идет обработка...'}</span>
                     </span>
                     <button
                       type="button"
@@ -3055,8 +3068,9 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
               )}
 
               {compilationError && (
-                <div style={{ padding: '10px 14px', backgroundColor: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '6px', color: '#fbbf24', fontSize: '12px', marginBottom: '16px' }}>
-                  ℹ️ {compilationError}
+                <div style={{ padding: '10px 14px', backgroundColor: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)', borderRadius: '6px', color: '#fbbf24', fontSize: '12px', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <WarningIcon size={13} color="#fbbf24" />
+                  <span>{compilationError}</span>
                 </div>
               )}
 
@@ -3065,17 +3079,18 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 <div style={{ marginBottom: '20px', padding: '14px', backgroundColor: '#101217', borderRadius: '8px', border: '1px solid #22c55e' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                      <span style={{ fontSize: '13px', fontWeight: 700, color: '#4ade80', display: 'block' }}>
-                        ✓ Готовый ролик: {compiledMontage.filename}
+                      <span style={{ fontSize: '13px', fontWeight: 700, color: '#4ade80', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <CheckIcon size={13} color="#4ade80" />
+                        <span>Готовый ролик: {compiledMontage.filename}</span>
                       </span>
-                      <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                      <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block', marginTop: '2px' }}>
                         Длительность: {compiledMontage.duration_seconds.toFixed(1)} с • {compiledMontage.total_clips} клипов • 1080p60 H.264
                       </span>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <button
                         type="button"
-                        className="btn btn-primary"
+                        className="btn btn-primary card-interactive"
                         onClick={() =>
                           setActiveModalVideo({
                             url: `/api/montage/${compiledMontage.filename}`,
@@ -3083,14 +3098,15 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                             subtitle: `Монтаж (${compiledMontage.duration_seconds.toFixed(1)} с, ${compiledMontage.total_clips} клипов)`,
                           })
                         }
-                        style={{ padding: '6px 14px', fontSize: '12px' }}
+                        style={{ padding: '6px 14px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                       >
-                        ▶ Смотреть в плеере
+                        <PlayIcon size={11} color="#090d16" />
+                        <span>Смотреть в плеере</span>
                       </button>
                       <a
                         href={`/api/montage/${compiledMontage.filename}`}
                         download
-                        className="btn btn-secondary"
+                        className="btn btn-secondary card-interactive"
                         style={{ padding: '6px 12px', fontSize: '12px', textDecoration: 'none' }}
                       >
                         ⬇ Скачать MP4
@@ -3133,7 +3149,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                         <span style={{ fontWeight: 600, color: '#f1f5f9' }}>{killer}</span>
                         <span style={{ color: '#fbbf24', fontSize: '11px' }}>[{weapon}]</span>
-                        {kill?.headshot && <span>🎯</span>}
+                        {kill?.headshot && <CrosshairIcon size={12} color="#ef4444" />}
                         <span style={{ color: '#94a3b8' }}>→ {victim}</span>
                       </div>
                       <span style={{ fontSize: '10px', fontWeight: 700, color: '#38bdf8' }}>

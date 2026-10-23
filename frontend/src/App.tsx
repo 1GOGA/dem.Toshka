@@ -5,6 +5,7 @@ import { ClipSettingsModal } from './components/ClipSettingsModal'
 import { ClipsMontageView } from './components/ClipsMontageView'
 import { Header, type TabType } from './components/Header'
 import { HighlightsStudioView } from './components/HighlightsStudioView'
+import { LanguageSwitcher } from './components/LanguageSwitcher'
 import { LibraryView } from './components/LibraryView'
 import { MatchOverviewView } from './components/MatchOverviewView'
 import { RenderQueueModal } from './components/RenderQueueModal'
@@ -58,6 +59,7 @@ export function App() {
     customCrosshair: true,
     watermark: true,
     radarMode: 'player_focus',
+    previewRecording: true,
   })
 
   // Loading & error
@@ -217,6 +219,7 @@ export function App() {
       crosshair_color: clipSettings.crosshairColor,
       radar_mode: clipSettings.radarMode || 'player_focus',
       watermark: clipSettings.watermark !== false,
+      preview_recording: clipSettings.previewRecording !== false,
     })
   }
 
@@ -235,6 +238,7 @@ export function App() {
       />
 
       <main style={{ minHeight: 'calc(100vh - 64px)', paddingBottom: activeTab === 'showcase' ? '0px' : '48px' }}>
+        <div key={activeTab} className="scene-transition">
         {activeTab === 'showcase' && (
           <CinematicShowcaseView
             onOpenStudio={() => {
@@ -321,6 +325,7 @@ export function App() {
         {activeTab === 'settings' && (
           <SettingsView />
         )}
+        </div>
       </main>
 
       {/* Modals */}
@@ -342,6 +347,9 @@ export function App() {
         onSubmitRender={handleSubmitRenderJobs}
         tickrate={activeDemo?.tickrate ?? 128}
       />
+
+      {/* Floating Bottom-Right Language Switcher */}
+      <LanguageSwitcher />
     </div>
   )
 }

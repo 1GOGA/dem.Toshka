@@ -795,6 +795,156 @@ class TestRenderQueueManager:
             assert j.progress == 1.0
             assert j.error_summary is None
 
+    @pytest.mark.asyncio
+    async def test_tournament_killcam_task_build(self, db_session_factory, tmp_path):
+        dummy_demo_file = tmp_path / "kc_test.dem"
+        dummy_demo_file.write_bytes(b"PBDEMS2\x00" + b"\x00" * 2000)
+
+        with db_session_factory() as sess:
+            demo = DemoModel(
+                fingerprint="fp_kc",
+                file_path=str(dummy_demo_file),
+                map_name="de_mirage",
+                tickrate=64,
+                duration_seconds=120.0,
+                schema_version="1",
+            )
+            sess.add(demo)
+            sess.flush()
+
+            hl = HighlightModel(
+                id="hl_kc_1",
+                demo_id=demo.id,
+                highlight_type="kill",
+                round_num=3,
+                clip_start_tick=5000,
+                clip_end_tick=5500,
+                kill_start_tick=5200,
+                kill_end_tick=5200,
+                pov_steam_id="76561198000000001",
+                pov_name="HeroShooter",
+                kill_count=1,
+            )
+            sess.add(hl)
+
+            kill = KillEventModel(
+                demo_id=demo.id,
+                round_num=3,
+                tick=5200,
+                attacker_steam_id="76561198000000001",
+                attacker_name="HeroShooter",
+                victim_steam_id="76561198000000002",
+                victim_name="VictimTarget",
+            )
+            sess.add(kill)
+
+            job = RenderJobModel(
+                id="job_kc_test",
+                demo_id=demo.id,
+                highlight_id=hl.id,
+                settings_json=json.dumps({"perspective": "dynamic_killcam"}),
+                status="pending",
+                progress=0.0,
+            )
+            sess.add(job)
+            sess.commit()
+
+        manager = RenderQueueManager(
+            session_factory=db_session_factory,
+            render_engine=MagicMock(),
+            output_dir=tmp_path,
+        )
+
+        task, err = manager._build_task("job_kc_test")
+        assert err is None
+        assert task is not None
+        assert task.is_killcam_replay is True
+        assert task.pov_steam_id == "76561198000000001"
+        assert task.pov_name == "HeroShooter"
+        assert len(task.killcam_victims) == 1
+        vic = task.killcam_victims[0]
+        assert vic.victim_steam_id == "76561198000000002"
+        assert vic.victim_name == "VictimTarget"
+        assert vic.kill_tick == 5200
+        assert vic.start_tick == 5200 - int(1.3 * 64)
+        assert vic.end_tick == 5200 + int(0.7 * 64)
+        assert task.killcam_hero_start_tick == 5200 - int(4.0 * 64)
+
+    @pytest.mark.asyncio
+    async def test_tournament_killcam_multikill_task_build(self, db_session_factory, tmp_path):
+        dummy_demo_file = tmp_path / "kc_multi.dem"
+        dummy_demo_file.write_bytes(b"PBDEMS2\x00" + b"\x00" * 2000)
+
+        with db_session_factory() as sess:
+            demo = DemoModel(
+                fingerprint="fp_kc_multi",
+                file_path=str(dummy_demo_file),
+                map_name="de_dust2",
+                tickrate=64,
+                duration_seconds=120.0,
+                schema_version="1",
+            )
+            sess.add(demo)
+            sess.flush()
+
+            hl = HighlightModel(
+                id="hl_kc_3k",
+                demo_id=demo.id,
+                highlight_type="multikill_3k",
+                round_num=5,
+                clip_start_tick=5000,
+                clip_end_tick=6200,
+                kill_start_tick=5100,
+                kill_end_tick=5900,
+                pov_steam_id="76561198000000001",
+                pov_name="HeroShooter",
+                kill_count=3,
+            )
+            sess.add(hl)
+
+            for tick, v_id, v_name in [
+                (5100, "76561198000000002", "VictimOne"),
+                (5500, "76561198000000003", "VictimTwo"),
+                (5900, "76561198000000004", "VictimThree"),
+            ]:
+                sess.add(
+                    KillEventModel(
+                        demo_id=demo.id,
+                        round_num=5,
+                        tick=tick,
+                        attacker_steam_id="76561198000000001",
+                        attacker_name="HeroShooter",
+                        victim_steam_id=v_id,
+                        victim_name=v_name,
+                    )
+                )
+
+            job = RenderJobModel(
+                id="job_kc_3k_test",
+                demo_id=demo.id,
+                highlight_id=hl.id,
+                settings_json=json.dumps({"perspective": "dynamic_killcam"}),
+                status="pending",
+                progress=0.0,
+            )
+            sess.add(job)
+            sess.commit()
+
+        manager = RenderQueueManager(
+            session_factory=db_session_factory,
+            render_engine=MagicMock(),
+            output_dir=tmp_path,
+        )
+
+        task, err = manager._build_task("job_kc_3k_test")
+        assert err is None
+        assert task is not None
+        assert task.is_killcam_replay is True
+        assert len(task.killcam_victims) == 3
+        assert [v.victim_name for v in task.killcam_victims] == ["VictimOne", "VictimTwo", "VictimThree"]
+        assert task.killcam_hero_start_tick == 5100 - int(4.0 * 64)
+        assert task.end_tick >= 5900 + int(5.0 * 64)
+
 
 class TestParseRenderResolution:
     def test_default_16_9(self):

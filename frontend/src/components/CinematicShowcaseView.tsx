@@ -1,5 +1,6 @@
 import React from 'react'
 import './CinematicShowcaseView.css'
+import { useTranslation } from '../i18n'
 
 interface CinematicShowcaseViewProps {
   onOpenStudio?: () => void
@@ -10,6 +11,8 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
   onOpenStudio,
   onOpenLibrary,
 }) => {
+  const { t } = useTranslation()
+
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id)
     if (el) {
@@ -31,7 +34,7 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
               <div className="hero-eyebrow">
                 <span className="eyebrow-dot" />
                 <span className="eyebrow-text">INDEPENDENT CS2 PROJECT</span>
-                <span className="eyebrow-status">В РАЗРАБОТКЕ</span>
+                <span className="eyebrow-status">{t('showcase.heroStatus')}</span>
               </div>
 
               <div className="hero-brand-line">
@@ -39,14 +42,13 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                   <span className="highlight">dem.Toshka</span> | pytoshka
                 </div>
                 <h1 className="hero-headline">
-                  Твои демки. <br />
-                  <span className="text-gradient">Твои лучшие моменты.</span>
+                  {t('showcase.heroTitle1')} <br />
+                  <span className="text-gradient">{t('showcase.heroTitle2')}</span>
                 </h1>
               </div>
 
               <p className="hero-description">
-                Превращай демки CS2 в хайлайты. Выбирай POV, настраивай HUD и сохраняй моменты,
-                которые хочется пересматривать. Локальный движок рендера на базе Source 2 и HLAE.
+                {t('showcase.heroDesc')}
               </p>
 
               <div className="hero-cta-group">
@@ -60,7 +62,7 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
                   </svg>
-                  СЛЕДИТЬ ЗА РАЗРАБОТКОЙ
+                  {t('showcase.followDev')}
                 </a>
 
                 <button
@@ -68,7 +70,7 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                   onClick={() => scrollToSection('features')}
                   className="btn-hero-secondary"
                 >
-                  ВОЗМОЖНОСТИ ПРОЕКТА
+                  {t('showcase.featuresBtn')}
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                     <path d="M7 13l5 5 5-5M7 6l5 5 5-5" />
                   </svg>
@@ -84,7 +86,7 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <polygon points="5 3 19 12 5 21 5 3" />
                     </svg>
-                    ОТКРЫТЬ СТУДИЮ
+                    {t('showcase.openStudioBtn')}
                   </button>
                 )}
               </div>
@@ -92,12 +94,12 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
               {/* Technical Spec Row */}
               <div className="hero-specs-row">
                 <div className="hero-spec-item">
-                  <span className="hero-spec-label">ARCHITECTURE</span>
-                  <span className="hero-spec-value">LOCAL-FIRST / DESKTOP</span>
+                  <span className="hero-spec-label">{t('showcase.archTitle')}</span>
+                  <span className="hero-spec-value">{t('showcase.archValue')}</span>
                 </div>
                 <div className="hero-spec-item">
-                  <span className="hero-spec-label">DEMO ENGINE</span>
-                  <span className="hero-spec-value">CS2 SOURCE 2 (AWPY)</span>
+                  <span className="hero-spec-label">{t('showcase.engineTitle')}</span>
+                  <span className="hero-spec-value">{t('showcase.engineValue')}</span>
                 </div>
                 <div className="hero-spec-item">
                   <span className="hero-spec-label">RECORDING</span>
@@ -152,10 +154,9 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
         <div className="showcase-container">
           <div className="section-header">
             <span className="section-tag">// 02 ARCHITECTURE & FEATURES</span>
-            <h2 className="section-title">Ключевые возможности студии</h2>
+            <h2 className="section-title">{t('showcase.featuresHeadline')}</h2>
             <p className="section-subtitle">
-              От глубокого разбора событий в демках CS2 до пакетного захвата кинокадров без
-              мучительного ручного монтажа.
+              {t('showcase.featuresSubheadline')}
             </p>
           </div>
 
@@ -318,9 +319,9 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
         <div className="showcase-container">
           <div className="section-header">
             <span className="section-tag">// 03 WORKFLOW PIPELINE</span>
-            <h2 className="section-title">Пайплайн создания хайлайта</h2>
+            <h2 className="section-title">{t('showcase.howItWorks')}</h2>
             <p className="section-subtitle">
-              От сырой демки матча до готового видеоклипа без лишних манипуляций со сторонними программами.
+              {t('showcase.pipelineSubtitle')}
             </p>
           </div>
 
@@ -328,10 +329,9 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
             {/* Step 1 */}
             <div className="workflow-card">
               <div className="workflow-step-num">01</div>
-              <h3 className="workflow-title">Загрузка демки CS2</h3>
+              <h3 className="workflow-title">{t('showcase.step1Title')}</h3>
               <p className="workflow-text">
-                Перетащите файл матча <code>.dem</code> прямо в окно программы или укажите путь.
-                Локальный анализатор Awpy мгновенно извлечет тики, структуру раундов и полную телеметрию игроков.
+                {t('showcase.step1Desc')}
               </p>
               <div className="workflow-command-hint">
                 AWPY SOURCE 2 PARSE → TICK METADATA
@@ -341,10 +341,9 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
             {/* Step 2 */}
             <div className="workflow-card">
               <div className="workflow-step-num">02</div>
-              <h3 className="workflow-title">Выбор моментов</h3>
+              <h3 className="workflow-title">{t('showcase.step2Title')}</h3>
               <p className="workflow-text">
-                Студия автоматически сгруппирует эйсы, клатчи, быстрые серии фрагов и дуэли.
-                Выбирайте нужные клипы галочками или сформируйте подборку по конкретному игроку.
+                {t('showcase.step2Desc')}
               </p>
               <div className="workflow-command-hint">
                 HIGHLIGHT DETECTOR → BATCH SELECTION
@@ -354,10 +353,9 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
             {/* Step 3 */}
             <div className="workflow-card">
               <div className="workflow-step-num">03</div>
-              <h3 className="workflow-title">Настройка POV и рендер</h3>
+              <h3 className="workflow-title">{t('showcase.step3Title')}</h3>
               <p className="workflow-text">
-                Выберите ракурс, стиль HUD, прицел и FPS (60 или 120). Запустите пакетную сессию:
-                CS2 запишет все эпизоды за один прогон, а встроенный FFmpeg соберет видео.
+                {t('showcase.step3Desc')}
               </p>
               <div className="workflow-command-hint">
                 CONTINUOUS BATCHING → FINAL MP4
@@ -374,10 +372,9 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
         <div className="showcase-container">
           <div className="philosophy-banner">
             <span className="section-tag">// 04 PHILOSOPHY</span>
-            <h2 className="philosophy-title">Твои хайлайты. Без лишних барьеров.</h2>
+            <h2 className="philosophy-title">{t('showcase.philosophyTitle')}</h2>
             <p className="section-subtitle" style={{ maxWidth: '780px' }}>
-              Мы верим, что создание крутых игровых видеороликов должно быть доступным,
-              чистым и свободным от подписок, очередей на облачных серверах и навязчивой рекламы.
+              {t('showcase.philosophyDesc')}
             </p>
 
             <div className="philosophy-pillars">
@@ -419,10 +416,9 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
         <div className="showcase-container">
           <div className="section-header">
             <span className="section-tag crimson">// 05 CREATOR & COMMUNITY</span>
-            <h2 className="section-title">Сделано для тех, кто живёт CS2.</h2>
+            <h2 className="section-title">{t('showcase.creatorTitle')}</h2>
             <p className="section-subtitle">
-              Следите за разработкой проекта <strong>dem.Toshka | pytoshka</strong>, участвуйте в обсуждении
-              новых функций и смотрите свежие видеодемонстрации в официальных каналах.
+              {t('showcase.creatorSub')}
             </p>
           </div>
 
@@ -558,9 +554,7 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
 
           <div className="footer-bottom">
             <div className="footer-disclaimer">
-              Counter-Strike, CS2, Valve and their respective logos are trademarks and/or registered
-              trademarks of Valve Corporation. dem.Toshka is an independent fan project not affiliated
-              with or endorsed by Valve Corporation.
+              {t('showcase.disclaimer')}
             </div>
             <div>
               © 2026 <strong>pytoshka</strong>. All rights reserved.

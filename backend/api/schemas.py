@@ -146,6 +146,7 @@ class RenderJobCreateRequest(BaseModel):
     crosshair_color: Optional[str] = None  # "cyan" | "green" | "yellow" | "white" | "pink" | "red" | "blue"
     radar_mode: str = "broadcast"  # "dynamic_large" | "broadcast_giant" | "broadcast" | "player_focus" | "compact" | "hidden"
     watermark: bool = True
+    preview_recording: bool = True
 
 
 class RenderJobDTO(BaseModel):

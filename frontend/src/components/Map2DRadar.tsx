@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useRef, useEffect } from 'react'
 import type { HighlightItem } from '../types'
 
 interface Map2DRadarProps {
@@ -117,6 +117,7 @@ export const Map2DRadar: React.FC<Map2DRadarProps> = ({
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const handleZoomIn = () => {
     setZoom((prev) => Math.min(3.5, Number((prev + 0.35).toFixed(2))))
@@ -135,18 +136,29 @@ export const Map2DRadar: React.FC<Map2DRadarProps> = ({
     setPan({ x: 0, y: 0 })
   }
 
-  const handleWheel = (e: React.WheelEvent) => {
-    e.preventDefault()
-    if (e.deltaY < 0) {
-      setZoom((prev) => Math.min(3.5, Number((prev + 0.25).toFixed(2))))
-    } else {
-      setZoom((prev) => {
-        const next = Math.max(1, Number((prev - 0.25).toFixed(2)))
-        if (next === 1) setPan({ x: 0, y: 0 })
-        return next
-      })
+  useEffect(() => {
+    const el = containerRef.current
+    if (!el) return
+
+    const onWheelNative = (e: WheelEvent) => {
+      e.preventDefault()
+      e.stopPropagation()
+      if (e.deltaY < 0) {
+        setZoom((prev) => Math.min(3.5, Number((prev + 0.25).toFixed(2))))
+      } else {
+        setZoom((prev) => {
+          const next = Math.max(1, Number((prev - 0.25).toFixed(2)))
+          if (next === 1) setPan({ x: 0, y: 0 })
+          return next
+        })
+      }
     }
-  }
+
+    el.addEventListener('wheel', onWheelNative, { passive: false })
+    return () => {
+      el.removeEventListener('wheel', onWheelNative)
+    }
+  }, [])
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (zoom > 1) {
@@ -315,6 +327,7 @@ export const Map2DRadar: React.FC<Map2DRadarProps> = ({
 
       {/* Map & SVG Overlay Canvas */}
       <div
+        ref={containerRef}
         style={{
           position: 'relative',
           width: '100%',
@@ -324,8 +337,9 @@ export const Map2DRadar: React.FC<Map2DRadarProps> = ({
           overflow: 'hidden',
           cursor: zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default',
           userSelect: 'none',
+          overscrollBehavior: 'contain',
+          touchAction: 'none',
         }}
-        onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}

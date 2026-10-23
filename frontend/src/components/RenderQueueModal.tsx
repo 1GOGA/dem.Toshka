@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react'
 import { api } from '../api'
 import type { ClipSettings, HighlightItem, MontageDTO, RenderJobDTO } from '../types'
 import { VideoPlayerModal } from './VideoPlayerModal'
+import { useTranslation } from '../i18n'
 
 interface RenderQueueModalProps {
   isOpen: boolean
@@ -26,6 +27,7 @@ export const RenderQueueModal: React.FC<RenderQueueModalProps> = ({
   onSubmitRender,
   tickrate,
 }) => {
+  const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<'queue' | 'history'>('queue')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isRetrying, setIsRetrying] = useState(false)
@@ -269,7 +271,7 @@ export const RenderQueueModal: React.FC<RenderQueueModalProps> = ({
         <div className="modal-header">
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <h3 className="modal-title" style={{ margin: 0 }}>
-              🎬 Video Render Queue
+              🎬 {t('modal.queue.title')}
             </h3>
             <div style={{ display: 'flex', gap: '4px' }}>
               <button

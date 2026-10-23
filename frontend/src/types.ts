@@ -144,6 +144,7 @@ export interface ClipSettings {
   crosshairColor?: 'cyan' | 'green' | 'yellow' | 'white' | 'pink' | 'red' | 'blue'
   radarMode?: 'dynamic_large' | 'broadcast_giant' | 'broadcast' | 'player_focus' | 'compact' | 'hidden'
   watermark?: boolean
+  previewRecording?: boolean
 }
 
 export interface MontageDTO {
@@ -189,6 +190,21 @@ export interface ReplayKillItem {
   headshot: boolean
 }
 
+export interface ReplayGrenadeItem {
+  id: number
+  type: 'smoke' | 'molotov' | 'flash' | 'he' | 'decoy'
+  raw_type?: string
+  thrower_name: string
+  thrower_steam_id: string
+  start_tick: number
+  detonate_tick: number
+  end_tick: number
+  duration_seconds: number
+  x: number
+  y: number
+  trajectory?: Array<{ tick: number; x: number; y: number }>
+}
+
 export interface RoundReplayData {
   round_num: number
   map_name: string
@@ -201,6 +217,7 @@ export interface RoundReplayData {
   frames: ReplayFrame[]
   kills: ReplayKillItem[]
   players: Record<string, { steam_id: string; name: string; side: string }>
+  grenades?: ReplayGrenadeItem[]
 }
 
 export interface CompletedClipDTO {

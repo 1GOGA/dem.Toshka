@@ -7,7 +7,7 @@ import pytest
 
 from backend.render.cfg_generator import generate_render_cfg, steam64_to_account_id
 from backend.render.engine import RenderEngine
-from backend.render.models import RenderTask
+from backend.render.models import KillcamVictimSegment, RenderTask
 from backend.render.verifier import (
     verify_media_integrity,
     verify_mp4,
@@ -87,7 +87,7 @@ class TestCfgGenerator:
         assert "mirv_streams record screen settings afxFfmpegYuv420p" in content
         assert "spec_lock_to_accountid 12345" in content
         assert 'mirv_cmd addAtTick 5000 "spec_autodirector 0; spec_mode 4; spec_lock_to_accountid 12345; spec_player Alice; cl_trueview_show_status 0; demo_ui_mode 0; cl_spec_show_bindings 0; mirv_streams record start"' in content
-        assert 'mirv_cmd addAtTick 5300 "mirv_streams record end; quit"' in content
+        assert 'mirv_cmd addAtTick 5300 "mirv_streams record end; exec restore_user; cl_radar_rotate 1; cl_drawhud 1; quit"' in content
         assert "r_show_build_info 0" in content
         assert "spec_show_xray 1" in content
         assert "cl_draw_only_deathnotices 0" in content
@@ -223,7 +223,7 @@ class TestCfgGenerator:
         assert "demo_gototick 4780" in content
         assert "spec_player VictimPlayer" in content
         assert 'mirv_cmd addAtTick 4800 "spec_autodirector 0; spec_mode 4; spec_lock_to_accountid 12345; spec_player VictimPlayer; cl_trueview_show_status 0; demo_ui_mode 0; cl_spec_show_bindings 0; mirv_streams record start"' in content
-        assert 'mirv_cmd addAtTick 5080 "mirv_streams record end; quit"' in content
+        assert 'mirv_cmd addAtTick 5080 "mirv_streams record end; exec restore_user; cl_radar_rotate 1; cl_drawhud 1; quit"' in content
         assert cfg_path.exists()
 
     def test_generate_batch_render_cfg(self, tmp_path):
@@ -258,7 +258,7 @@ class TestCfgGenerator:
         assert "demo_ui_mode 0" in content
         assert "demo_gototick 2980" in content
         assert 'mirv_cmd addAtTick 1500 "mirv_streams record end; demo_gototick 2980; demo_resume"' in content
-        assert 'mirv_cmd addAtTick 3500 "mirv_streams record end; quit"' in content
+        assert 'mirv_cmd addAtTick 3500 "mirv_streams record end; exec restore_user; cl_radar_rotate 1; cl_drawhud 1; quit"' in content
         assert " 0 0" not in content
         # Ensure every single command line fits safely within Source 2 console buffer (< 200 chars)
         assert all(len(line) < 200 for line in content.splitlines())
@@ -537,6 +537,100 @@ class TestRenderEngineValidation:
         assert executed_passes[1]["end_tick"] == 5800
         assert executed_passes[1]["pov_name"] == "HeroAttacker"
         assert executed_passes[1]["pov_steam_id"] == "76561197960278074"
+
+    def test_render_clip_tournament_killcam_multikill_staging(self, tmp_path, monkeypatch):
+        """Verify that multi-kill tournament killcam executes passes for all victims sequentially then hero, and concatenates all."""
+        from unittest.mock import MagicMock
+        from backend.render.montage import MontageResult
+
+        dummy_cs2 = tmp_path / "cs2.exe"
+        dummy_cs2.write_text("cs2")
+        dummy_hlae = tmp_path / "hlae.exe"
+        dummy_hlae.write_text("hlae")
+        dummy_hook = tmp_path / "hook.dll"
+        dummy_hook.write_text("hook")
+        dummy_demo = tmp_path / "match.dem"
+        dummy_demo.write_text("demo")
+
+        engine = RenderEngine(
+            cs2_exe=dummy_cs2,
+            hlae_exe=dummy_hlae,
+            hook_dll=dummy_hook,
+        )
+
+        out_mp4 = tmp_path / "final_3k_killcam.mp4"
+        victims = [
+            KillcamVictimSegment(victim_steam_id="76561197960278001", victim_name="VicA", start_tick=4800, end_tick=5000, kill_tick=4950),
+            KillcamVictimSegment(victim_steam_id="76561197960278002", victim_name="VicB", start_tick=5200, end_tick=5400, kill_tick=5350),
+            KillcamVictimSegment(victim_steam_id="76561197960278003", victim_name="VicC", start_tick=5600, end_tick=5800, kill_tick=5750),
+        ]
+        task = RenderTask(
+            task_id="kc_3k_task",
+            demo_path=dummy_demo,
+            start_tick=5000,
+            end_tick=6200,
+            pov_steam_id="76561197960278099",
+            pov_name="HeroShooter",
+            output_path=out_mp4,
+            is_killcam_replay=True,
+            killcam_victims=victims,
+            killcam_hero_start_tick=4700,
+        )
+
+        executed_passes = []
+        batch_victim_calls = []
+
+        def mock_execute_pass(task, subtask_id, start_tick, end_tick, pov_steam_id, pov_name, output_mp4, camera_switches=None, log_file=None):
+            executed_passes.append({
+                "subtask_id": subtask_id,
+                "start_tick": start_tick,
+                "end_tick": end_tick,
+                "pov_name": pov_name,
+                "pov_steam_id": pov_steam_id,
+                "output_mp4": output_mp4,
+            })
+            output_mp4.parent.mkdir(parents=True, exist_ok=True)
+            output_mp4.write_text(f"dummy video for {subtask_id}")
+            return True, None, True, None
+
+        def mock_execute_victim_batch(task, victims, output_mp4s, log_file=None):
+            batch_victim_calls.append(len(victims))
+            for i, p in enumerate(output_mp4s):
+                p.parent.mkdir(parents=True, exist_ok=True)
+                p.write_text(f"dummy video for victim {i}")
+            return True, None, True, None
+
+        monkeypatch.setattr(engine, "_execute_cs2_pass", mock_execute_pass)
+        monkeypatch.setattr(engine, "_execute_cs2_victim_batch", mock_execute_victim_batch)
+
+        montage_clip_paths = []
+        def mock_montage_call(clip_paths, output_path):
+            montage_clip_paths.extend(clip_paths)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text("stitched final 3k killcam")
+            return MontageResult(success=True, output_path=output_path, duration_seconds=20.0, clip_count=len(clip_paths))
+
+        monkeypatch.setattr("backend.render.engine.create_montage", mock_montage_call)
+        monkeypatch.setattr("backend.render.engine.verify_mp4", lambda *args, **kwargs: (True, 20.0, None))
+        monkeypatch.setattr("backend.render.engine.verify_media_integrity", lambda *args, **kwargs: (True, None))
+        monkeypatch.setattr("backend.render.engine.verify_mp4_visual_content", lambda *args, **kwargs: (True, None))
+        monkeypatch.setattr("backend.render.engine.verify_mp4_audio_signal", lambda *args, **kwargs: (True, 0.0, -14.0, None))
+
+        result = engine.render_clip(task)
+        assert result.success is True
+
+        # Exactly 2 CS2 launches:
+        # Launch 1: all 3 victims recorded in 1 batch run!
+        assert len(batch_victim_calls) == 1
+        assert batch_victim_calls[0] == 3
+        # Launch 2: Hero recorded in 1 linear pass!
+        assert len(executed_passes) == 1
+        assert executed_passes[0]["subtask_id"] == "kc_3k_task_hero"
+        assert executed_passes[0]["pov_name"] == "HeroShooter"
+        assert executed_passes[0]["start_tick"] == 4700
+
+        # Montage concat combined all 4 clips
+        assert len(montage_clip_paths) == 4
 
     def test_real_obs_mode_cfg_generation(self, tmp_path):
         from backend.render.cfg_generator import generate_render_cfg

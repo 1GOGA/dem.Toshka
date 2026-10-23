@@ -125,14 +125,32 @@ _DEMO_OBJ_CACHE: dict[str, Any] = {}
 _REPLAY_DATA_CACHE: dict[tuple[str, int, int], dict[str, Any]] = {}
 
 
+def normalize_map_name(map_name: str) -> str:
+    """Normalize map names like 'workshop/123/de_dust2' or 'maps/de_mirage.vpk' to standard CS2 base names."""
+    if not map_name:
+        return "de_mirage"
+    clean = str(map_name).replace("\\", "/").split("/")[-1].replace(".vpk", "").lower().strip()
+    return clean
+
+
+def get_map_calibration(map_name: str) -> dict[str, Any]:
+    """Look up official map calibration with intelligent fuzzy matching for custom/workshop prefixes."""
+    norm = normalize_map_name(map_name)
+    if norm in MAP_CALIBRATIONS:
+        return MAP_CALIBRATIONS[norm]
+    for k, v in MAP_CALIBRATIONS.items():
+        if k in norm:
+            return v
+    return DEFAULT_CALIBRATION
+
+
 def world_to_radar_percent(
     x: float,
     y: float,
     map_name: str = "de_nuke",
 ) -> tuple[float, float]:
     """Convert world 3D coordinates (X, Y) into radar coordinates (0%..100%)."""
-    norm_map = (map_name or "de_nuke").lower().replace(".vpk", "")
-    cal = MAP_CALIBRATIONS.get(norm_map, DEFAULT_CALIBRATION)
+    cal = get_map_calibration(map_name)
 
     pos_x = cal["pos_x"]
     pos_y = cal["pos_y"]
@@ -215,7 +233,7 @@ def extract_round_replay_data(
 
     frames_list: list[dict[str, Any]] = []
 
-    cal = MAP_CALIBRATIONS.get(map_name, DEFAULT_CALIBRATION)
+    cal = get_map_calibration(map_name)
     split_z = cal.get("split_z")
 
     # Fast group-by tick
@@ -276,7 +294,83 @@ def extract_round_replay_data(
             "headshot": bool(k.get("headshot")),
         })
 
-    cal = MAP_CALIBRATIONS.get(map_name, DEFAULT_CALIBRATION)
+    # 4. Extract utility / grenades in this round
+    grenades_list: list[dict[str, Any]] = []
+    if hasattr(dem, "grenades") and dem.grenades is not None:
+        try:
+            round_grenades = dem.grenades.filter(
+                (dem.grenades["round_num"] == round_num) & dem.grenades["X"].is_not_null()
+            )
+            if len(round_grenades) > 0:
+                entities = round_grenades["entity_id"].unique().to_list()
+                for eid in entities:
+                    ent_rows = round_grenades.filter(round_grenades["entity_id"] == eid)
+                    raw_type = str(ent_rows["grenade_type"][0])
+                    s_tick = int(ent_rows["tick"].min())
+                    e_tick = int(ent_rows["tick"].max())
+                    dur_ticks = e_tick - s_tick
+
+                    # Determine grenade category and timings
+                    if "Smoke" in raw_type:
+                        g_type = "smoke"
+                        # In CS2, smoke blooms ~1.8s after throw (or end of flight) and lasts 20.0s
+                        det_tick = max(s_tick + int(1.5 * tickrate), e_tick - int(20.0 * tickrate)) if dur_ticks > int(10 * tickrate) else s_tick + int(1.8 * tickrate)
+                        exp_tick = max(e_tick, det_tick + int(20.0 * tickrate))
+                        total_duration = 20.0
+                    elif "Molotov" in raw_type or "Incendiary" in raw_type:
+                        g_type = "molotov"
+                        det_tick = e_tick
+                        exp_tick = det_tick + int(7.03 * tickrate)
+                        total_duration = 7.03
+                    elif "Flash" in raw_type:
+                        g_type = "flash"
+                        det_tick = e_tick
+                        exp_tick = det_tick + int(1.2 * tickrate)
+                        total_duration = 1.2
+                    elif "Decoy" in raw_type:
+                        g_type = "decoy"
+                        det_tick = e_tick
+                        exp_tick = det_tick + int(15.0 * tickrate)
+                        total_duration = 15.0
+                    else:
+                        g_type = "he"
+                        det_tick = e_tick
+                        exp_tick = det_tick + int(1.0 * tickrate)
+                        total_duration = 1.0
+
+                    last_x = float(ent_rows["X"][-1])
+                    last_y = float(ent_rows["Y"][-1])
+                    rx, ry = world_to_radar_percent(last_x, last_y, map_name)
+
+                    thrower = str(ent_rows["thrower"][0]) if "thrower" in ent_rows.columns else ""
+                    thrower_sid = str(ent_rows["thrower_steamid"][0]) if "thrower_steamid" in ent_rows.columns else ""
+
+                    # Downsample flight trajectory points
+                    trajectory: list[dict[str, Any]] = []
+                    flight_rows = ent_rows.filter(ent_rows["tick"] <= det_tick)
+                    step = max(1, len(flight_rows) // 8)
+                    for row in flight_rows[::step].to_dicts():
+                        tx, ty = world_to_radar_percent(float(row.get("X") or 0.0), float(row.get("Y") or 0.0), map_name)
+                        trajectory.append({"tick": int(row.get("tick") or 0), "x": tx, "y": ty})
+
+                    grenades_list.append({
+                        "id": int(eid),
+                        "type": g_type,
+                        "raw_type": raw_type,
+                        "thrower_name": thrower,
+                        "thrower_steam_id": thrower_sid,
+                        "start_tick": s_tick,
+                        "detonate_tick": det_tick,
+                        "end_tick": exp_tick,
+                        "duration_seconds": total_duration,
+                        "x": rx,
+                        "y": ry,
+                        "trajectory": trajectory,
+                    })
+        except Exception as ex:
+            logger.warning("Error extracting grenades for round %s: %s", round_num, ex)
+
+    cal = get_map_calibration(map_name)
     res = {
         "round_num": round_num,
         "map_name": map_name,
@@ -289,6 +383,7 @@ def extract_round_replay_data(
         "frames": frames_list,
         "kills": kills_list,
         "players": players_dict,
+        "grenades": grenades_list,
     }
     _REPLAY_DATA_CACHE[cache_key] = res
     return res
@@ -317,7 +412,7 @@ def get_highlights_radar_coords(
     else:
         dem = _DEMO_OBJ_CACHE[demo_key]
 
-    cal = MAP_CALIBRATIONS.get(map_name, DEFAULT_CALIBRATION)
+    cal = get_map_calibration(map_name)
     split_z = cal.get("split_z")
 
     try:

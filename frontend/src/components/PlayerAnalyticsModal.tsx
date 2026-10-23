@@ -70,8 +70,8 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
     }
   }, [demoId, playerIdentifier])
 
-  // Helper to calculate FACEIT level equivalent (1 to 10)
-  const getFaceitLevel = (rating: number): { level: number; color: string; bg: string } => {
+  // Helper to calculate PR (pytoshka Rating) level equivalent (1 to 10)
+  const getPRLevel = (rating: number): { level: number; color: string; bg: string } => {
     if (rating >= 1.50) return { level: 10, color: '#ef4444', bg: 'rgba(239, 68, 68, 0.2)' }
     if (rating >= 1.35) return { level: 9, color: '#f97316', bg: 'rgba(249, 115, 22, 0.2)' }
     if (rating >= 1.25) return { level: 8, color: '#fbbf24', bg: 'rgba(251, 191, 36, 0.2)' }
@@ -84,7 +84,7 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
     return { level: 1, color: '#64748b', bg: 'rgba(100, 116, 139, 0.2)' }
   }
 
-  const faceitInfo = analytics ? getFaceitLevel(analytics.performance_rating) : { level: 5, color: '#38bdf8', bg: 'rgba(56, 189, 248, 0.2)' }
+  const prInfo = analytics ? getPRLevel(analytics.performance_rating) : { level: 5, color: '#38bdf8', bg: 'rgba(56, 189, 248, 0.2)' }
 
   const filteredErrors = analytics
     ? analytics.errors.filter((e) => errorFilter === 'all' || e.severity === errorFilter)
@@ -247,7 +247,7 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
           {isLoading && (
             <div style={{ textAlign: 'center', padding: '60px 0', color: '#94a3b8' }}>
               <div style={{ fontSize: '28px', marginBottom: '12px', animation: 'spin 1.5s linear infinite' }}>⚙️</div>
-              <div>Вычисляем статистику FACEIT, SWING и аудит тактических ошибок...</div>
+              <div>Вычисляем тактический рейтинг PR (pytoshka Rating), SWING и аудит ошибок...</div>
             </div>
           )}
 
@@ -295,7 +295,7 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                 </div>
               )}
 
-              {/* FACEIT & COMBAT HERO CARD */}
+              {/* PR (PYTOSHKA RATING) & COMBAT HERO CARD */}
               <div
                 style={{
                   background: 'linear-gradient(135deg, #181d27 0%, #151821 100%)',
@@ -316,28 +316,36 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                       width: '68px',
                       height: '68px',
                       borderRadius: '16px',
-                      backgroundColor: faceitInfo.bg,
-                      border: `2px solid ${faceitInfo.color}`,
+                      backgroundColor: prInfo.bg,
+                      border: `2px solid ${prInfo.color}`,
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      boxShadow: `0 0 20px ${faceitInfo.bg}`,
+                      boxShadow: `0 0 20px ${prInfo.bg}`,
                     }}
+                    title={`Уровень PR: ${prInfo.level}/10 (pytoshka Rating)`}
                   >
                     <span style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>LVL</span>
-                    <span style={{ fontSize: '28px', fontWeight: 900, color: faceitInfo.color, lineHeight: 1 }}>
-                      {faceitInfo.level}
+                    <span style={{ fontSize: '28px', fontWeight: 900, color: prInfo.color, lineHeight: 1 }}>
+                      {prInfo.level}
                     </span>
                   </div>
-                  <span style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8' }}>FACEIT RATING</span>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 800, color: prInfo.color, letterSpacing: '0.05em' }}>
+                      PR RATING
+                    </div>
+                    <div style={{ fontSize: '9px', fontWeight: 600, color: '#64748b' }}>
+                      pytoshka Rating
+                    </div>
+                  </div>
                 </div>
 
                 {/* Main Stats Row */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '16px' }}>
                   <div style={{ backgroundColor: '#101217', padding: '12px 14px', borderRadius: '10px', border: '1px solid #1f2430' }}>
                     <div style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>PERFORMANCE SCORE</div>
-                    <div className="num" style={{ fontSize: '22px', fontWeight: 800, color: faceitInfo.color, marginTop: '2px' }}>
+                    <div className="num" style={{ fontSize: '22px', fontWeight: 800, color: prInfo.color, marginTop: '2px' }}>
                       {analytics.performance_rating.toFixed(2)}
                     </div>
                     <div style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 600 }}>

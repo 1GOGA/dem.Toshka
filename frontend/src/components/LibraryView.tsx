@@ -1,5 +1,7 @@
 import React, { useState, useRef } from 'react'
 import type { DemoSummary } from '../types'
+import { FolderIcon, LoaderIcon, CheckIcon } from './Icons'
+import { useTranslation } from '../i18n'
 
 interface LibraryViewProps {
   demos: DemoSummary[]
@@ -20,7 +22,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
   isLoading,
   error,
 }) => {
-  const [inputPath, setInputPath] = useState('tests/integration/fixtures/test.dem')
+  const { t } = useTranslation()
   const [uploadingName, setUploadingName] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -41,7 +43,6 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
     const file = e.target.files?.[0]
     if (!file) return
     e.target.value = ''
-    setInputPath(file.name)
     if (onUploadDemo) {
       setUploadingName(file.name)
       try {
@@ -70,13 +71,6 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
     setEditingDemoId(null)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (inputPath.trim()) {
-      onParsePath(inputPath.trim())
-    }
-  }
-
   const formatDuration = (secs: number | null) => {
     if (!secs) return '-'
     const m = Math.floor(secs / 60)
@@ -103,10 +97,9 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
           const file = e.dataTransfer.files?.[0]
           if (!file) return
           if (!file.name.toLowerCase().endsWith('.dem')) {
-            alert('Пожалуйста, выберите файл с расширением .dem')
+            alert(t('library.invalidExtension'))
             return
           }
-          setInputPath(file.name)
           if (onUploadDemo) {
             setUploadingName(file.name)
             try {
@@ -130,10 +123,10 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', marginBottom: '16px' }}>
           <div>
             <h2 style={{ fontSize: '18px', fontWeight: 700, margin: '0 0 4px 0' }}>
-              Добавить CS2 демку (.dem) в библиотеку
+              {t('library.dragDropTitle')}
             </h2>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
-              Выберите файл с компьютера или перетащите его прямо сюда (Drag & Drop). Демка парсится движком CS2 Source 2 и сохраняется в локальной базе.
+              {t('library.dragDropSubtitle')}
             </p>
           </div>
 
@@ -169,34 +162,11 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                 gap: '10px',
               }}
             >
-              <span style={{ fontSize: '18px' }}>{uploadingName ? '⏳' : '📁'}</span>
-              <span>{uploadingName ? `Загрузка и парсинг (${uploadingName})...` : 'Выбрать .dem с компьютера'}</span>
+              {uploadingName ? <LoaderIcon size={18} color="#ffffff" /> : <FolderIcon size={18} color="#ffffff" />}
+              <span>{uploadingName ? `${t('library.uploading')} (${uploadingName})...` : t('library.selectFileBtn')}</span>
             </button>
           </div>
         </div>
-
-        <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <input
-            type="text"
-            value={inputPath}
-            onChange={(e) => setInputPath(e.target.value)}
-            placeholder="Или введите локальный путь: C:\cs2\demos\match.dem"
-            disabled={isLoading}
-            style={{
-              flex: 1,
-              backgroundColor: 'var(--bg-app)',
-              border: '1px solid var(--border)',
-              borderRadius: '6px',
-              padding: '10px 14px',
-              color: 'var(--text-main)',
-              fontSize: '13px',
-              fontFamily: 'inherit',
-            }}
-          />
-          <button type="submit" className="btn btn-secondary" disabled={isLoading} style={{ padding: '10px 18px', fontWeight: 600 }}>
-            {isLoading ? 'Анализ...' : 'Парсинг по пути'}
-          </button>
-        </form>
 
         {uploadingName && (
           <div
@@ -214,7 +184,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
               gap: '10px',
             }}
           >
-            <span style={{ fontSize: '16px' }}>⏳</span>
+            <LoaderIcon size={16} color="#38bdf8" />
             <span>Загрузка и полный анализ демки <strong>{uploadingName}</strong> движком CS2 Source 2... Это займет несколько секунд.</span>
           </div>
         )}
@@ -240,7 +210,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
       <div>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <h3 style={{ fontSize: '16px', fontWeight: 700 }}>
-            Saved Matches ({demos.length})
+            {t('library.parsedDemos')} ({demos.length})
           </h3>
         </div>
 
@@ -255,7 +225,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
               color: 'var(--text-muted)',
             }}
           >
-            No matches analyzed yet. Enter a demo path above to parse your first CS2 demo.
+            {t('library.noDemos')}. {t('library.noDemosSubtitle')}
           </div>
         ) : (
           <div
@@ -270,6 +240,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
               return (
                 <div
                   key={demo.id}
+                  className={`card-interactive ${isSelected ? 'glow-ct' : ''}`}
                   style={{
                     backgroundColor: isSelected ? 'var(--bg-card-selected)' : 'var(--bg-surface)',
                     border: `1px solid ${isSelected ? 'var(--accent-gold)' : 'var(--border)'}`,
@@ -278,7 +249,6 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
-                    transition: 'all 0.15s ease',
                   }}
                 >
                   <div>
@@ -293,26 +263,47 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                         {demo.map_name || 'Unknown Map'}
                       </span>
                       <span
-                        className="num"
                         style={{
-                          fontSize: '12px',
-                          color: 'var(--text-faint)',
-                          backgroundColor: 'var(--bg-app)',
-                          padding: '2px 6px',
+                          fontSize: '10px',
+                          color: '#38bdf8',
+                          backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                          border: '1px solid rgba(56, 189, 248, 0.25)',
+                          padding: '2px 8px',
                           borderRadius: '4px',
+                          fontWeight: 600,
                         }}
                       >
-                        {demo.tickrate} tick
+                        Sub-tick CS2
                       </span>
                     </div>
 
                     <p
+                      title={demo.file_path}
                       style={{
-                        fontSize: '11px',
+                        fontSize: '12px',
+                        color: '#cbd5e1',
+                        fontWeight: 600,
+                        wordBreak: 'break-all',
+                        marginBottom: '3px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                      }}
+                    >
+                      <FolderIcon size={13} color="#94a3b8" />
+                      <span>{demo.file_path.split(/[\\/]/).pop() || demo.file_path}</span>
+                    </p>
+                    <p
+                      title={demo.file_path}
+                      style={{
+                        fontSize: '10px',
                         color: 'var(--text-muted)',
                         wordBreak: 'break-all',
                         marginBottom: '10px',
                         fontFamily: 'monospace',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
                       }}
                     >
                       {demo.file_path}
@@ -392,9 +383,9 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                             whiteSpace: 'nowrap',
                           }}
                         >
-                          {demoNotes[demo.id] ? `📝 ${demoNotes[demo.id]}` : '+ Подписать демку / заметка'}
+                          {demoNotes[demo.id] || '+ Подписать демку / заметка'}
                         </span>
-                        <span style={{ fontSize: '11px', color: '#94a3b8' }}>✏️</span>
+                        <span style={{ fontSize: '11px', color: '#94a3b8' }}>✎</span>
                       </div>
                     )}
 
@@ -414,13 +405,13 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                         <div className="num" style={{ fontSize: '15px', fontWeight: 700 }}>
                           {demo.rounds_count}
                         </div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-faint)' }}>Rounds</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-faint)' }}>{t('common.rounds')}</div>
                       </div>
                       <div>
                         <div className="num" style={{ fontSize: '15px', fontWeight: 700 }}>
                           {demo.players_count}
                         </div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-faint)' }}>Players</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-faint)' }}>{t('common.player')}s</div>
                       </div>
                       <div>
                         <div
@@ -433,21 +424,28 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                         >
                           {demo.highlights_count}
                         </div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-faint)' }}>Highlights</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-faint)' }}>{t('library.colHighlights')}</div>
                       </div>
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span style={{ fontSize: '12px', color: 'var(--text-faint)' }}>
-                      Duration: {formatDuration(demo.duration_seconds)}
+                      {t('library.colDuration')}: {formatDuration(demo.duration_seconds)}
                     </span>
                     <button
                       className={`btn ${isSelected ? 'btn-primary' : 'btn-secondary'}`}
                       onClick={() => onSelectDemo(demo)}
-                      style={{ padding: '6px 14px', fontSize: '12px' }}
+                      style={{ padding: '6px 14px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
                     >
-                      {isSelected ? 'Active Match ✓' : 'Open Match →'}
+                      {isSelected ? (
+                        <>
+                          <CheckIcon size={13} color="#ffffff" />
+                          <span>{t('library.openInStudio')}</span>
+                        </>
+                      ) : (
+                        <span>{t('library.openInStudio')} →</span>
+                      )}
                     </button>
                   </div>
                 </div>

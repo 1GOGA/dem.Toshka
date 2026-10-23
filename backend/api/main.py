@@ -3,8 +3,15 @@
 from __future__ import annotations
 
 import pathlib
+import sys
 import uuid
 from typing import Generator, Optional
+
+if sys.platform == "win32":
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    if hasattr(sys.stderr, "reconfigure"):
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 from contextlib import asynccontextmanager
 from fastapi import Depends, FastAPI, HTTPException, Query, Request, status
@@ -372,6 +379,7 @@ async def create_render_jobs(
         "killfeed_only": req.killfeed_only,
         "teamcounter_mode": req.teamcounter_mode,
         "watermark": req.watermark,
+        "preview_recording": req.preview_recording,
     }
 
     # 1. Deduplicate highlight_ids in request preserving order
@@ -379,6 +387,7 @@ async def create_render_jobs(
     unique_hl_ids = [hid for hid in req.highlight_ids if not (hid in seen_ids or seen_ids.add(hid))]
 
     created_jobs: list[RenderJobDTO] = []
+    new_job_ids: list[str] = []
     for hl_id in unique_hl_ids:
         hl = repo.get_highlight_by_id(hl_id)
         if not hl or hl.demo_id != req.demo_id:
@@ -391,7 +400,7 @@ async def create_render_jobs(
         existing_active = repo.get_active_render_job(demo_id=req.demo_id, highlight_id=hl_id)
         if existing_active:
             if existing_active.status == "pending" and render_queue.current_job_id != existing_active.id:
-                await render_queue.enqueue(existing_active.id)
+                new_job_ids.append(existing_active.id)
             created_jobs.append(
                 RenderJobDTO(
                     id=existing_active.id,
@@ -415,9 +424,7 @@ async def create_render_jobs(
             highlight_id=hl_id,
             settings_dict=settings_dict,
         )
-
-        # Enqueue in sequential worker
-        await render_queue.enqueue(job_id)
+        new_job_ids.append(job_id)
 
         created_jobs.append(
             RenderJobDTO(
@@ -433,6 +440,10 @@ async def create_render_jobs(
                 created_at=job_model.created_at,
             )
         )
+
+    # Atomically enqueue all jobs together to trigger single-session CS2 batch recording
+    if new_job_ids:
+        await render_queue.enqueue_many(new_job_ids)
 
     return created_jobs
 
@@ -754,6 +765,32 @@ def get_montage_video(filename: str):
     )
 
 
+@app.get("/api/montages", response_model=list[MontageDTO], tags=["rendering"])
+def list_montages_endpoint() -> list[MontageDTO]:
+    """List all compiled montage movies in the output folder."""
+    renders_dir = pathlib.Path("renders").resolve()
+    if not renders_dir.exists():
+        return []
+
+    results: list[MontageDTO] = []
+    candidates = sorted(
+        [f for f in renders_dir.glob("montage_*.mp4") if f.is_file()],
+        key=lambda x: x.stat().st_mtime,
+        reverse=True,
+    )
+    for f in candidates:
+        results.append(
+            MontageDTO(
+                success=True,
+                montage_path=str(f),
+                filename=f.name,
+                duration_seconds=0.0,
+                clip_count=1,
+            )
+        )
+    return results
+
+
 @app.get("/api/demos/{demo_id}/rounds/{round_num}/replay", tags=["replay"])
 def get_round_replay(
     demo_id: int,
@@ -816,6 +853,38 @@ def set_storage_settings(payload: dict):
         "message": message,
         "output_directory": str(saved_path),
         "is_writable": is_directory_writable(saved_path),
+    }
+
+
+@app.post("/api/settings/restore-cs2-config", tags=["settings"])
+def restore_cs2_config():
+    """Restore clean competitive gameplay configuration for CS2."""
+    from backend.render.cfg_backup import restore_user_gameplay_config
+
+    try:
+        res = restore_user_gameplay_config()
+        return res
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to restore CS2 configuration: {e}",
+        )
+
+
+@app.get("/api/settings/cs2-config-status", tags=["settings"])
+def get_cs2_config_status():
+    """Check existence of autoexec.cfg and restore_user.cfg in game cfg dir."""
+    from backend.render.cfg_backup import detect_csgo_cfg_dir, detect_steam_userdata_dir
+
+    csgo_cfg = detect_csgo_cfg_dir()
+    userdata = detect_steam_userdata_dir()
+    return {
+        "csgo_cfg_dir": str(csgo_cfg),
+        "csgo_cfg_exists": csgo_cfg.is_dir(),
+        "has_autoexec": (csgo_cfg / "autoexec.cfg").is_file(),
+        "has_restore_user": (csgo_cfg / "restore_user.cfg").is_file(),
+        "userdata_dir": str(userdata),
+        "userdata_exists": userdata.is_dir(),
     }
 
 
@@ -909,6 +978,27 @@ def get_render_by_filename(filename: str):
             "Cache-Control": "public, max-age=3600",
         },
     )
+
+
+# ---------------------------------------------------------------------------
+# Mount Frontend Distribution for Standalone / Production Desktop Mode
+# ---------------------------------------------------------------------------
+_meipass_base = getattr(sys, "_MEIPASS", None)
+_exe_parent = pathlib.Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else None
+_frontend_candidates = [
+    pathlib.Path(__file__).resolve().parent.parent.parent / "frontend" / "dist",
+    pathlib.Path("frontend/dist").resolve(),
+]
+if _exe_parent:
+    _frontend_candidates.insert(0, _exe_parent / "frontend" / "dist")
+    _frontend_candidates.insert(0, _exe_parent / "_internal" / "frontend" / "dist")
+if _meipass_base:
+    _frontend_candidates.insert(0, pathlib.Path(_meipass_base) / "frontend" / "dist")
+
+_frontend_dist = next((p for p in _frontend_candidates if p.is_dir()), None)
+if _frontend_dist:
+    app.mount("/", StaticFiles(directory=str(_frontend_dist), html=True), name="frontend")
+
 
 
 

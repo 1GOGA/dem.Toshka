@@ -19,6 +19,7 @@ __pycache__/
 build/
 develop-eggs/
 dist/
+dist-installer/
 downloads/
 eggs/
 .eggs/
@@ -138,5 +139,6 @@ brain/
 .antigravity/
 *.bak
 scratch/
+user_config_backup/
 
 

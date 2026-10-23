@@ -134,6 +134,7 @@ export const api = {
     crosshair_color?: string
     radar_mode?: string
     watermark?: boolean
+    preview_recording?: boolean
   }): Promise<RenderJobDTO[]> {
     const res = await fetch(`${BASE_URL}/render-jobs`, {
       method: 'POST',
@@ -258,8 +259,30 @@ export const api = {
     return handleResponse(res)
   },
 
+  async listMontages(): Promise<MontageDTO[]> {
+    const res = await fetch(`${BASE_URL}/montages`)
+    return handleResponse(res)
+  },
+
   async cleanupDemoClips(demoId: number): Promise<{ success: boolean; deleted: string[]; count: number }> {
     const res = await fetch(`${BASE_URL}/renders/cleanup-demo/${demoId}`, { method: 'POST' })
+    return handleResponse(res)
+  },
+
+  async restoreCS2Config(): Promise<{ success: boolean; restored_files_count: number; message: string }> {
+    const res = await fetch(`${BASE_URL}/settings/restore-cs2-config`, { method: 'POST' })
+    return handleResponse(res)
+  },
+
+  async getCS2ConfigStatus(): Promise<{
+    csgo_cfg_dir: string
+    csgo_cfg_exists: boolean
+    has_autoexec: boolean
+    has_restore_user: boolean
+    userdata_dir: string
+    userdata_exists: boolean
+  }> {
+    const res = await fetch(`${BASE_URL}/settings/cs2-config-status`)
     return handleResponse(res)
   },
 }

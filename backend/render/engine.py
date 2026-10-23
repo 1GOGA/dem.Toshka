@@ -27,7 +27,7 @@ from backend.render.config import (
     DEFAULT_HLAE_EXE,
     RENDER_OUTPUT_DIR,
 )
-from backend.render.models import RenderResult, RenderTask
+from backend.render.models import KillcamVictimSegment, RenderResult, RenderTask
 from backend.render.montage import create_montage
 from backend.render.muxer import mux_video_and_audio
 from backend.render.verifier import (
@@ -253,6 +253,221 @@ class RenderEngine:
                 except Exception:
                     pass
 
+    def _execute_cs2_victim_batch(
+        self,
+        task: RenderTask,
+        victims: list[KillcamVictimSegment],
+        output_mp4s: list[pathlib.Path],
+        log_file: Optional[pathlib.Path] = None,
+    ) -> tuple[bool, Optional[str], bool, Optional[str]]:
+        """Execute a single continuous CS2/HLAE session recording ALL victim deaths.
+
+        Produces sequential takes (take0000, take0001, take0002...) in ONE run of CS2,
+        eliminating the need to restart the game between victim frags.
+        Returns (success, error_message, has_audio, warning_message).
+        """
+        subtask_id = f"batch_vic_{task.task_id}"
+        job_render_dir = RENDER_OUTPUT_DIR / f"job_{subtask_id}"
+        if job_render_dir.exists():
+            shutil.rmtree(job_render_dir, ignore_errors=True)
+        job_render_dir.mkdir(parents=True, exist_ok=True)
+
+        staged_demo = self.csgo_dir / f"temp_{subtask_id}.dem"
+        cfg_path = self.cfg_dir / f"render_{subtask_id}.cfg"
+
+        try:
+            with ConfigBackupManager(csgo_cfg_dir=self.cfg_dir):
+                shutil.copy2(task.demo_path, staged_demo)
+
+                batch_clips = [
+                    BatchClipItem(
+                        clip_id=f"{task.task_id}_vic_{i}",
+                        start_tick=v.start_tick,
+                        end_tick=v.end_tick,
+                        pov_steam_id=v.victim_steam_id,
+                        pov_name=v.victim_name,
+                        xray=task.xray,
+                        hud_mode=task.hud_mode,
+                        custom_crosshair=task.custom_crosshair,
+                        fov=task.fov,
+                        viewmodel_fov=task.viewmodel_fov,
+                        crosshair_preset=task.crosshair_preset,
+                        crosshair_color=task.crosshair_color,
+                        radar_mode=task.radar_mode,
+                        hud_scale=getattr(task, "hud_scale", None),
+                        overhead_mode=getattr(task, "overhead_mode", None),
+                        killfeed_only=getattr(task, "killfeed_only", None),
+                        teamcounter_mode=getattr(task, "teamcounter_mode", None),
+                    )
+                    for i, v in enumerate(victims)
+                ]
+
+                logger.info(
+                    "Configuring continuous multi-victim batch CFG for %d victims in 1 CS2 session: %s",
+                    len(batch_clips),
+                    ", ".join(f"{v.victim_name}[{v.start_tick}..{v.end_tick}]" for v in victims),
+                )
+                generate_batch_render_cfg(
+                    clips=batch_clips,
+                    output_dir=job_render_dir,
+                    output_cfg_path=cfg_path,
+                    fps=task.fps,
+                )
+
+                demo_rel_name = f"temp_{subtask_id}"
+                w, h = task.resolution
+
+                cs2_args = (
+                    f"-steam -insecure +sv_lan 1 -console -condebug -novid -nojoy -high "
+                    f"+fps_max 0 +mat_powersavingsmode 0 -sw -w {w} -h {h} -afxDisableSteamStorage "
+                    f"+exec render_{subtask_id}.cfg +playdemo {demo_rel_name}"
+                )
+
+                hlae_cmd = [
+                    str(self.hlae_exe.resolve()),
+                    "-customLoader",
+                    "-noGui",
+                    "-autoStart",
+                    "-hookDllPath",
+                    str(self.hook_dll.resolve()),
+                    "-programPath",
+                    str(self.cs2_exe.resolve()),
+                    "-cmdLine",
+                    cs2_args,
+                ]
+
+                hlae_proc = subprocess.Popen(
+                    hlae_cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                )
+
+                tickrate = max(1, task.tickrate)
+                total_duration = sum(max(1.0, (v.end_tick - v.start_tick) / tickrate) for v in victims)
+                max_timeout = max(240.0, total_duration * 6.0 + 180.0)
+                start_time = time.time()
+                cs2_seen = False
+
+                while time.time() - start_time < max_timeout:
+                    res = subprocess.run(
+                        ["tasklist", "/FI", "IMAGENAME eq cs2.exe", "/FO", "CSV", "/NH"],
+                        capture_output=True,
+                        text=True,
+                    )
+                    cs2_running = "cs2.exe" in res.stdout
+
+                    if cs2_running:
+                        cs2_seen = True
+                    elif cs2_seen:
+                        break
+
+                    time.sleep(2.0)
+
+                # If timed out, kill CS2
+                res = subprocess.run(
+                    ["tasklist", "/FI", "IMAGENAME eq cs2.exe", "/FO", "CSV", "/NH"],
+                    capture_output=True,
+                    text=True,
+                )
+                if "cs2.exe" in res.stdout:
+                    logger.warning("CS2 exceeded timeout (%.0fs) during victim batch, killing process...", max_timeout)
+                    subprocess.run(["taskkill", "/F", "/IM", "cs2.exe"], capture_output=True)
+
+                hlae_out, hlae_err = "", ""
+                try:
+                    hlae_out, hlae_err = hlae_proc.communicate(timeout=5.0)
+                except subprocess.TimeoutExpired:
+                    hlae_proc.terminate()
+                    hlae_out, hlae_err = hlae_proc.communicate()
+
+                if log_file:
+                    log_content = (
+                        f"--- Victim Batch Pass {subtask_id} Render Log ---\n"
+                        f"Victims: {len(victims)}\n"
+                        f"HLAE Command: {' '.join(hlae_cmd)}\n"
+                        f"CS2 Args: {cs2_args}\n"
+                        f"CS2 seen running: {cs2_seen}\n"
+                        f"HLAE exit code: {hlae_proc.returncode}\n"
+                        f"--- HLAE STDOUT ---\n{hlae_out}\n"
+                        f"--- HLAE STDERR ---\n{hlae_err}\n"
+                    )
+                    try:
+                        with open(log_file, "a", encoding="utf-8") as f:
+                            f.write(log_content + "\n")
+                    except Exception as log_ex:
+                        logger.warning("Could not append to task log file %s: %s", log_file, log_ex)
+
+                # Ensure CS2 is terminated if it hung
+                res = subprocess.run(
+                    ["tasklist", "/FI", "IMAGENAME eq cs2.exe", "/FO", "CSV", "/NH"],
+                    capture_output=True,
+                    text=True,
+                )
+                if "cs2.exe" in res.stdout:
+                    subprocess.run(["taskkill", "/F", "/IM", "cs2.exe"], capture_output=True)
+                    return False, f"CS2 process did not finish within timeout ({max_timeout:.0f}s)", False, None
+
+                # Locate recorded takes
+                take_dirs = sorted(
+                    [d for d in job_render_dir.iterdir() if d.is_dir() and d.name.lower().startswith("take")],
+                    key=lambda d: d.name,
+                )
+                if not take_dirs:
+                    take_dirs = sorted([d for d in job_render_dir.iterdir() if d.is_dir()], key=lambda d: d.name)
+
+                if len(take_dirs) < len(victims):
+                    return False, f"HLAE generated only {len(take_dirs)} takes for {len(victims)} victims", False, None
+
+                has_any_audio = False
+                first_warn = None
+
+                for i, (take_dir, out_mp4) in enumerate(zip(take_dirs, output_mp4s)):
+                    mp4s = list(take_dir.rglob("*.mp4"))
+                    wavs = list(take_dir.rglob("*.wav"))
+
+                    if not mp4s:
+                        return False, f"No .mp4 video found in take {take_dir.name} for victim {i}", False, None
+
+                    rec_video = mp4s[0]
+                    rec_audio = wavs[0] if wavs else None
+
+                    out_mp4.parent.mkdir(parents=True, exist_ok=True)
+                    mux_res = mux_video_and_audio(
+                        video_path=rec_video,
+                        audio_path=rec_audio,
+                        output_path=out_mp4,
+                        watermark=getattr(task, "watermark", True),
+                    )
+                    if not mux_res.success:
+                        return False, mux_res.error_message or f"Multiplexing failed for victim take {i}", False, None
+
+                    if mux_res.has_audio:
+                        has_any_audio = True
+                    if mux_res.warning_message and not first_warn:
+                        first_warn = mux_res.warning_message
+
+                return True, None, has_any_audio, first_warn
+
+        except Exception as ex:
+            return False, f"Victim batch recording failed: {ex}", False, None
+        finally:
+            if staged_demo.exists():
+                try:
+                    staged_demo.unlink()
+                except Exception:
+                    pass
+            if cfg_path.exists():
+                try:
+                    cfg_path.unlink()
+                except Exception:
+                    pass
+            if job_render_dir.exists():
+                try:
+                    shutil.rmtree(job_render_dir, ignore_errors=True)
+                except Exception:
+                    pass
+
     def render_clip(self, task: RenderTask) -> RenderResult:
         """Execute end-to-end rendering for a single highlight clip using HLAE."""
         log_file = RENDER_OUTPUT_DIR / f"{task.task_id}.log"
@@ -297,40 +512,107 @@ class RenderEngine:
 
         # 2. Execution (Two-Pass Staging for Tournament Killcam vs Linear Pass for Standard)
         if task.is_killcam_replay:
-            # TOURNAMENT KILLCAM REPLAY: Two-Pass Staging
-            # Pass 1: Victim view (shows victim moving/holding and falling on camera)
-            vic_subtask_id = f"{task.task_id}_vic"
-            vic_out = RENDER_OUTPUT_DIR / f"temp_{task.task_id}_victim.mp4"
-            v_start = task.killcam_victim_start_tick if task.killcam_victim_start_tick is not None else task.start_tick
-            v_end = task.killcam_victim_end_tick if task.killcam_victim_end_tick is not None else task.end_tick
+            # TOURNAMENT KILLCAM REPLAY: Multi-Victim Reel -> Hero Master Showcase
+            victims = task.get_effective_killcam_victims()
+            if not victims and task.killcam_victim_steam_id:
+                victims = [
+                    KillcamVictimSegment(
+                        victim_steam_id=task.killcam_victim_steam_id,
+                        victim_name=task.killcam_victim_name,
+                        start_tick=task.killcam_victim_start_tick or task.start_tick,
+                        end_tick=task.killcam_victim_end_tick or task.end_tick,
+                        kill_tick=task.killcam_victim_end_tick or task.end_tick,
+                    )
+                ]
 
-            logger.info(
-                "Executing Pass 1 of Tournament Killcam (Victim POV: %s, ticks=[%s, %s])",
-                task.killcam_victim_name,
-                v_start,
-                v_end,
+            victim_outs: list[pathlib.Path] = []
+            has_victim_audio = False
+            victim_warns: list[str] = []
+
+            # OPTIMIZATION: If multiple victims move strictly forward in time, record ALL victims in 1 CS2 session!
+            can_batch_victims = len(victims) > 1 and all(
+                victims[i + 1].start_tick >= victims[i].end_tick for i in range(len(victims) - 1)
             )
-            ok1, err1, has_audio1, warn1 = self._execute_cs2_pass(
-                task=task,
-                subtask_id=vic_subtask_id,
-                start_tick=v_start,
-                end_tick=v_end,
-                pov_steam_id=task.killcam_victim_steam_id,
-                pov_name=task.killcam_victim_name,
-                output_mp4=vic_out,
-                camera_switches=None,
-                log_file=log_file,
-            )
-            if not ok1:
-                return RenderResult(
-                    success=False,
-                    output_path=None,
-                    duration_seconds=0.0,
-                    error_message=f"Tournament killcam Pass 1 (Victim) failed: {err1}",
+
+            if can_batch_victims:
+                logger.info(
+                    "Executing Pass 1 of Tournament Killcam in SINGLE CS2 session for all %d victims [%s]",
+                    len(victims),
+                    ", ".join(v.victim_name or "Unknown" for v in victims),
+                )
+                for idx in range(len(victims)):
+                    victim_outs.append(RENDER_OUTPUT_DIR / f"temp_{task.task_id}_vic_{idx}.mp4")
+
+                ok_vb, err_vb, has_audio_vb, warn_vb = self._execute_cs2_victim_batch(
+                    task=task,
+                    victims=victims,
+                    output_mp4s=victim_outs,
                     log_file=log_file,
                 )
+                if not ok_vb:
+                    for p in victim_outs:
+                        if p.exists():
+                            try:
+                                p.unlink()
+                            except Exception:
+                                pass
+                    return RenderResult(
+                        success=False,
+                        output_path=None,
+                        duration_seconds=0.0,
+                        error_message=f"Tournament killcam Pass 1 (Victims Reel) failed: {err_vb}",
+                        log_file=log_file,
+                    )
+                if has_audio_vb:
+                    has_victim_audio = True
+                if warn_vb:
+                    victim_warns.append(warn_vb)
+            else:
+                # Sequential passes (for 1 victim or overlapping rapid spray transfers)
+                for idx, vic in enumerate(victims):
+                    vic_subtask_id = f"{task.task_id}_vic" if len(victims) == 1 else f"{task.task_id}_vic_{idx}"
+                    vic_out = RENDER_OUTPUT_DIR / f"temp_{task.task_id}_vic_{idx}.mp4"
 
-            # Pass 2: Hero view (rewind ~4.0s before kill to hero POV, plays until highlight end)
+                    logger.info(
+                        "Executing Pass 1.%d of Tournament Killcam (Victim POV: %s, ticks=[%s, %s])",
+                        idx + 1,
+                        vic.victim_name,
+                        vic.start_tick,
+                        vic.end_tick,
+                    )
+                    ok_v, err_v, has_audio_v, warn_v = self._execute_cs2_pass(
+                        task=task,
+                        subtask_id=vic_subtask_id,
+                        start_tick=vic.start_tick,
+                        end_tick=vic.end_tick,
+                        pov_steam_id=vic.victim_steam_id,
+                        pov_name=vic.victim_name,
+                        output_mp4=vic_out,
+                        camera_switches=None,
+                        log_file=log_file,
+                    )
+                    if not ok_v:
+                        for p in victim_outs:
+                            if p.exists():
+                                try:
+                                    p.unlink()
+                                except Exception:
+                                    pass
+                        return RenderResult(
+                            success=False,
+                            output_path=None,
+                            duration_seconds=0.0,
+                            error_message=f"Tournament killcam Pass 1.{idx + 1} (Victim {vic.victim_name}) failed: {err_v}",
+                            log_file=log_file,
+                        )
+
+                    victim_outs.append(vic_out)
+                    if has_audio_v:
+                        has_victim_audio = True
+                    if warn_v:
+                        victim_warns.append(warn_v)
+
+            # Pass 2: Hero view (rewind ~4.0s before first kill to hero POV, plays until highlight end)
             hero_subtask_id = f"{task.task_id}_hero"
             hero_out = RENDER_OUTPUT_DIR / f"temp_{task.task_id}_hero.mp4"
             h_start = task.killcam_hero_start_tick if task.killcam_hero_start_tick is not None else task.start_tick
@@ -341,7 +623,7 @@ class RenderEngine:
                 h_start,
                 task.end_tick,
             )
-            ok2, err2, has_audio2, warn2 = self._execute_cs2_pass(
+            ok_hero, err_hero, has_audio_hero, warn_hero = self._execute_cs2_pass(
                 task=task,
                 subtask_id=hero_subtask_id,
                 start_tick=h_start,
@@ -352,32 +634,31 @@ class RenderEngine:
                 camera_switches=task.camera_switches,
                 log_file=log_file,
             )
-            if not ok2:
-                if vic_out.exists():
-                    try:
-                        vic_out.unlink()
-                    except Exception:
-                        pass
+            if not ok_hero:
+                for p in victim_outs:
+                    if p.exists():
+                        try:
+                            p.unlink()
+                        except Exception:
+                            pass
                 return RenderResult(
                     success=False,
                     output_path=None,
                     duration_seconds=0.0,
-                    error_message=f"Tournament killcam Pass 2 (Hero) failed: {err2}",
+                    error_message=f"Tournament killcam Pass 2 (Hero) failed: {err_hero}",
                     log_file=log_file,
                 )
 
-            # Combine Pass 1 (Victim death) and Pass 2 (Hero play) into final output
-            montage_res = create_montage(clip_paths=[vic_out, hero_out], output_path=task.output_path)
-            if vic_out.exists():
-                try:
-                    vic_out.unlink()
-                except Exception:
-                    pass
-            if hero_out.exists():
-                try:
-                    hero_out.unlink()
-                except Exception:
-                    pass
+            # Combine all Victim death clips and Hero play into final output
+            all_parts = victim_outs + [hero_out]
+            montage_res = create_montage(clip_paths=all_parts, output_path=task.output_path)
+
+            for p in all_parts:
+                if p.exists():
+                    try:
+                        p.unlink()
+                    except Exception:
+                        pass
 
             if not montage_res.success:
                 return RenderResult(
@@ -388,8 +669,8 @@ class RenderEngine:
                     log_file=log_file,
                 )
 
-            mux_has_audio = has_audio1 or has_audio2
-            warning_note = warn2 or warn1
+            mux_has_audio = has_victim_audio or has_audio_hero
+            warning_note = warn_hero or (victim_warns[0] if victim_warns else None)
         else:
             # Standard single-pass clip
             ok, err, mux_has_audio, warning_note = self._execute_cs2_pass(

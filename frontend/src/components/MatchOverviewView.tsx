@@ -23,7 +23,7 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
     team?: string | null
   } | null>(null)
 
-  const [viewMode, setViewMode] = useState<'faceit' | 'all' | 'weapons'>('faceit')
+  const [viewMode, setViewMode] = useState<'pr' | 'all' | 'weapons'>('pr')
 
   const [mySteamId, setMySteamId] = useState<string | null>(() => {
     return localStorage.getItem('my_steam_id')
@@ -54,8 +54,8 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
   const isCtWinner = ctScore > tScore
   const isTWinner = tScore > ctScore
 
-  // Helper to get FACEIT level styling (1 to 10)
-  const getFaceitBadge = (level?: number, rating?: number) => {
+  // Helper to get PR (pytoshka Rating) level styling (1 to 10)
+  const getPRBadge = (level?: number, rating?: number) => {
     const lvl = level || (rating ? (rating >= 1.5 ? 10 : rating >= 1.35 ? 9 : rating >= 1.25 ? 8 : rating >= 1.15 ? 7 : rating >= 1.05 ? 6 : rating >= 0.95 ? 5 : rating >= 0.85 ? 4 : rating >= 0.75 ? 3 : rating >= 0.65 ? 2 : 1) : 5)
     const colors: Record<number, { color: string; bg: string }> = {
       10: { color: '#ef4444', bg: 'rgba(239, 68, 68, 0.2)' },
@@ -143,7 +143,7 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
         <thead>
           <tr style={{ backgroundColor: '#0f1218', color: '#64748b', borderBottom: '1px solid #1e2433', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             <th style={{ padding: '12px 18px' }}>Игрок</th>
-            <th style={{ padding: '12px 10px', textAlign: 'center' }}>FACEIT</th>
+            <th style={{ padding: '12px 10px', textAlign: 'center' }} title="PR — pytoshka Rating (1-10)">PR</th>
             <th style={{ padding: '12px 10px', textAlign: 'right' }}>K - D - A</th>
             <th style={{ padding: '12px 10px', textAlign: 'right' }}>+/-</th>
             <th style={{ padding: '12px 10px', textAlign: 'right' }}>K/D</th>
@@ -157,7 +157,7 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
         <tbody>
           {playersList.map((p, idx) => {
             const isMe = mySteamId && (mySteamId === p.steam_id || mySteamId === p.name)
-            const badge = getFaceitBadge(p.faceit_level, p.performance_rating)
+            const badge = getPRBadge(p.faceit_level, p.performance_rating)
             const diff = p.differential !== undefined ? p.differential : (p.kills - p.deaths)
             const kr = p.kpr !== undefined ? p.kpr : (stats.total_rounds > 0 ? (p.kills / stats.total_rounds) : 0)
 
@@ -220,7 +220,7 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
                   </div>
                 </td>
 
-                {/* FACEIT Level Badge */}
+                {/* PR Level Badge */}
                 <td style={{ padding: '12px 10px', textAlign: 'center' }}>
                   <div
                     style={{
@@ -236,7 +236,7 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
                       fontWeight: 900,
                       fontSize: '13px',
                     }}
-                    title={`FACEIT Level: ${badge.level} (Score: ${(p.performance_rating || 1.0).toFixed(2)})`}
+                    title={`PR Level: ${badge.level} (pytoshka Rating: ${(p.performance_rating || 1.0).toFixed(2)})`}
                   >
                     {badge.level}
                   </div>
@@ -388,11 +388,11 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
                 border: '1px solid rgba(56, 189, 248, 0.3)',
               }}
             >
-              FACEIT COMPETITIVE
+              PR COMPETITIVE
             </span>
           </div>
           <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '4px' }}>
-            Всего раундов: <strong>{stats.total_rounds}</strong> • Tickrate: <strong>{demo.tickrate}</strong> • Игроков: <strong>{stats.players.length}</strong>
+            Всего раундов: <strong>{stats.total_rounds}</strong> • Архитектура: <strong>Subtick</strong> • Игроков: <strong>{stats.players.length}</strong>
           </div>
         </div>
 
@@ -510,11 +510,11 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
         <div style={{ display: 'flex', gap: '8px' }}>
           <button
             type="button"
-            className={viewMode === 'faceit' ? 'btn btn-primary' : 'btn btn-secondary'}
-            onClick={() => setViewMode('faceit')}
+            className={viewMode === 'pr' ? 'btn btn-primary' : 'btn btn-secondary'}
+            onClick={() => setViewMode('pr')}
             style={{ fontSize: '12px', padding: '7px 14px', display: 'flex', alignItems: 'center', gap: '6px' }}
           >
-            <span>🏆 FACEIT Табло команд</span>
+            <span>🏆 PR Табло команд</span>
           </button>
           <button
             type="button"
@@ -540,7 +540,7 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
       </div>
 
       {/* 5. Scoreboard Views */}
-      {viewMode === 'faceit' && (
+      {viewMode === 'pr' && (
         <>
           {ctPlayers.length > 0 && renderPlayerTable(ctPlayers, 'COUNTER-TERRORISTS', ctScore, isCtWinner, '#38bdf8')}
           {tPlayers.length > 0 && renderPlayerTable(tPlayers, 'TERRORISTS', tScore, isTWinner, '#f59e0b')}

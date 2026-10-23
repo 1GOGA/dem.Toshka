@@ -15,7 +15,7 @@ from backend.parser.ingestion import validate_demo_path
 from backend.render.cfg_generator import steam64_to_account_id
 from backend.render.config import DEFAULT_CS2_EXE, DEFAULT_HLAE_EXE, DEFAULT_HOOK_DLL, RENDER_OUTPUT_DIR
 from backend.render.engine import RenderEngine
-from backend.render.models import RenderResult, RenderTask
+from backend.render.models import KillcamVictimSegment, RenderResult, RenderTask
 from backend.storage.models import DemoModel, HighlightModel, RenderJobModel
 from backend.storage.repository import DemoRepository
 
@@ -155,7 +155,7 @@ class RenderQueueManager:
             # Startup recovery: reset stale running jobs and recover pending ones
             try:
                 import datetime
-                now = datetime.datetime.now()
+                now = datetime.datetime.now(datetime.timezone.utc)
                 with self.session_factory() as session:
                     repo = DemoRepository(session)
                     stale_count = repo.reset_stale_running_jobs()
@@ -165,17 +165,21 @@ class RenderQueueManager:
                     pending_jobs = repo.get_pending_render_jobs()
                     for job in pending_jobs:
                         # Expire pending jobs older than 2 hours to avoid surprise CS2 popups from yesterday
-                        if job.created_at and (now - job.created_at).total_seconds() > 7200:
-                            repo.update_render_job(
-                                job.id,
-                                status="failed",
-                                error_summary="Queued job expired before worker started. Click Retry to render.",
-                            )
-                            logger.info("Expired old pending job %s (created %s)", job.id, job.created_at)
-                        elif job.id not in self._pending_ids and job.id != self._current_job_id:
-                            self._pending_ids.add(job.id)
-                            queue.put_nowait(job.id)
-                            logger.info("Enqueued pending render job %s on startup recovery.", job.id)
+                        if job.created_at:
+                            j_created = job.created_at
+                            if j_created.tzinfo is None:
+                                j_created = j_created.replace(tzinfo=datetime.timezone.utc)
+                            if (now - j_created).total_seconds() > 7200:
+                                repo.update_render_job(
+                                    job.id,
+                                    status="failed",
+                                    error_summary="Queued job expired before worker started. Click Retry to render.",
+                                )
+                                logger.info("Expired old pending job %s (created %s)", job.id, job.created_at)
+                            elif job.id not in self._pending_ids and job.id != self._current_job_id:
+                                self._pending_ids.add(job.id)
+                                queue.put_nowait(job.id)
+                                logger.info("Enqueued pending render job %s on startup recovery.", job.id)
             except Exception as e:
                 logger.warning("Error during render queue startup recovery: %s", e)
 
@@ -196,16 +200,18 @@ class RenderQueueManager:
 
     async def enqueue(self, job_id: str) -> None:
         """Enqueue a job ID for sequential processing if not already queued."""
-        if job_id in self._pending_ids or job_id == self._current_job_id:
-            logger.info("Job %s is already queued or running, skipping duplicate enqueue.", job_id)
-            return
+        await self.enqueue_many([job_id])
 
+    async def enqueue_many(self, job_ids: list[str]) -> None:
+        """Enqueue multiple job IDs atomically without yielding, so they batch together."""
         queue = self._ensure_queue()
         if not self._is_running:
             self.start()
-        self._pending_ids.add(job_id)
-        await queue.put(job_id)
-        logger.info("Job %s enqueued. Queue size: %d", job_id, queue.qsize())
+        for job_id in job_ids:
+            if job_id not in self._pending_ids and job_id != self._current_job_id:
+                self._pending_ids.add(job_id)
+                queue.put_nowait(job_id)
+                logger.info("Job %s enqueued. Queue size: %d", job_id, queue.qsize())
 
     async def _worker_loop(self) -> None:
         """Continuous worker processing jobs, batching same-demo clips into a single CS2 run."""
@@ -326,6 +332,7 @@ class RenderQueueManager:
             tickrate = max(1, demo.tickrate)
             camera_switches: list[tuple[int, Optional[str], Optional[str]]] = []
             is_killcam_replay = False
+            killcam_victims: list[KillcamVictimSegment] = []
             killcam_victim_steam_id = None
             killcam_victim_name = None
             killcam_victim_start_tick = None
@@ -335,7 +342,7 @@ class RenderQueueManager:
             if highlight:
                 pre_roll = float(settings.get("pre_roll_seconds", 5.0))
                 if perspective == "dynamic_killcam":
-                    pre_roll = max(pre_roll, 4.8)
+                    pre_roll = max(pre_roll, 4.0)
                 post_roll = float(settings.get("post_roll_seconds", 5.0))
 
                 base_start = (
@@ -360,9 +367,9 @@ class RenderQueueManager:
                         end_tick = min(r_upper, end_tick)
 
                 if perspective == "dynamic_killcam":
-                    # Dynamic Killcam mode (Tournament Replay):
-                    # 1. First record the victim holding/moving and DYING ON CAMERA (showing epic frag & ragdoll).
-                    # 2. Then REWIND backwards ~4.0s before the kill to Hero start, switch camera to Hero, and capture full play!
+                    # Tournament Killcam mode (Multi-Victim Death Chronicle -> Hero Master Showcase):
+                    # 1. Record each victim holding/moving and DYING ON CAMERA (2.2s pre-kill + 0.8s post-kill ragdoll).
+                    # 2. Then REWIND backwards ~4.0s before the first kill to Hero start, switch camera to Hero, and capture full play!
                     if not highlight.pov_steam_id:
                         raise ValueError(f"Attacker SteamID not found for highlight {highlight.id}")
                     hero_steam_id = highlight.pov_steam_id
@@ -370,13 +377,20 @@ class RenderQueueManager:
                     pov_steam_id = hero_steam_id
                     pov_name = hero_name
 
-                    # Gather all kills by hero in this highlight
+                    # Gather all kills by hero in this highlight / round
                     effective_kills = hl_kills
                     if not effective_kills and round_info:
                         session_kills = repo.get_kills(demo_id=demo.id, round_num=highlight.round_num)
                         effective_kills = [
                             k for k in session_kills
-                            if highlight.kill_start_tick <= k.tick <= highlight.kill_end_tick
+                            if getattr(highlight, "kill_start_tick", None) is not None
+                            and highlight.kill_start_tick <= k.tick <= highlight.kill_end_tick
+                        ]
+                    if not effective_kills and round_info:
+                        session_kills = repo.get_kills(demo_id=demo.id, round_num=highlight.round_num)
+                        effective_kills = [
+                            k for k in session_kills
+                            if k.attacker_steam_id == hero_steam_id
                         ]
 
                     valid_kills = sorted(
@@ -385,30 +399,57 @@ class RenderQueueManager:
                     )
 
                     if valid_kills:
-                        primary_kill = valid_kills[0]
-                        k_tick = primary_kill.tick
                         r_start = round_info.start_tick if round_info else 0
+                        r_end = (round_info.official_end_tick or round_info.end_tick) if round_info else None
 
-                        # Phase 1: Victim death POV (~3.5s lead-in, and ~1.2s post-death to see ragdoll fall)
-                        vic_lead_ticks = int(3.5 * tickrate)
-                        vic_post_ticks = int(1.2 * tickrate)
-                        killcam_victim_start_tick = max(r_start, k_tick - vic_lead_ticks)
-                        killcam_victim_end_tick = k_tick + vic_post_ticks
-                        killcam_victim_steam_id = primary_kill.victim_steam_id
-                        killcam_victim_name = primary_kill.victim_name
+                        vic_lead_ticks = int(1.3 * tickrate)
+                        vic_post_ticks = int(0.7 * tickrate)
 
-                        # Phase 2: Rewind ~4.0s backwards before kill to hero POV
-                        hero_rewind_ticks = int(4.0 * tickrate)
-                        killcam_hero_start_tick = max(r_start, k_tick - hero_rewind_ticks)
+                        victim_segments: list[KillcamVictimSegment] = []
+                        for k in valid_kills:
+                            v_start = max(r_start, k.tick - vic_lead_ticks)
+                            v_end = k.tick + vic_post_ticks
+                            if r_end and r_end > v_start:
+                                v_end = min(r_end, v_end)
+                            victim_segments.append(
+                                KillcamVictimSegment(
+                                    victim_steam_id=k.victim_steam_id,
+                                    victim_name=k.victim_name,
+                                    start_tick=v_start,
+                                    end_tick=v_end,
+                                    kill_tick=k.tick,
+                                )
+                            )
+
+                        hero_lead_ticks = int(4.0 * tickrate)
+                        first_kill_tick = valid_kills[0].tick
+                        hero_start_tick = max(r_start, first_kill_tick - hero_lead_ticks)
+
                         is_killcam_replay = True
+                        killcam_victims = victim_segments
+                        killcam_hero_start_tick = hero_start_tick
+
+                        # Populate legacy/compat fields from first victim
+                        killcam_victim_steam_id = victim_segments[0].victim_steam_id
+                        killcam_victim_name = victim_segments[0].victim_name
+                        killcam_victim_start_tick = victim_segments[0].start_tick
+                        killcam_victim_end_tick = victim_segments[0].end_tick
+
+                        # Main task bounds for Hero play
+                        start_tick = hero_start_tick
+                        last_kill_tick = valid_kills[-1].tick
+                        hero_post_ticks = int(post_roll * tickrate)
+                        hero_end_tick = last_kill_tick + hero_post_ticks
+                        if r_end and r_end > hero_start_tick:
+                            hero_end_tick = min(r_end, hero_end_tick)
+                        end_tick = max(end_tick, hero_end_tick)
 
                         logger.info(
-                            "Configured Tournament Killcam Replay: Victim %s [%d..%d] -> REWIND -> Hero %s [%d..%d]",
-                            killcam_victim_name,
-                            killcam_victim_start_tick,
-                            killcam_victim_end_tick,
+                            "Configured Multi-Victim Tournament Killcam Replay: %d victims [%s] -> REWIND -> Hero %s [%d..%d]",
+                            len(victim_segments),
+                            ", ".join(f"{v.victim_name}@{v.kill_tick}" for v in victim_segments),
                             hero_name,
-                            killcam_hero_start_tick,
+                            hero_start_tick,
                             end_tick,
                         )
                     else:
@@ -493,12 +534,14 @@ class RenderQueueManager:
                 teamcounter_mode=bool(settings["teamcounter_mode"]) if "teamcounter_mode" in settings and settings["teamcounter_mode"] is not None else None,
                 camera_switches=camera_switches,
                 is_killcam_replay=is_killcam_replay,
+                killcam_victims=killcam_victims,
                 killcam_victim_steam_id=killcam_victim_steam_id,
                 killcam_victim_name=killcam_victim_name,
                 killcam_victim_start_tick=killcam_victim_start_tick,
                 killcam_victim_end_tick=killcam_victim_end_tick,
                 killcam_hero_start_tick=killcam_hero_start_tick,
                 watermark=bool(settings.get("watermark", True)),
+                preview_recording=bool(settings.get("preview_recording", True)),
             )
             return task, None
         except Exception as e:
