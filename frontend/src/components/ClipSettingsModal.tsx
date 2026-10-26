@@ -543,32 +543,73 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
               </div>
             </div>
 
-            {/* Switch 6: Watermark */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', backgroundColor: '#161922', borderRadius: '6px', border: '1px solid #232738' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <img
-                  src="/logo_video.png"
-                  alt="dem.Toshka"
-                  style={{ height: '18px', maxWidth: '55px', objectFit: 'contain' }}
-                />
-                <div>
-                  <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600 }}>{lang === 'ru' ? 'Водяной знак dem.Toshka' : 'dem.Toshka Watermark'}</div>
-                  <div style={{ fontSize: '10px', color: '#94a3b8' }}>{lang === 'ru' ? 'Фирменный логотип в верхнем углу клипа' : 'Subtle studio logo in top corner of clip'}</div>
+            {/* Switch 6: Watermark & Corner Selector */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '8px 10px', backgroundColor: '#161922', borderRadius: '6px', border: '1px solid #232738' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <img
+                    src="/logo_video.png"
+                    alt="dem.Toshka"
+                    style={{ height: '18px', maxWidth: '55px', objectFit: 'contain' }}
+                  />
+                  <div>
+                    <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600 }}>{lang === 'ru' ? 'Водяной знак dem.Toshka' : 'dem.Toshka Watermark'}</div>
+                    <div style={{ fontSize: '10px', color: '#94a3b8' }}>{lang === 'ru' ? 'Фирменный логотип студии на видео' : 'Subtle studio logo on video'}</div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '10px', fontWeight: 700, color: settings.watermark !== false ? '#38bdf8' : '#64748b' }}>
+                    {settings.watermark !== false ? (lang === 'ru' ? 'ВКЛ' : 'ON') : (lang === 'ru' ? 'ВЫКЛ' : 'OFF')}
+                  </span>
+                  <label className="toggle-switch">
+                    <input
+                      type="checkbox"
+                      checked={settings.watermark !== false}
+                      onChange={(e) => onUpdateSettings({ ...settings, watermark: e.target.checked })}
+                    />
+                    <span className="toggle-slider" />
+                  </label>
                 </div>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '10px', fontWeight: 700, color: settings.watermark !== false ? '#38bdf8' : '#64748b' }}>
-                  {settings.watermark !== false ? (lang === 'ru' ? 'ВКЛ' : 'ON') : (lang === 'ru' ? 'ВЫКЛ' : 'OFF')}
-                </span>
-                <label className="toggle-switch">
-                  <input
-                    type="checkbox"
-                    checked={settings.watermark !== false}
-                    onChange={(e) => onUpdateSettings({ ...settings, watermark: e.target.checked })}
-                  />
-                  <span className="toggle-slider" />
-                </label>
-              </div>
+
+              {settings.watermark !== false && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '4px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                  <span style={{ fontSize: '10px', color: '#94a3b8', fontWeight: 600 }}>
+                    {lang === 'ru' ? 'Угол водяного знака:' : 'Watermark Corner:'}
+                  </span>
+                  <div style={{ display: 'flex', gap: '4px' }}>
+                    {[
+                      { id: 'top_left' as const, label: '↖ ' + (lang === 'ru' ? 'Слева верх' : 'Top Left') },
+                      { id: 'top_right' as const, label: '↗ ' + (lang === 'ru' ? 'Справа верх' : 'Top Right') },
+                      { id: 'bottom_left' as const, label: '↙ ' + (lang === 'ru' ? 'Слева низ' : 'Bottom Left') },
+                      { id: 'bottom_right' as const, label: '↘ ' + (lang === 'ru' ? 'Справа низ' : 'Bottom Right') },
+                    ].map((pos) => {
+                      const isActive = (settings.watermarkPosition || 'top_left') === pos.id
+                      return (
+                        <button
+                          key={pos.id}
+                          type="button"
+                          className="btn card-interactive"
+                          onClick={() => onUpdateSettings({ ...settings, watermarkPosition: pos.id })}
+                          style={{
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            padding: '3px 6px',
+                            borderRadius: '4px',
+                            border: isActive ? '1px solid #38bdf8' : '1px solid #262c3e',
+                            backgroundColor: isActive ? 'rgba(56, 189, 248, 0.2)' : '#161a25',
+                            color: isActive ? '#38bdf8' : '#94a3b8',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          {pos.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

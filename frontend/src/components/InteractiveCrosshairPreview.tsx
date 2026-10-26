@@ -9,6 +9,7 @@ export interface CrosshairConfig {
   hudMode?: string
   customCrosshair?: boolean
   watermark?: boolean
+  watermarkPosition?: 'top_left' | 'top_right' | 'bottom_left' | 'bottom_right'
   size?: number
   gap?: number
   thickness?: number
@@ -110,6 +111,49 @@ export const InteractiveCrosshairPreview: React.FC<InteractiveCrosshairPreviewPr
   const isHidden = preset === 'hidden'
   const colorHex = COLOR_MAP[config.color || 'cyan'] || '#00ffb4'
   const fov = config.fov || 90
+  const wmPos = config.watermarkPosition || 'top_left'
+
+  const getWatermarkStyle = (): React.CSSProperties => {
+    const base: React.CSSProperties = {
+      position: 'absolute',
+      zIndex: 10,
+      display: 'flex',
+      alignItems: 'center',
+      background: 'rgba(10, 12, 16, 0.65)',
+      backdropFilter: 'blur(4px)',
+      padding: '2px 8px',
+      borderRadius: '6px',
+      border: '1px solid rgba(56, 189, 248, 0.35)',
+      cursor: 'pointer',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.6)',
+      transition: 'all 0.2s ease',
+    }
+    switch (wmPos) {
+      case 'top_right':
+        return { ...base, top: '12px', right: '14px', bottom: 'auto', left: 'auto' }
+      case 'bottom_left':
+        return { ...base, bottom: '12px', left: '14px', top: 'auto', right: 'auto' }
+      case 'bottom_right':
+        return { ...base, bottom: '12px', right: '14px', top: 'auto', left: 'auto' }
+      case 'top_left':
+      default:
+        return { ...base, top: '12px', left: '14px', bottom: 'auto', right: 'auto' }
+    }
+  }
+
+  const cycleWatermarkPosition = () => {
+    const order: Array<'top_left' | 'top_right' | 'bottom_right' | 'bottom_left'> = [
+      'top_left',
+      'top_right',
+      'bottom_right',
+      'bottom_left',
+    ]
+    const idx = order.indexOf(wmPos as any)
+    const next = order[(idx + 1) % order.length]
+    if (onChangeConfig) {
+      onChangeConfig({ watermarkPosition: next })
+    }
+  }
 
   // Calculate preset values
   const getPresetValues = () => {
@@ -227,36 +271,103 @@ export const InteractiveCrosshairPreview: React.FC<InteractiveCrosshairPreviewPr
           userSelect: 'none',
         }}
       >
-        {/* Top-Left Watermark Overlay Preview */}
+        {/* Interactive Watermark Overlay with Click-to-Cycle */}
         {config.watermark !== false && (
           <div
-            style={{
-              position: 'absolute',
-              top: '12px',
-              left: '14px',
-              zIndex: 10,
-              pointerEvents: 'none',
-              display: 'flex',
-              alignItems: 'center',
-              background: 'rgba(10, 12, 16, 0.45)',
-              backdropFilter: 'blur(4px)',
-              padding: '2px 6px',
-              borderRadius: '6px',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
+            onClick={(e) => {
+              e.stopPropagation()
+              cycleWatermarkPosition()
             }}
-            title={lang === "ru" ? "Водяной знак dem.Toshka (слева сверху)" : "dem.Toshka watermark (top left)"}
+            style={getWatermarkStyle()}
+            title={
+              lang === 'ru'
+                ? 'Водяной знак dem.Toshka (кликните, чтобы переместить в другой угол)'
+                : 'dem.Toshka watermark (click to cycle position)'
+            }
           >
             <img
               src="/logo_video.png"
               alt="dem.Toshka"
               style={{
-                height: '22px',
+                height: '20px',
                 width: 'auto',
                 objectFit: 'contain',
                 filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.8))',
               }}
             />
+            <span
+              style={{
+                fontSize: '10px',
+                color: '#38bdf8',
+                marginLeft: '6px',
+                fontWeight: 800,
+                letterSpacing: '-0.5px',
+              }}
+            >
+              {wmPos === 'top_left' && '↖'}
+              {wmPos === 'top_right' && '↗'}
+              {wmPos === 'bottom_left' && '↙'}
+              {wmPos === 'bottom_right' && '↘'}
+            </span>
           </div>
+        )}
+
+        {/* 4 Corner Click Targets directly in the Viewport */}
+        {config.watermark !== false && (
+          <>
+            {[
+              { id: 'top_left' as const, style: { top: '8px', left: '8px' }, label: '↖' },
+              { id: 'top_right' as const, style: { top: '8px', right: '8px' }, label: '↗' },
+              { id: 'bottom_left' as const, style: { bottom: '8px', left: '8px' }, label: '↙' },
+              { id: 'bottom_right' as const, style: { bottom: '8px', right: '8px' }, label: '↘' },
+            ].map((c) => {
+              if (wmPos === c.id) return null
+              return (
+                <div
+                  key={c.id}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onChangeConfig && onChangeConfig({ watermarkPosition: c.id })
+                  }}
+                  title={
+                    lang === 'ru'
+                      ? 'Переместить водяной знак в этот угол'
+                      : 'Move watermark to this corner'
+                  }
+                  style={{
+                    position: 'absolute',
+                    ...c.style,
+                    zIndex: 9,
+                    width: '28px',
+                    height: '24px',
+                    borderRadius: '4px',
+                    border: '1px dashed rgba(255, 255, 255, 0.25)',
+                    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#94a3b8',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = '#38bdf8'
+                    e.currentTarget.style.backgroundColor = 'rgba(56, 189, 248, 0.2)'
+                    e.currentTarget.style.color = '#38bdf8'
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.25)'
+                    e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.35)'
+                    e.currentTarget.style.color = '#94a3b8'
+                  }}
+                >
+                  {c.label}
+                </div>
+              )
+            })}
+          </>
         )}
 
         {/* Tactical Grid / Wall architecture overlay */}
@@ -456,6 +567,46 @@ export const InteractiveCrosshairPreview: React.FC<InteractiveCrosshairPreviewPr
             gap: '12px',
           }}
         >
+          {/* Quick Watermark Corner Position Controls */}
+          {config.watermark !== false && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>
+                {lang === 'ru' ? 'Водяной знак:' : 'Watermark:'}
+              </span>
+              <div style={{ display: 'flex', gap: '4px' }}>
+                {[
+                  { id: 'top_left' as const, label: '↖ ' + (lang === 'ru' ? 'Слева верх' : 'Top Left') },
+                  { id: 'top_right' as const, label: '↗ ' + (lang === 'ru' ? 'Справа верх' : 'Top Right') },
+                  { id: 'bottom_left' as const, label: '↙ ' + (lang === 'ru' ? 'Слева низ' : 'Bottom Left') },
+                  { id: 'bottom_right' as const, label: '↘ ' + (lang === 'ru' ? 'Справа низ' : 'Bottom Right') },
+                ].map((pos) => {
+                  const isActive = wmPos === pos.id
+                  return (
+                    <button
+                      key={pos.id}
+                      type="button"
+                      className="btn card-interactive"
+                      onClick={() => onChangeConfig && onChangeConfig({ watermarkPosition: pos.id })}
+                      style={{
+                        fontSize: '10px',
+                        fontWeight: 700,
+                        padding: '3px 7px',
+                        borderRadius: '4px',
+                        border: isActive ? '1px solid #38bdf8' : '1px solid #262c3e',
+                        backgroundColor: isActive ? 'rgba(56, 189, 248, 0.2)' : '#161a25',
+                        color: isActive ? '#38bdf8' : '#94a3b8',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      {pos.label}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Quick Color Picker */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>{lang === 'ru' ? 'Цвет:' : 'Color:'}</span>

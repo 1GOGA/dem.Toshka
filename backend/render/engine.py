@@ -228,6 +228,7 @@ class RenderEngine:
                     audio_path=recorded_audio,
                     output_path=output_mp4,
                     watermark=getattr(task, "watermark", True),
+                    watermark_position=getattr(task, "watermark_position", "top_left"),
                 )
                 if not mux_res.success:
                     return False, mux_res.error_message or "Multiplexing video and audio failed", False, None
@@ -438,6 +439,7 @@ class RenderEngine:
                         audio_path=rec_audio,
                         output_path=out_mp4,
                         watermark=getattr(task, "watermark", True),
+                    watermark_position=getattr(task, "watermark_position", "top_left"),
                     )
                     if not mux_res.success:
                         return False, mux_res.error_message or f"Multiplexing failed for victim take {i}", False, None
@@ -1048,6 +1050,7 @@ class RenderEngine:
                         audio_path=rec_audio,
                         output_path=task.output_path,
                         watermark=getattr(task, "watermark", True),
+                    watermark_position=getattr(task, "watermark_position", "top_left"),
                     )
                     if not mux_res.success:
                         results_by_id[task.task_id] = RenderResult(

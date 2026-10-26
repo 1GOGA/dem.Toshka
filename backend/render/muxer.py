@@ -68,10 +68,11 @@ def mux_video_and_audio(
     timeout_seconds: float = 120.0,
     watermark: bool = True,
     watermark_path: Optional[pathlib.Path] = None,
+    watermark_position: str = "top_left",
 ) -> MuxResult:
     """Multiplex H.264 video and PCM WAV audio into an MP4 container.
 
-    - Overlays top-left watermark (logo_video.png) when watermark=True and watermark_path exists.
+    - Overlays watermark (logo_video.png) at specified watermark_position (top_left, top_right, bottom_left, bottom_right) when watermark=True and watermark_path exists.
     - If watermark is disabled, copies video stream (-c:v copy) without re-encoding.
     - Audio is encoded to AAC (-c:a aac -b:a 192k) for optimal compatibility.
     - Writes to an isolated temporary staging file first; only replaces target on verified success.
@@ -116,6 +117,17 @@ def mux_video_and_audio(
     offset_x = max(16, int(v_width * 0.0125))
     offset_y = max(14, int(v_height * 0.0185))
 
+    # Determine watermark overlay coordinates based on watermark_position
+    pos = (watermark_position or "top_left").lower().replace("-", "_")
+    if pos == "top_right":
+        overlay_coord = f"W-w-{offset_x}:{offset_y}"
+    elif pos == "bottom_left":
+        overlay_coord = f"{offset_x}:H-h-{offset_y}"
+    elif pos == "bottom_right":
+        overlay_coord = f"W-w-{offset_x}:H-h-{offset_y}"
+    else:  # default top_left
+        overlay_coord = f"{offset_x}:{offset_y}"
+
     # Case 1: Audio file is absent
     if audio_path is None or not audio_path.exists() or audio_path.stat().st_size == 0:
         warning = "Audio file not found or empty; video exported without audio stream."
@@ -132,7 +144,7 @@ def mux_video_and_audio(
                     "-i",
                     str(target_wm_path),
                     "-filter_complex",
-                    f"[1:v]scale={logo_w}:-1[logo];[0:v][logo]overlay={offset_x}:{offset_y}[outv]",
+                    f"[1:v]scale={logo_w}:-1[logo];[0:v][logo]overlay={overlay_coord}[outv]",
                     "-map",
                     "[outv]",
                     "-c:v",
@@ -209,7 +221,7 @@ def mux_video_and_audio(
             "-i",
             str(target_wm_path),
             "-filter_complex",
-            f"[2:v]scale={logo_w}:-1[logo];[0:v][logo]overlay={offset_x}:{offset_y}[outv]",
+            f"[2:v]scale={logo_w}:-1[logo];[0:v][logo]overlay={overlay_coord}[outv]",
             "-map",
             "[outv]",
             "-map",

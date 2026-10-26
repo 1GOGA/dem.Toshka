@@ -4,7 +4,6 @@ import { Map2DRadar } from './Map2DRadar'
 import { TacticalReplayRadar } from './TacticalReplayRadar'
 import { api } from '../api'
 import { VideoPlayerModal } from './VideoPlayerModal'
-import { TournamentHudModal } from './TournamentHudModal'
 import { PlayerAnalyticsModal } from './PlayerAnalyticsModal'
 import { InteractiveCrosshairPreview } from './InteractiveCrosshairPreview'
 import {
@@ -248,7 +247,6 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
     title: string
     subtitle?: string
   } | null>(null)
-  const [isTournamentHudModalOpen, setIsTournamentHudModalOpen] = useState(false)
   const [selectedPlayerForAnalytics, setSelectedPlayerForAnalytics] = useState<{
     steamIdOrName: string
     name: string
@@ -2688,10 +2686,20 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     />
                     <div>
                       <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600 }}>{lang === 'ru' ? 'Водяной знак dem.Toshka' : 'dem.Toshka Watermark'}</div>
-                      <div style={{ fontSize: '10px', color: '#94a3b8' }}>{lang === 'ru' ? 'Фирменный полупрозрачный логотип слева сверху' : 'Signature subtle logo in top left corner'}</div>
+                      <div style={{ fontSize: '10px', color: '#94a3b8' }}>
+                        {lang === 'ru' ? 'Фирменный логотип (позиция выбирается в окне симулятора справа)' : 'Signature logo (position chosen in preview simulator on right)'}
+                      </div>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {clipSettings?.watermark !== false && (
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.12)', padding: '2px 6px', borderRadius: '4px', border: '1px solid rgba(56, 189, 248, 0.25)' }}>
+                        {clipSettings?.watermarkPosition === 'top_right' ? (lang === 'ru' ? '↗ Справа вверху' : '↗ Top Right') :
+                         clipSettings?.watermarkPosition === 'bottom_left' ? (lang === 'ru' ? '↙ Слева внизу' : '↙ Bottom Left') :
+                         clipSettings?.watermarkPosition === 'bottom_right' ? (lang === 'ru' ? '↘ Справа внизу' : '↘ Bottom Right') :
+                         (lang === 'ru' ? '↖ Слева вверху' : '↖ Top Left')}
+                      </span>
+                    )}
                     <span style={{ fontSize: '10px', fontWeight: 700, color: clipSettings?.watermark !== false ? '#38bdf8' : '#64748b' }}>
                       {clipSettings?.watermark !== false ? (lang === 'ru' ? 'ВКЛ' : 'ON') : (lang === 'ru' ? 'ВЫКЛ' : 'OFF')}
                     </span>
@@ -2714,29 +2722,8 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ fontSize: '12px', fontWeight: 700, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <SlidersIcon size={14} color="#38bdf8" />
-                    <span>{lang === "ru" ? "МАСШТАБ HUD И ТУРНИРНЫЙ ОВЕРЛЕЙ" : "HUD SCALE & TOURNAMENT OVERLAYS"}</span>
+                    <span>{lang === "ru" ? "МАСШТАБ ИНТЕРФЕЙСА (HUD) В CS2" : "CS2 HUD INTERFACE SCALE"}</span>
                   </div>
-                  <button
-                    type="button"
-                    className="btn card-interactive"
-                    onClick={() => setIsTournamentHudModalOpen(true)}
-                    style={{
-                      padding: '3px 8px',
-                      fontSize: '10px',
-                      backgroundColor: 'rgba(245, 158, 11, 0.15)',
-                      color: '#fbbf24',
-                      border: '1px solid rgba(245, 158, 11, 0.4)',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontWeight: 600,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                    }}
-                  >
-                    <TrophyIcon size={11} color="#fbbf24" />
-                    <span>{lang === "ru" ? "Турнирный HUD (GSI)..." : "Tournament HUD (GSI)..."}</span>
-                  </button>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -2788,12 +2775,15 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   viewmodelFov: clipSettings?.viewmodelFov || 60,
                   hudMode: clipSettings?.hudMode || 'full',
                   customCrosshair: clipSettings?.customCrosshair,
+                  watermark: clipSettings?.watermark !== false,
+                  watermarkPosition: clipSettings?.watermarkPosition || 'top_left',
                 }}
                 onChangeConfig={(newCfg) => {
                   if (onUpdateSettings && clipSettings) {
                     onUpdateSettings({
                       ...clipSettings,
                       crosshairColor: (newCfg.color as any) || clipSettings.crosshairColor,
+                      watermarkPosition: (newCfg.watermarkPosition as any) || clipSettings.watermarkPosition || 'top_left',
                     })
                   }
                 }}
@@ -3215,11 +3205,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
         subtitle={activeModalVideo?.subtitle}
       />
 
-      {/* External Tournament HUD & Overlays Modal (Lexogrine / GSI) */}
-      <TournamentHudModal
-        isOpen={isTournamentHudModalOpen}
-        onClose={() => setIsTournamentHudModalOpen(false)}
-      />
+
 
       {/* In-depth FACEIT Analytics & Tactical Error Audit Modal */}
       {selectedPlayerForAnalytics && activeDemo && (

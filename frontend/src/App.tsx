@@ -61,6 +61,7 @@ export function App() {
     hudMode: 'full',
     customCrosshair: true,
     watermark: true,
+    watermarkPosition: 'top_left',
     radarMode: 'player_focus',
     previewRecording: true,
   })
@@ -232,6 +233,7 @@ export function App() {
       crosshair_color: clipSettings.crosshairColor,
       radar_mode: clipSettings.radarMode || 'player_focus',
       watermark: clipSettings.watermark !== false,
+      watermark_position: clipSettings.watermarkPosition || 'top_left',
       preview_recording: clipSettings.previewRecording !== false,
     })
   }

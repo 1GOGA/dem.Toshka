@@ -541,6 +541,7 @@ class RenderQueueManager:
                 killcam_victim_end_tick=killcam_victim_end_tick,
                 killcam_hero_start_tick=killcam_hero_start_tick,
                 watermark=bool(settings.get("watermark", True)),
+                watermark_position=str(settings.get("watermark_position", settings.get("watermarkPosition", "top_left"))),
                 preview_recording=bool(settings.get("preview_recording", True)),
             )
             return task, None

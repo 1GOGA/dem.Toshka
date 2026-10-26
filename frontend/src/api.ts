@@ -134,6 +134,7 @@ export const api = {
     crosshair_color?: string
     radar_mode?: string
     watermark?: boolean
+    watermark_position?: 'top_left' | 'top_right' | 'bottom_left' | 'bottom_right'
     preview_recording?: boolean
   }): Promise<RenderJobDTO[]> {
     const res = await fetch(`${BASE_URL}/render-jobs`, {

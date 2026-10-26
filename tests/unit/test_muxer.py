@@ -165,6 +165,24 @@ class TestMuxerWithRealPocFixtures:
         is_valid, probed_dur, err = verify_mp4(out, require_audio=True)
         assert is_valid, f"Verification with watermark failed: {err}"
 
+    @pytest.mark.parametrize("pos", ["top_right", "bottom_left", "bottom_right"])
+    def test_successful_video_audio_muxing_with_watermark_positions(self, tmp_path, pos):
+        if not POC_VIDEO.exists() or not POC_AUDIO.exists():
+            pytest.skip("PoC fixtures not present on disk")
+
+        logo_path = pathlib.Path("logo_video.png")
+        if not logo_path.exists():
+            pytest.skip("logo_video.png not found")
+
+        out = tmp_path / f"muxed_wm_{pos}.mp4"
+        res = mux_video_and_audio(POC_VIDEO, POC_AUDIO, out, watermark=True, watermark_path=logo_path, watermark_position=pos)
+
+        assert res.success
+        assert res.output_path == out
+        assert out.exists()
+        is_valid, probed_dur, err = verify_mp4(out, require_audio=True)
+        assert is_valid, f"Verification with watermark position {pos} failed: {err}"
+
 
 class TestAudioVerifier:
     def test_verify_audio_signal_missing_file(self, tmp_path):

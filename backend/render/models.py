@@ -57,6 +57,7 @@ class RenderTask:
     killcam_victim_end_tick: Optional[int] = None
     killcam_hero_start_tick: Optional[int] = None
     watermark: bool = True
+    watermark_position: str = "top_left"
     preview_recording: bool = True
 
     def get_effective_killcam_victims(self) -> list[KillcamVictimSegment]:

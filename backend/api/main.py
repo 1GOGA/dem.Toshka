@@ -408,6 +408,7 @@ async def create_render_jobs(
         "killfeed_only": req.killfeed_only,
         "teamcounter_mode": req.teamcounter_mode,
         "watermark": req.watermark,
+        "watermark_position": req.watermark_position,
         "preview_recording": req.preview_recording,
     }
 

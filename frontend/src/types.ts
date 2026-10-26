@@ -144,6 +144,7 @@ export interface ClipSettings {
   crosshairColor?: 'cyan' | 'green' | 'yellow' | 'white' | 'pink' | 'red' | 'blue'
   radarMode?: 'dynamic_large' | 'broadcast_giant' | 'broadcast' | 'player_focus' | 'compact' | 'hidden'
   watermark?: boolean
+  watermarkPosition?: 'top_left' | 'top_right' | 'bottom_left' | 'bottom_right'
   previewRecording?: boolean
 }
 
