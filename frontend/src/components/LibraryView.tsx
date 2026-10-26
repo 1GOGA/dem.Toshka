@@ -1,11 +1,12 @@
 import React, { useState, useRef } from 'react'
 import type { DemoSummary } from '../types'
-import { FolderIcon, LoaderIcon, CheckIcon } from './Icons'
+import { FolderIcon, LoaderIcon, CheckIcon, FilmIcon } from './Icons'
 import { useTranslation } from '../i18n'
 
 interface LibraryViewProps {
   demos: DemoSummary[]
   activeDemoId: number | null
+  activeDemo?: DemoSummary | null
   onSelectDemo: (demo: DemoSummary) => void
   onParsePath: (path: string) => Promise<void>
   onUploadDemo?: (file: File) => Promise<void>
@@ -16,13 +17,14 @@ interface LibraryViewProps {
 export const LibraryView: React.FC<LibraryViewProps> = ({
   demos,
   activeDemoId,
+  activeDemo,
   onSelectDemo,
   onParsePath,
   onUploadDemo,
   isLoading,
   error,
 }) => {
-  const { t } = useTranslation()
+  const { t, lang } = useTranslation()
   const [uploadingName, setUploadingName] = useState<string | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -168,24 +170,80 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
           </div>
         </div>
 
-        {uploadingName && (
+        {(uploadingName || isLoading) && (
           <div
             style={{
-              marginTop: '16px',
-              padding: '12px 16px',
-              backgroundColor: 'rgba(56, 189, 248, 0.12)',
-              border: '1px solid rgba(56, 189, 248, 0.4)',
-              borderRadius: '8px',
-              color: '#38bdf8',
-              fontSize: '13px',
-              fontWeight: 600,
+              marginTop: '20px',
+              padding: '20px 24px',
+              backgroundColor: 'rgba(10, 16, 28, 0.95)',
+              border: '1px solid rgba(56, 189, 248, 0.55)',
+              borderRadius: '10px',
+              boxShadow: '0 0 35px rgba(56, 189, 248, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
               display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
+              flexDirection: 'column',
+              gap: '14px',
+              position: 'relative',
+              overflow: 'hidden',
             }}
           >
-            <LoaderIcon size={16} color="#38bdf8" />
-            <span>Загрузка и полный анализ демки <strong>{uploadingName}</strong> движком CS2 Source 2... Это займет несколько секунд.</span>
+            {/* Top Row: Rotating Spinner & Status Title */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  border: '3px solid rgba(56, 189, 248, 0.2)',
+                  borderTopColor: '#38bdf8',
+                  animation: 'spin 0.8s linear infinite',
+                }} />
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 800, color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>{lang === 'ru' ? 'АНАЛИЗ И ОБРАБОТКА ДЕМКИ CS2' : 'ANALYZING & PROCESSING CS2 DEMO'}</span>
+                    {uploadingName && (
+                      <span style={{ fontSize: '12px', color: '#38bdf8', background: 'rgba(56, 189, 248, 0.15)', padding: '2px 8px', borderRadius: '4px' }}>
+                        {uploadingName}
+                      </span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+                    {lang === 'ru' ? 'Считывание бинарных тиков CS2, поиск фрагов, клатчей и построение 2D радара...' : 'Parsing binary CS2 ticks, detecting kills, clutches, and building 2D radar...'}
+                  </div>
+                </div>
+              </div>
+              <div style={{ fontSize: '11px', fontFamily: 'monospace', fontWeight: 700, color: '#38bdf8', background: 'rgba(56, 189, 248, 0.1)', border: '1px solid rgba(56, 189, 248, 0.3)', padding: '4px 10px', borderRadius: '6px' }}>
+                SOURCE 2 PARSER ⚡
+              </div>
+            </div>
+
+            {/* Glowing Shimmer Progress Bar */}
+            <div style={{ width: '100%', height: '6px', backgroundColor: 'rgba(255, 255, 255, 0.08)', borderRadius: '3px', overflow: 'hidden', position: 'relative' }}>
+              <div
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  background: 'linear-gradient(90deg, #0284c7 0%, #38bdf8 50%, #818cf8 100%)',
+                  borderRadius: '3px',
+                  animation: 'pulse 1.8s ease-in-out infinite',
+                }}
+              />
+            </div>
+
+            {/* Live Pipeline Steps */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', paddingTop: '4px' }}>
+              <div style={{ fontSize: '10.5px', color: '#cbd5e1', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ color: '#22c55e', fontWeight: 800 }}>✓</span>
+                <span>{lang === 'ru' ? 'Загрузка файла .dem' : 'Uploading .dem file'}</span>
+              </div>
+              <div style={{ fontSize: '10.5px', color: '#38bdf8', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 700 }}>
+                <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#38bdf8', boxShadow: '0 0 8px #38bdf8' }} />
+                <span>{lang === 'ru' ? 'Парсинг тиков и убийств' : 'Parsing ticks & kills'}</span>
+              </div>
+              <div style={{ fontSize: '10.5px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span>○</span>
+                <span>{lang === 'ru' ? 'Детекция хайлайтов' : 'Detecting highlights'}</span>
+              </div>
+            </div>
           </div>
         )}
 
@@ -201,13 +259,82 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
               fontSize: '13px',
             }}
           >
-            <strong>Ошибка:</strong> {error}
+            <strong>{lang === 'ru' ? 'Ошибка:' : 'Error:'}</strong> {error}
           </div>
         )}
       </div>
 
       {/* Matches Grid */}
       <div>
+        {activeDemo && (
+          <div
+            style={{
+              marginBottom: '20px',
+              padding: '16px 20px',
+              backgroundColor: '#0f172a',
+              border: '1px solid #38bdf8',
+              borderRadius: '12px',
+              boxShadow: '0 0 24px rgba(56, 189, 248, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '14px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div
+                style={{
+                  width: '42px',
+                  height: '42px',
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 0 16px rgba(56, 189, 248, 0.35)',
+                }}
+              >
+                <FilmIcon size={20} color="#040711" />
+              </div>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '11px', fontWeight: 800, color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    {lang === 'ru' ? 'АКТИВНЫЙ МАТЧ В РАБОТЕ' : 'ACTIVE MATCH IN STUDIO'}
+                  </span>
+                  <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: '#22c55e', boxShadow: '0 0 8px #22c55e' }} />
+                </div>
+                <div style={{ fontSize: '16px', fontWeight: 800, color: '#ffffff' }}>
+                  {(activeDemo.map_name || 'CS2').replace('de_', '').toUpperCase()} — {activeDemo.rounds_count} {lang === 'ru' ? 'раундов' : 'rounds'} ({activeDemo.highlights_count} {lang === 'ru' ? 'хайлайтов' : 'highlights'})
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => onSelectDemo(activeDemo)}
+              style={{
+                padding: '10px 22px',
+                background: 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)',
+                color: '#040711',
+                fontWeight: 800,
+                fontSize: '13px',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 0 20px rgba(56, 189, 248, 0.4)',
+                transition: 'transform 0.15s ease',
+              }}
+            >
+              <span>{lang === 'ru' ? '⚡ Продолжить работу в Студии' : '⚡ Continue to Highlights Studio'}</span>
+              <span>➔</span>
+            </button>
+          </div>
+        )}
+
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <h3 style={{ fontSize: '16px', fontWeight: 700 }}>
             {t('library.parsedDemos')} ({demos.length})
@@ -241,14 +368,18 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                 <div
                   key={demo.id}
                   className={`card-interactive ${isSelected ? 'glow-ct' : ''}`}
+                  onClick={() => onSelectDemo(demo)}
                   style={{
                     backgroundColor: isSelected ? 'var(--bg-card-selected)' : 'var(--bg-surface)',
-                    border: `1px solid ${isSelected ? 'var(--accent-gold)' : 'var(--border)'}`,
+                    border: `1px solid ${isSelected ? '#38bdf8' : 'var(--border)'}`,
                     borderRadius: '10px',
                     padding: '20px',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'space-between',
+                    cursor: 'pointer',
+                    boxShadow: isSelected ? '0 0 20px rgba(56, 189, 248, 0.22)' : 'none',
+                    transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                   }}
                 >
                   <div>
@@ -319,7 +450,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                           type="text"
                           value={noteDraft}
                           onChange={(e) => setNoteDraft(e.target.value)}
-                          placeholder="Например: FACEIT финал 16-14 против s1mple"
+                          placeholder={lang === 'ru' ? 'Например: FACEIT финал 16-14 против s1mple' : 'e.g. FACEIT final 16-14 vs s1mple'}
                           autoFocus
                           style={{
                             flex: 1,
@@ -370,7 +501,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                           setEditingDemoId(demo.id)
                           setNoteDraft(demoNotes[demo.id] || '')
                         }}
-                        title="Нажмите чтобы подписать или изменить заметку к этой демке"
+                        title={lang === 'ru' ? 'Нажмите чтобы подписать или изменить заметку к этой демке' : 'Click to add or edit custom note for this demo'}
                       >
                         <span
                           style={{
@@ -383,7 +514,7 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                             whiteSpace: 'nowrap',
                           }}
                         >
-                          {demoNotes[demo.id] || '+ Подписать демку / заметка'}
+                          {demoNotes[demo.id] || (lang === 'ru' ? '+ Подписать демку / заметка' : '+ Add custom note')}
                         </span>
                         <span style={{ fontSize: '11px', color: '#94a3b8' }}>✎</span>
                       </div>
@@ -435,16 +566,29 @@ export const LibraryView: React.FC<LibraryViewProps> = ({
                     </span>
                     <button
                       className={`btn ${isSelected ? 'btn-primary' : 'btn-secondary'}`}
-                      onClick={() => onSelectDemo(demo)}
-                      style={{ padding: '6px 14px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onSelectDemo(demo)
+                      }}
+                      style={{
+                        padding: '8px 16px',
+                        fontSize: '12.5px',
+                        fontWeight: 700,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        backgroundColor: isSelected ? '#38bdf8' : undefined,
+                        color: isSelected ? '#040711' : undefined,
+                        boxShadow: isSelected ? '0 0 16px rgba(56, 189, 248, 0.4)' : undefined,
+                      }}
                     >
                       {isSelected ? (
                         <>
-                          <CheckIcon size={13} color="#ffffff" />
-                          <span>{t('library.openInStudio')}</span>
+                          <CheckIcon size={14} color="#040711" />
+                          <span>{lang === 'ru' ? 'В Студию хайлайтов ➔' : 'To Highlights Studio ➔'}</span>
                         </>
                       ) : (
-                        <span>{t('library.openInStudio')} →</span>
+                        <span>{lang === 'ru' ? 'Выбрать и открыть в Студии →' : 'Select & Open in Studio →'}</span>
                       )}
                     </button>
                   </div>

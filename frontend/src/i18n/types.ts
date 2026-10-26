@@ -1,6 +1,7 @@
 export type Language = 'ru' | 'en'
 
 export interface TranslationDictionary {
+  [key: string]: string
   // Brand & Header
   'brand.subtitle': string
   'brand.showcaseTooltip': string
@@ -198,5 +199,5 @@ export interface TranslationDictionary {
   'modal.queue.statusFailed': string
 }
 
-export type TranslationKey = keyof TranslationDictionary
+export type TranslationKey = keyof TranslationDictionary | string
 

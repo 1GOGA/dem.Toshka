@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from '../i18n'
 
 export type SimMapId = 'mirage' | 'inferno' | 'nuke' | 'dust2' | 'anubis'
 
@@ -31,7 +32,7 @@ const MAPS_DATA: Record<SimMapId, MapVisualInfo> = {
     id: 'mirage',
     name: 'de_mirage',
     label: '🏜️ Mirage',
-    desc: 'Песчаные арки, А-плент и Дворец',
+    desc: 'Sandstone arches, A-site & Palace',
     gradient: 'radial-gradient(ellipse at 50% 45%, #59442a 0%, #2b2014 60%, #0d0a06 100%)',
     accentColor: '#f59e0b',
     radarPaths: [
@@ -50,7 +51,7 @@ const MAPS_DATA: Record<SimMapId, MapVisualInfo> = {
     id: 'inferno',
     name: 'de_inferno',
     label: '🏰 Inferno',
-    desc: 'Каменная брусчатка, Банан и Церковь',
+    desc: 'Cobblestone streets, Banana & Church',
     gradient: 'radial-gradient(ellipse at 50% 45%, #5a3d28 0%, #291a10 60%, #0e0906 100%)',
     accentColor: '#f97316',
     radarPaths: [
@@ -69,7 +70,7 @@ const MAPS_DATA: Record<SimMapId, MapVisualInfo> = {
     id: 'nuke',
     name: 'de_nuke',
     label: '☢️ Nuke',
-    desc: 'Индустриальный металл, Рампа и Силосы',
+    desc: 'Industrial steel, Ramp & Silos',
     gradient: 'radial-gradient(ellipse at 50% 45%, #2a3d52 0%, #131d28 60%, #06090e 100%)',
     accentColor: '#38bdf8',
     radarPaths: [
@@ -88,7 +89,7 @@ const MAPS_DATA: Record<SimMapId, MapVisualInfo> = {
     id: 'dust2',
     name: 'de_dust2',
     label: '⏳ Dust II',
-    desc: 'Солнечный Long, Mid двери и Коробка',
+    desc: 'Sunny Long, Mid doors & Box',
     gradient: 'radial-gradient(ellipse at 50% 45%, #6e583b 0%, #342817 60%, #120e08 100%)',
     accentColor: '#eab308',
     radarPaths: [
@@ -107,7 +108,7 @@ const MAPS_DATA: Record<SimMapId, MapVisualInfo> = {
     id: 'anubis',
     name: 'de_anubis',
     label: '🏺 Anubis',
-    desc: 'Водный канал, Древний храм и Руины',
+    desc: 'Water canals, Ancient temple & Ruins',
     gradient: 'radial-gradient(ellipse at 50% 45%, #2a4c4a 0%, #112626 60%, #050d0d 100%)',
     accentColor: '#2dd4bf',
     radarPaths: [
@@ -132,6 +133,7 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
   onSelectPreset,
   onSelectMap,
 }) => {
+  const { lang } = useTranslation()
   const [compareMode, setCompareMode] = useState<'current' | 'compare_old'>('current')
   const [activeMapId, setActiveMapId] = useState<SimMapId>(() => {
     const raw = (mapName || '').toLowerCase()
@@ -182,7 +184,7 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '16px' }}>📺</span>
           <span style={{ fontSize: '13px', fontWeight: 700, color: '#f1f5f9' }}>
-            Интерактивный симулятор экрана CS2
+            {lang === 'ru' ? 'Интерактивный симулятор экрана CS2' : 'Interactive CS2 Screen Simulator'}
           </span>
           <span
             style={{
@@ -195,7 +197,7 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
               border: `1px solid ${isHugeHud ? 'rgba(56, 189, 248, 0.4)' : '#2d3345'}`,
             }}
           >
-            {isHugeHud ? '🔥 115% МАСШТАБ HUD' : '95% СТАНДАРТ'}
+            {isHugeHud ? (lang === 'ru' ? '🔥 115% МАСШТАБ HUD' : '🔥 115% HUD SCALE') : (lang === 'ru' ? '95% СТАНДАРТ' : '95% STANDARD')}
           </span>
         </div>
 
@@ -216,9 +218,9 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
               gap: '4px',
               fontWeight: 600,
             }}
-            title="Посмотреть визуальные примеры и скриншоты каждого режима"
+            title={lang === "ru" ? "Посмотреть визуальные примеры и скриншоты каждого режима" : "View visual screenshots and examples of each mode"}
           >
-            <span>📸 Примеры со скриншотами</span>
+            <span>📸 {lang === 'ru' ? 'Примеры со скриншотами' : 'Visual Examples'}</span>
           </button>
 
           <button
@@ -227,7 +229,7 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
             onClick={() => setCompareMode('current')}
             style={{ padding: '4px 8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
           >
-            <span>🟢 Выбранный</span>
+            <span>🟢 {lang === 'ru' ? 'Выбранный' : 'Active'}</span>
           </button>
 
           <button
@@ -235,9 +237,9 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
             className={compareMode === 'compare_old' ? 'btn btn-primary' : 'btn btn-secondary'}
             onClick={() => setCompareMode('compare_old')}
             style={{ padding: '4px 8px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}
-            title="Сравнить со стандартным мелким CS2 HUD"
+            title={lang === "ru" ? "Сравнить со стандартным мелким CS2 HUD" : "Compare with default small CS2 HUD"}
           >
-            <span>🔴 Как было</span>
+            <span>🔴 {lang === 'ru' ? 'Как было' : 'Default CS2'}</span>
           </button>
         </div>
       </div>
@@ -254,7 +256,7 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
         }}
       >
         <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600, marginRight: '4px' }}>
-          Карта:
+          {lang === 'ru' ? 'Карта:' : 'Map:'}
         </span>
         {(Object.keys(MAPS_DATA) as SimMapId[]).map((mId) => {
           const m = MAPS_DATA[mId]
@@ -721,7 +723,7 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
           }}
         >
           {compareMode === 'compare_old'
-            ? 'РЕЖИМ СРАВНЕНИЯ: СТАНДАРТНЫЙ МЕЛКИЙ CS2'
+            ? (lang === 'ru' ? 'РЕЖИМ СРАВНЕНИЯ: СТАНДАРТНЫЙ МЕЛКИЙ CS2' : 'COMPARISON MODE: DEFAULT SMALL CS2')
             : `${currentMap.name.toUpperCase()} • ${isHugeHud ? 'HUGE ESPORTS HUD (115%)' : 'STANDARD HUD'}`}
         </div>
       </div>
@@ -730,7 +732,7 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
       {onSelectPreset && (
         <div style={{ marginTop: '14px' }}>
           <div style={{ fontSize: '11px', fontWeight: 700, color: '#94a3b8', marginBottom: '8px', textTransform: 'uppercase' }}>
-            ⚡ Быстрые пресеты визуальной видимости:
+            {lang === 'ru' ? '⚡ Быстрые пресеты визуальной видимости:' : '⚡ Visibility & HUD Presets:'}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px' }}>
             <button
@@ -740,10 +742,10 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
               style={{ textAlign: 'left', padding: '8px 10px' }}
             >
               <div style={{ fontWeight: 800, fontSize: '12px', color: '#38bdf8' }}>
-                🔥 Макс. Видимость (130%)
+                {lang === 'ru' ? '🔥 Макс. Видимость (130%)' : '🔥 Max Visibility (130%)'}
               </div>
               <div style={{ fontSize: '10px', opacity: 0.8 }}>
-                Огромный HUD 1.15x + Вращающийся радар
+                {lang === 'ru' ? 'Огромный HUD 1.15x + Вращающийся радар' : 'Huge HUD 1.15x + Rotating radar'}
               </div>
             </button>
 
@@ -754,10 +756,10 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
               style={{ textAlign: 'left', padding: '8px 10px' }}
             >
               <div style={{ fontWeight: 800, fontSize: '12px', color: '#fbbf24' }}>
-                ⚡ Огромный Киллфид
+                {lang === 'ru' ? '⚡ Огромный Киллфид' : '⚡ Huge Killfeed'}
               </div>
               <div style={{ fontSize: '10px', opacity: 0.8 }}>
-                Крупные фраги + Динамический радар
+                {lang === 'ru' ? 'Крупные фраги + Динамический радар' : 'Enlarged kills + Dynamic radar'}
               </div>
             </button>
 
@@ -771,7 +773,7 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
                 📡 Pro Tournament (BLAST)
               </div>
               <div style={{ fontSize: '10px', opacity: 0.8 }}>
-                Вся карта 130% обзор + Крупный HUD
+                {lang === 'ru' ? 'Вся карта 130% обзор + Крупный HUD' : 'Full map 130% overview + Large HUD'}
               </div>
             </button>
 
@@ -782,10 +784,10 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
               style={{ textAlign: 'left', padding: '8px 10px' }}
             >
               <div style={{ fontWeight: 800, fontSize: '12px', color: '#94a3b8' }}>
-                🎬 Чистый Синематик
+                {lang === 'ru' ? '🎬 Чистый Синематик' : '🎬 Clean Cinematic'}
               </div>
               <div style={{ fontSize: '10px', opacity: 0.8 }}>
-                Без худа и без карты (No-HUD)
+                {lang === 'ru' ? 'Без худа и без карты (No-HUD)' : 'No-HUD and no mini-map'}
               </div>
             </button>
           </div>
@@ -807,10 +809,10 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
             <div>
               <div style={{ fontSize: '14px', fontWeight: 800, color: '#f1f5f9' }}>
-                📸 Наглядные примеры режимов в CS2 (Скриншоты и параметры)
+                {lang === 'ru' ? '📸 Наглядные примеры режимов в CS2 (Скриншоты и параметры)' : '📸 Visual CS2 Recording Modes (Screenshots & Settings)'}
               </div>
               <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-                Реальные параметры CS2 консоли и как они выглядят в готовом ролике
+                {lang === 'ru' ? 'Реальные параметры CS2 консоли и как они выглядят в готовом ролике' : 'Actual CS2 console parameters and their appearance in final videos'}
               </div>
             </div>
             <button
@@ -837,10 +839,10 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '13px', fontWeight: 800, color: '#38bdf8' }}>
-                  🔥 Огромный киберспорт (130%)
+                  {lang === 'ru' ? '🔥 Огромный киберспорт (130%)' : '🔥 Max Esports Visibility (130%)'}
                 </span>
                 <span style={{ fontSize: '10px', backgroundColor: '#0284c733', color: '#38bdf8', padding: '1px 5px', borderRadius: '4px', fontWeight: 700 }}>
-                  ТОП ДЛЯ КЛИПОВ
+                  {lang === 'ru' ? 'ТОП ДЛЯ КЛИПОВ' : 'TOP FOR CLIPS'}
                 </span>
               </div>
               {/* Mini visual mockup */}
@@ -868,7 +870,7 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
                 <div style={{ position: 'absolute', bottom: '4px', right: '6px', fontSize: '8px', color: '#f1f5f9', fontWeight: 900 }}>30 / 90</div>
               </div>
               <div style={{ fontSize: '11px', color: '#cbd5e1' }}>
-                Радар увеличен на 30%, динамически вращается по прицелу, фраги в киллфиде увеличены, аватары и HP четко читаются с экрана смартфона.
+                {lang === 'ru' ? 'Радар увеличен на 30%, динамически вращается по прицелу, фраги в киллфиде увеличены, аватары и HP четко читаются с экрана смартфона.' : 'Radar enlarged by 30%, dynamically rotates with crosshair, kills scaled up, HP and avatars legible even on mobile screens.'}
               </div>
               <div style={{ fontSize: '10px', color: '#64748b', fontFamily: 'monospace' }}>
                 cl_hud_radar_scale 1.30; hud_scaling 1.15
@@ -883,7 +885,7 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
                   }}
                   style={{ padding: '4px 8px', fontSize: '11px', marginTop: 'auto' }}
                 >
-                  Применить этот режим
+                  {lang === 'ru' ? 'Применить этот режим' : 'Apply this preset'}
                 </button>
               )}
             </div>
@@ -934,7 +936,7 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
                 </div>
               </div>
               <div style={{ fontSize: '11px', color: '#cbd5e1' }}>
-                Официальный турнирный радар трансляций BLAST. Зафиксирован на север и показывает сразу 100% территории всей карты.
+                {lang === 'ru' ? 'Официальный турнирный радар трансляций BLAST. Зафиксирован на север и показывает сразу 100% территории всей карты.' : 'Official BLAST broadcast radar. Fixed north orientation displaying 100% full map territory.'}
               </div>
               <div style={{ fontSize: '10px', color: '#64748b', fontFamily: 'monospace' }}>
                 cl_radar_rotate 0; cl_radar_scale 0.55
@@ -949,7 +951,7 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
                   }}
                   style={{ padding: '4px 8px', fontSize: '11px', marginTop: 'auto' }}
                 >
-                  Применить этот режим
+                  {lang === 'ru' ? 'Применить этот режим' : 'Apply this preset'}
                 </button>
               )}
             </div>
@@ -968,10 +970,10 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '13px', fontWeight: 800, color: '#fbbf24' }}>
-                  ⚡ Огромный Киллфид
+                  {lang === 'ru' ? '⚡ Огромный Киллфид' : '⚡ Huge Killfeed'}
                 </span>
                 <span style={{ fontSize: '10px', backgroundColor: '#d9770633', color: '#fbbf24', padding: '1px 5px', borderRadius: '4px', fontWeight: 700 }}>
-                  ЧИСТЫЙ ЭКРАН
+                  {lang === 'ru' ? 'ЧИСТЫЙ ЭКРАН' : 'CLEAN SCREEN'}
                 </span>
               </div>
               {/* Mini visual mockup */}
@@ -997,11 +999,11 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
                 </div>
                 {/* Empty bottom center to emphasize clean screen */}
                 <div style={{ position: 'absolute', bottom: '6px', left: '50%', transform: 'translateX(-50%)', fontSize: '7px', color: '#64748b' }}>
-                  [Нижний худ скрыт]
+                  {lang === 'ru' ? '[Нижний худ скрыт]' : '[Bottom HUD hidden]'}
                 </div>
               </div>
               <div style={{ fontSize: '11px', color: '#cbd5e1' }}>
-                Максимальный акцент на фрагах автора. Нижние цифры HP и патронов скрыты, вверху справа крупные яркие плашки фрагов.
+                {lang === 'ru' ? 'Максимальный акцент на фрагах автора. Нижние цифры HP и патронов скрыты, вверху справа крупные яркие плашки фрагов.' : 'Maximum focus on author frags. Bottom HP and ammo counters hidden, top right shows prominent kill banners.'}
               </div>
               <div style={{ fontSize: '10px', color: '#64748b', fontFamily: 'monospace' }}>
                 cl_draw_only_deathnotices 1; hud_scaling 1.15
@@ -1016,7 +1018,7 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
                   }}
                   style={{ padding: '4px 8px', fontSize: '11px', marginTop: 'auto' }}
                 >
-                  Применить этот режим
+                  {lang === 'ru' ? 'Применить этот режим' : 'Apply this preset'}
                 </button>
               )}
             </div>
@@ -1035,10 +1037,10 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '13px', fontWeight: 800, color: '#94a3b8' }}>
-                  🎬 Чистый Синематик (No-HUD)
+                  {lang === 'ru' ? '🎬 Чистый Синематик' : '🎬 Clean Cinematic'} (No-HUD)
                 </span>
                 <span style={{ fontSize: '10px', backgroundColor: '#33415544', color: '#94a3b8', padding: '1px 5px', borderRadius: '4px', fontWeight: 700 }}>
-                  ДЛЯ МУВИКОВ
+                  {lang === 'ru' ? 'ДЛЯ МУВИКОВ' : 'FOR MOVIEMAKING'}
                 </span>
               </div>
               {/* Mini visual mockup */}
@@ -1061,7 +1063,7 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
                 </div>
               </div>
               <div style={{ fontSize: '11px', color: '#cbd5e1' }}>
-                Кристально чистый кадр без интерфейса, худа и карты. Идеально для красивых видео-фрагмуви и наложения турнирных оверлеев.
+                {lang === 'ru' ? 'Кристально чистый кадр без интерфейса, худа и карты. Идеально для красивых видео-фрагмуви и наложения турнирных оверлеев.' : 'Crystal clean capture without UI, HUD, or map. Ideal for cinematic fragmovies and custom tournament overlays.'}
               </div>
               <div style={{ fontSize: '10px', color: '#64748b', fontFamily: 'monospace' }}>
                 cl_drawhud 0
@@ -1076,7 +1078,7 @@ export const HudRadarScreenSimulator: React.FC<HudRadarScreenSimulatorProps> = (
                   }}
                   style={{ padding: '4px 8px', fontSize: '11px', marginTop: 'auto' }}
                 >
-                  Применить этот режим
+                  {lang === 'ru' ? 'Применить этот режим' : 'Apply this preset'}
                 </button>
               )}
             </div>

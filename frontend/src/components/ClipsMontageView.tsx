@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from '../api'
 import type { CompletedClipDTO, MontageDTO } from '../types'
+import { useTranslation } from '../i18n'
 import { VideoPlayerModal } from './VideoPlayerModal'
 
 interface ClipsMontageViewProps {
@@ -10,6 +11,7 @@ interface ClipsMontageViewProps {
 }
 
 export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }: ClipsMontageViewProps) {
+  const { lang } = useTranslation()
   const [clips, setClips] = useState<CompletedClipDTO[]>([])
   const [selectedFilenames, setSelectedFilenames] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -25,6 +27,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
     title: string
     subtitle?: string
   } | null>(null)
+  const [hoveredClip, setHoveredClip] = useState<string | null>(null)
 
   const loadClips = async () => {
     setIsLoading(true)
@@ -34,7 +37,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
       setClips(data)
     } catch (err: any) {
       console.error('Failed to load clips:', err)
-      setError(err?.message || 'Не удалось загрузить список готовых роликов')
+      setError(err?.message || (lang === 'ru' ? 'Не удалось загрузить список готовых роликов' : 'Failed to load clips list'))
     } finally {
       setIsLoading(false)
     }
@@ -47,26 +50,28 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
   const handleCleanupLogs = async () => {
     try {
       const res = await api.cleanupRenderLogs()
-      setCleanMessage(`Очищено файлов логов: ${res.count}`)
+      setCleanMessage(lang === 'ru' ? `Очищено файлов логов: ${res.count}` : `Cleaned up ${res.count} log files`)
       setTimeout(() => setCleanMessage(null), 3500)
     } catch (err: any) {
-      setError(err?.message || 'Ошибка очистки логов')
+      setError(err?.message || (lang === 'ru' ? 'Ошибка очистки логов' : 'Failed to clear logs'))
     }
   }
 
   const handleCleanupDemoClips = async () => {
     if (!currentDemoId) return
     const confirmed = window.confirm(
-      `Удалить все клипы для карты ${currentMapName || 'текущего матча'}?\n\nКлипы других матчей затронуты не будут.`
+      lang === 'ru'
+        ? `Удалить все клипы для карты ${currentMapName || 'текущего матча'}?\n\nКлипы других матчей затронуты не будут.`
+        : `Delete all clips for ${currentMapName || 'current match'}?\n\nClips of other matches will not be affected.`
     )
     if (!confirmed) return
     try {
       const res = await api.cleanupDemoClips(currentDemoId)
-      setCleanMessage(`Успешно удалено клипов матча: ${res.count}`)
+      setCleanMessage(lang === 'ru' ? `Успешно удалено клипов матча: ${res.count}` : `Successfully removed ${res.count} match clips`)
       setTimeout(() => setCleanMessage(null), 3500)
       loadClips()
     } catch (err: any) {
-      setError(err?.message || 'Ошибка удаления клипов матча')
+      setError(err?.message || (lang === 'ru' ? 'Ошибка удаления клипов матча' : 'Error deleting match clips'))
     }
   }
 
@@ -111,7 +116,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
       setCompiledMontage(res)
       loadClips()
     } catch (err: any) {
-      setError(err?.message || 'Ошибка сборки монтажа через FFmpeg')
+      setError(err?.message || (lang === 'ru' ? 'Ошибка сборки монтажа через FFmpeg' : 'FFmpeg montage compilation error'))
     } finally {
       setIsCompiling(false)
     }
@@ -120,7 +125,9 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
   const handleDeleteSelected = async () => {
     if (selectedFilenames.length === 0) return
     const confirmed = window.confirm(
-      `Вы действительно хотите удалить ${selectedFilenames.length} файл(ов)?\n\n` +
+      (lang === 'ru'
+        ? `Вы действительно хотите удалить ${selectedFilenames.length} файл(ов)?\n\n`
+        : `Are you sure you want to delete ${selectedFilenames.length} file(s)?\n\n`) +
         selectedFilenames.slice(0, 5).join('\n') +
         (selectedFilenames.length > 5 ? '\n...' : '')
     )
@@ -130,10 +137,10 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
       await api.deleteClips(selectedFilenames)
       setSelectedFilenames([])
       loadClips()
-      setCleanMessage(`Успешно удалено файлов: ${selectedFilenames.length}`)
+      setCleanMessage(lang === 'ru' ? `Успешно удалено файлов: ${selectedFilenames.length}` : `Successfully deleted ${selectedFilenames.length} files`)
       setTimeout(() => setCleanMessage(null), 3000)
     } catch (err: any) {
-      setError(err?.message || 'Не удалось удалить файлы')
+      setError(err?.message || (lang === 'ru' ? 'Не удалось удалить файлы' : 'Failed to delete files'))
     }
   }
 
@@ -143,28 +150,34 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
       const d = res.cleaned.directories || 0
       const w = res.cleaned.wav_files || 0
       const l = res.cleaned.log_files || 0
-      setCleanMessage(`Очищено временных папок: ${d}, промежуточных .wav: ${w}, логов: ${l}. Все MP4 сохранены.`)
+      setCleanMessage(
+        lang === 'ru'
+          ? `Очищено временных папок: ${d}, промежуточных .wav: ${w}, логов: ${l}. Все MP4 сохранены.`
+          : `Cleaned up ${d} temp dirs, ${w} intermediate .wav files, ${l} logs. All MP4s preserved.`
+      )
       setTimeout(() => setCleanMessage(null), 4000)
     } catch (err: any) {
-      setError(err?.message || 'Ошибка очистки временных файлов')
+      setError(err?.message || (lang === 'ru' ? 'Ошибка очистки временных файлов' : 'Error cleaning up temp files'))
     }
   }
 
   const handleCleanupAllClips = async () => {
     if (clips.length === 0) return
     const confirmed = window.confirm(
-      `ВНИМАНИЕ: Вы действительно хотите удалить ВСЕ (${clips.length}) готовые ролики из папки вывода?\n\nЭто действие необратимо. Исходные .dem файлы затронуты НЕ будут.`
+      lang === 'ru'
+        ? `ВНИМАНИЕ: Вы действительно хотите удалить ВСЕ (${clips.length}) готовые ролики из папки вывода?\n\nЭто действие необратимо. Исходные .dem файлы затронуты НЕ будут.`
+        : `WARNING: Are you sure you want to delete ALL (${clips.length}) clips from the output folder?\n\nThis cannot be undone. Source .dem files will NOT be affected.`
     )
     if (!confirmed) return
 
     try {
       const res = await api.cleanupAllClips()
       setSelectedFilenames([])
-      setCleanMessage(`Успешно удалено ${res.count} роликов. Папка вывода очищена.`)
+      setCleanMessage(lang === 'ru' ? `Успешно удалено ${res.count} роликов. Папка вывода очищена.` : `Successfully removed ${res.count} clips. Output folder cleared.`)
       setTimeout(() => setCleanMessage(null), 4000)
       loadClips()
     } catch (err: any) {
-      setError(err?.message || 'Ошибка очистки всех роликов')
+      setError(err?.message || (lang === 'ru' ? 'Ошибка очистки всех роликов' : 'Error clearing clips'))
     }
   }
 
@@ -188,10 +201,12 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
       >
         <div>
           <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#f1f5f9', letterSpacing: '-0.02em', margin: 0 }}>
-            Готовые ролики и монтажная студия
+            {lang === 'ru' ? 'Готовые ролики и монтажная студия' : 'Rendered Clips & Montage Studio'}
           </h1>
           <p style={{ fontSize: '13px', color: '#94a3b8', margin: '4px 0 0 0' }}>
-            Выбирайте отрендеренные клипы, меняйте порядок и объединяйте их в единый качественный MP4 через FFmpeg.
+            {lang === 'ru'
+              ? 'Выбирайте отрендеренные клипы, меняйте порядок и объединяйте их в единый качественный MP4 через FFmpeg.'
+              : 'Select rendered clips, reorder them and compile into a single high-quality MP4 using FFmpeg.'}
           </p>
         </div>
 
@@ -200,20 +215,20 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
             type="button"
             className="btn btn-secondary"
             onClick={handleCleanupLogs}
-            title="Очистить все файлы логов (.log) HLAE, FFmpeg и запуска"
+            title={lang === 'ru' ? 'Очистить все файлы логов (.log) HLAE, FFmpeg и запуска' : 'Clear all log files (.log) from HLAE, FFmpeg and launch'}
             style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}
           >
-            📄 Очистить логи
+            📄 {lang === 'ru' ? 'Очистить логи' : 'Clear Logs'}
           </button>
 
           <button
             type="button"
             className="btn btn-secondary"
             onClick={handleCleanupTempFiles}
-            title="Очистить промежуточные временные файлы рендера"
+            title={lang === 'ru' ? 'Очистить промежуточные временные файлы рендера' : 'Clean up temporary intermediate render files'}
             style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px' }}
           >
-            🧹 Временные файлы
+            🧹 {lang === 'ru' ? 'Временные файлы' : 'Temp Files'}
           </button>
 
           {currentDemoId && (
@@ -221,10 +236,10 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
               type="button"
               className="btn btn-secondary"
               onClick={handleCleanupDemoClips}
-              title={`Удалить только клипы карты ${currentMapName || 'текущего матча'}`}
+              title={lang === 'ru' ? `Удалить только клипы карты ${currentMapName || 'текущего матча'}` : `Delete only clips for ${currentMapName || 'current match'}`}
               style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#fb923c' }}
             >
-              🗑 Клипы карты {currentMapName ? currentMapName.replace('de_', '').toUpperCase() : ''}
+              🗑 {lang === 'ru' ? 'Клипы карты' : 'Clips for'} {currentMapName ? currentMapName.replace('de_', '').toUpperCase() : ''}
             </button>
           )}
 
@@ -233,10 +248,10 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
               type="button"
               className="btn btn-secondary"
               onClick={handleCleanupAllClips}
-              title="Очистить все созданные MP4 клипы"
+              title={lang === 'ru' ? 'Очистить все созданные MP4 клипы' : 'Delete all created MP4 clips'}
               style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#f87171' }}
             >
-              🗑 Очистить все
+              🗑 {lang === 'ru' ? 'Очистить все' : 'Clear All'}
             </button>
           )}
 
@@ -249,7 +264,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
             </svg>
-            Открыть папку
+            {lang === 'ru' ? 'Открыть папку' : 'Open Folder'}
           </button>
 
           <button
@@ -259,7 +274,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
             disabled={isLoading}
             style={{ fontSize: '12px' }}
           >
-            🔄 Обновить
+            🔄 {lang === 'ru' ? 'Обновить' : 'Refresh'}
           </button>
         </div>
       </div>
@@ -283,7 +298,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <span style={{ fontSize: '14px', fontWeight: 700, color: '#f1f5f9' }}>
-                Готовые клипы ({clips.length})
+                {lang === 'ru' ? 'Готовые клипы' : 'Rendered Clips'} ({clips.length})
               </span>
 
               {/* Map Filter Tabs */}
@@ -302,7 +317,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
                     color: filterMap === 'all' ? '#090d16' : '#94a3b8',
                   }}
                 >
-                  Все ({clips.length})
+                  {lang === 'ru' ? 'Все' : 'All'} ({clips.length})
                 </button>
                 {Array.from(new Set(clips.map((c) => c.map_name).filter(Boolean))).map((m) => {
                   const count = clips.filter((c) => c.map_name === m).length
@@ -344,7 +359,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
                     textDecoration: 'underline',
                   }}
                 >
-                  Выбрать все
+                  {lang === 'ru' ? 'Выбрать все' : 'Select All'}
                 </button>
                 <button
                   type="button"
@@ -358,7 +373,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
                     textDecoration: 'underline',
                   }}
                 >
-                  Снять выбор
+                  {lang === 'ru' ? 'Снять выбор' : 'Deselect All'}
                 </button>
               </div>
             )}
@@ -376,7 +391,9 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
                 fontSize: '13px',
               }}
             >
-              В выходной папке пока нет отрендеренных клипов. Отрендерите хайлайты в Студии или Очереди.
+              {lang === 'ru'
+                ? 'В выходной папке пока нет отрендеренных клипов. Отрендерите хайлайты в Студии или Очереди.'
+                : 'No rendered clips in the output folder yet. Render highlights in Studio or Queue.'}
             </div>
           )}
 
@@ -399,7 +416,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
                       transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                     }}
                   >
-                    {/* 16:9 Video Thumbnail Preview */}
+                    {/* 16:9 Video Thumbnail Preview (Optimized on-demand loading) */}
                     <div
                       style={{
                         position: 'relative',
@@ -409,6 +426,8 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
                         overflow: 'hidden',
                         cursor: 'pointer',
                       }}
+                      onMouseEnter={() => setHoveredClip(c.filename)}
+                      onMouseLeave={() => setHoveredClip(null)}
                       onClick={() =>
                         setActiveModalVideo({
                           url: c.url,
@@ -416,29 +435,46 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
                           subtitle: `${formatFileSize(c.size_bytes)} • ${new Date(c.modified_at * 1000).toLocaleTimeString()}`,
                         })
                       }
-                      title="Нажмите для полноэкранного воспроизведения"
+                      title={lang === 'ru' ? 'Нажмите для полноэкранного воспроизведения' : 'Click for fullscreen playback'}
                     >
-                      <video
-                        preload="metadata"
-                        src={`${c.url}#t=0.5`}
-                        muted
-                        playsInline
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                          opacity: 0.88,
-                          transition: 'transform 0.3s ease, opacity 0.3s ease',
-                        }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.transform = 'scale(1.04)'
-                          e.currentTarget.style.opacity = '1.0'
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.transform = 'scale(1.0)'
-                          e.currentTarget.style.opacity = '0.88'
-                        }}
-                      />
+                      {hoveredClip === c.filename ? (
+                        <video
+                          preload="auto"
+                          src={`${c.url}#t=0.5`}
+                          autoPlay
+                          loop
+                          muted
+                          playsInline
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            transform: 'scale(1.03)',
+                            transition: 'transform 0.3s ease',
+                          }}
+                        />
+                      ) : (
+                        <div
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: 'radial-gradient(ellipse at center, rgba(18, 26, 44, 0.9) 0%, rgba(8, 11, 18, 0.98) 100%)',
+                            position: 'relative',
+                          }}
+                        >
+                          <div
+                            style={{
+                              position: 'absolute',
+                              inset: 0,
+                              backgroundImage: 'linear-gradient(rgba(56, 189, 248, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(56, 189, 248, 0.05) 1px, transparent 1px)',
+                              backgroundSize: '20px 20px',
+                            }}
+                          />
+                        </div>
+                      )}
 
                       {/* Vignette Bottom Gradient */}
                       <div
@@ -524,7 +560,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
                               boxShadow: '0 0 10px rgba(56, 189, 248, 0.5)',
                             }}
                           >
-                            🎬 МОНТАЖ
+                            🎬 {lang === 'ru' ? 'МОНТАЖ' : 'MONTAGE'}
                           </span>
                         ) : c.highlight_type ? (
                           <span
@@ -608,7 +644,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
                             👤 {c.player_name} {c.round_num ? `(R${c.round_num})` : ''}
                           </span>
                         ) : (
-                          <span>Матч CS2</span>
+                          <span>{lang === 'ru' ? 'Матч CS2' : 'CS2 Match'}</span>
                         )}
                         <span>🕒 {new Date(c.modified_at * 1000).toLocaleTimeString()}</span>
                       </div>
@@ -641,7 +677,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
                             gap: '4px',
                           }}
                         >
-                          <span>▶</span> Смотреть
+                          <span>▶</span> {lang === 'ru' ? 'Смотреть' : 'Watch'}
                         </button>
                         <a
                           href={c.url}
@@ -657,7 +693,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
                             gap: '4px',
                           }}
                         >
-                          <span>⬇</span> Скачать
+                          <span>⬇</span> {lang === 'ru' ? 'Скачать' : 'Download'}
                         </a>
                       </div>
                     </div>
@@ -681,7 +717,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
         >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <span style={{ fontSize: '14px', fontWeight: 700, color: '#f1f5f9' }}>
-              Очередь сборки ({selectedFilenames.length})
+              {lang === 'ru' ? 'Очередь сборки' : 'Assembly Queue'} ({selectedFilenames.length})
             </span>
             {selectedFilenames.length > 0 && (
               <button
@@ -696,20 +732,24 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
                   textDecoration: 'underline',
                 }}
               >
-                Удалить выбранные
+                {lang === 'ru' ? 'Удалить выбранные' : 'Delete Selected'}
               </button>
             )}
           </div>
 
           <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>
-            Стрелками вверх/вниз настраивайте точный порядок следования клипов в итоговом ролике.
+            {lang === 'ru'
+              ? 'Стрелками вверх/вниз настраивайте точный порядок следования клипов в итоговом ролике.'
+              : 'Use up/down arrows to set the exact sequence of clips in the final video.'}
           </p>
 
           {/* Ordered List with Move Up / Move Down buttons */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '360px', overflowY: 'auto' }}>
             {selectedFilenames.length === 0 ? (
               <div style={{ padding: '24px', textAlign: 'center', color: '#64748b', fontSize: '12px' }}>
-                Выберите клипы слева чекбоксами для объединения.
+                {lang === 'ru'
+                  ? 'Выберите клипы слева чекбоксами для объединения.'
+                  : 'Select clips on the left with checkboxes to merge.'}
               </div>
             ) : (
               selectedFilenames.map((fn, idx) => (
@@ -778,7 +818,9 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
             disabled={isCompiling || selectedFilenames.length === 0}
             style={{ width: '100%', padding: '10px', fontSize: '13px', fontWeight: 700 }}
           >
-            {isCompiling ? '⏳ Объединение через FFmpeg...' : '🎬 Собрать монтаж из выбранных'}
+            {isCompiling
+              ? (lang === 'ru' ? '⏳ Объединение через FFmpeg...' : '⏳ Merging via FFmpeg...')
+              : (lang === 'ru' ? '🎬 Собрать монтаж из выбранных' : '🎬 Build Montage from Selected')}
           </button>
 
           {/* Compiled Result Banner */}
@@ -786,7 +828,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
             <div style={{ marginTop: '12px', padding: '14px', backgroundColor: '#0f1117', borderRadius: '8px', border: '1px solid #22c55e', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ fontSize: '12px', fontWeight: 700, color: '#4ade80' }}>
-                  ✓ Монтаж готов ({compiledMontage.duration_seconds.toFixed(1)} с, {compiledMontage.total_clips} клипов)
+                  {lang === 'ru' ? '✓ Монтаж готов' : '✓ Montage Ready'} ({compiledMontage.duration_seconds.toFixed(1)} {lang === 'ru' ? 'с' : 's'}, {compiledMontage.total_clips} {lang === 'ru' ? 'клипов' : 'clips'})
                 </span>
                 <div style={{ display: 'flex', gap: '8px' }}>
                   <button
@@ -796,19 +838,19 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
                       setActiveModalVideo({
                         url: `/api/montage/${compiledMontage.filename}`,
                         title: compiledMontage.filename,
-                        subtitle: `Монтаж (${compiledMontage.duration_seconds.toFixed(1)} с, ${compiledMontage.total_clips} клипов)`,
+                        subtitle: `${lang === 'ru' ? 'Монтаж' : 'Montage'} (${compiledMontage.duration_seconds.toFixed(1)} ${lang === 'ru' ? 'с' : 's'}, ${compiledMontage.total_clips} ${lang === 'ru' ? 'клипов' : 'clips'})`,
                       })
                     }
                     style={{ padding: '3px 8px', fontSize: '11px', color: '#38bdf8' }}
                   >
-                    ▶ Смотреть в плеере
+                    ▶ {lang === 'ru' ? 'Смотреть в плеере' : 'Watch in Player'}
                   </button>
                   <a
                     href={`/api/montage/${compiledMontage.filename}`}
                     download
                     style={{ color: '#94a3b8', fontSize: '11px', textDecoration: 'none', display: 'flex', alignItems: 'center' }}
                   >
-                    ⬇ Скачать
+                    ⬇ {lang === 'ru' ? 'Скачать' : 'Download'}
                   </a>
                 </div>
               </div>
@@ -822,7 +864,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
         isOpen={!!activeModalVideo}
         onClose={() => setActiveModalVideo(null)}
         videoUrl={activeModalVideo?.url || ''}
-        title={activeModalVideo?.title || 'Воспроизведение клипа'}
+        title={activeModalVideo?.title || (lang === 'ru' ? 'Воспроизведение клипа' : 'Video Player')}
         subtitle={activeModalVideo?.subtitle}
       />
     </div>

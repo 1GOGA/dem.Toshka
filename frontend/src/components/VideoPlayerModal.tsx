@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
+import { createPortal } from 'react-dom'
+import { useTranslation } from '../i18n'
 
 export interface VideoPlayerModalProps {
   isOpen: boolean
@@ -24,6 +26,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
   subtitle,
   clipMetadata,
 }) => {
+  const { lang } = useTranslation()
   const videoRef = useRef<HTMLVideoElement | null>(null)
   const containerRef = useRef<HTMLDivElement | null>(null)
   const timelineRef = useRef<HTMLDivElement | null>(null)
@@ -86,15 +89,15 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
       v.play()
         .then(() => {
           setIsPlaying(true)
-          triggerRipple('Воспроизведение', 'play')
+          triggerRipple(lang === 'ru' ? 'Воспроизведение' : 'Play', 'play')
         })
         .catch((e) => console.warn('Play interrupted:', e))
     } else {
       v.pause()
       setIsPlaying(false)
-      triggerRipple('Пауза', 'pause')
+      triggerRipple(lang === 'ru' ? 'Пауза' : 'Pause', 'pause')
     }
-  }, [])
+  }, [lang])
 
   // Seeking helpers
   const seekRelative = useCallback((seconds: number) => {
@@ -122,8 +125,11 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
         : Math.max(0, v.currentTime - frameDuration)
     v.currentTime = target
     setCurrentTime(target)
-    triggerRipple(direction === 'next' ? '+1 кадр' : '-1 кадр', direction === 'next' ? 'frame-next' : 'frame-prev')
-  }, [])
+    triggerRipple(
+      direction === 'next' ? (lang === 'ru' ? '+1 кадр' : '+1 frame') : (lang === 'ru' ? '-1 кадр' : '-1 frame'),
+      direction === 'next' ? 'frame-next' : 'frame-prev'
+    )
+  }, [lang])
 
   // Volume toggle & slider
   const handleVolumeChange = (newVol: number) => {
@@ -448,6 +454,16 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
     onClose,
   ])
 
+  // Lock body scroll while player modal is active to prevent page shifting
+  useEffect(() => {
+    if (!isOpen) return
+    const originalOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = originalOverflow
+    }
+  }, [isOpen])
+
   // Video element events
   const onTimeUpdate = () => {
     const v = videoRef.current
@@ -491,19 +507,25 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0
   const bufferedPercent = duration > 0 ? (bufferedEnd / duration) * 100 : 0
 
-  return (
+  return createPortal(
     <div
       style={{
         position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(5, 7, 12, 0.94)',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: 'rgba(5, 7, 12, 0.95)',
+        backdropFilter: 'blur(8px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        zIndex: 1000,
+        zIndex: 999999,
         padding: '20px',
+        boxSizing: 'border-box',
       }}
       onClick={onClose}
+      onWheel={(e) => e.stopPropagation()}
     >
       <div
         ref={containerRef}
@@ -515,7 +537,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
           width: isFullscreen ? '100vw' : '92%',
           maxWidth: isFullscreen ? 'none' : (!is43Stretched && videoAspectRatio === '4 / 3' ? '880px' : '1100px'),
           height: isFullscreen ? '100vh' : 'auto',
-          maxHeight: isFullscreen ? 'none' : '92vh',
+          maxHeight: isFullscreen ? 'none' : '86vh',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
@@ -591,14 +613,14 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
               type="button"
               className="btn btn-secondary"
               onClick={() => setShowShortcuts(!showShortcuts)}
-              title="Горячие клавиши плеера"
+              title={lang === 'ru' ? 'Горячие клавиши плеера' : 'Player Keyboard Shortcuts'}
               style={{ padding: '5px 10px', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="2" y="4" width="20" height="16" rx="2" />
                 <path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M6 12h.01M10 12h.01M14 12h.01M18 12h.01M8 16h8" />
               </svg>
-              Клавиши
+              {lang === 'ru' ? 'Клавиши' : 'Keys'}
             </button>
 
             <a
@@ -606,12 +628,12 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
               download={title.endsWith('.mp4') ? title : `${title}.mp4`}
               className="btn btn-secondary"
               style={{ padding: '5px 12px', fontSize: '11px', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}
-              title="Скачать исходный MP4 файл"
+              title={lang === 'ru' ? 'Скачать исходный MP4 файл' : 'Download source MP4 file'}
             >
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
               </svg>
-              Скачать
+              {lang === 'ru' ? 'Скачать' : 'Download'}
             </a>
 
             <button
@@ -629,7 +651,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
               }}
               onMouseEnter={(e) => (e.currentTarget.style.color = '#f1f5f9')}
               onMouseLeave={(e) => (e.currentTarget.style.color = '#94a3b8')}
-              title="Закрыть плеер (Esc)"
+              title={lang === 'ru' ? 'Закрыть плеер (Esc)' : 'Close Player (Esc)'}
             >
               ✕
             </button>
@@ -644,11 +666,12 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
             width: '100%',
             flex: isFullscreen ? 1 : '1 1 auto',
             minHeight: 0,
+            maxHeight: isFullscreen ? 'none' : 'calc(86vh - 125px)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             overflow: 'hidden',
-            padding: isFullscreen ? 0 : '8px 16px',
+            padding: isFullscreen ? 0 : '4px 12px',
             cursor: isFullscreen && !showControls ? 'none' : 'default',
           }}
           onClick={togglePlay}
@@ -686,7 +709,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
             }}
             style={{
               maxWidth: '100%',
-              maxHeight: isFullscreen ? '100vh' : 'calc(70vh - 60px)',
+              maxHeight: isFullscreen ? '100vh' : 'calc(86vh - 135px)',
               width: is43Stretched ? '100%' : 'auto',
               height: is43Stretched ? '100%' : 'auto',
               objectFit: is43Stretched ? 'fill' : 'contain',
@@ -784,7 +807,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
               >
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                   <h4 style={{ fontSize: '16px', fontWeight: 700, color: '#f1f5f9', margin: 0 }}>
-                    ⌨️ Горячие клавиши плеера
+                    {lang === 'ru' ? '⌨️ Горячие клавиши плеера' : '⌨️ Player Keyboard Shortcuts'}
                   </h4>
                   <button
                     type="button"
@@ -796,42 +819,42 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '10px', fontSize: '12px' }}>
-                  <span style={{ color: '#cbd5e1' }}>Воспроизведение / Пауза</span>
+                  <span style={{ color: '#cbd5e1' }}>{lang === 'ru' ? 'Воспроизведение / Пауза' : 'Play / Pause'}</span>
                   <kbd style={{ backgroundColor: '#232b3e', padding: '2px 8px', borderRadius: '4px', border: '1px solid #3b4662', color: '#38bdf8' }}>
-                    Пробел / K
+                    {lang === 'ru' ? 'Пробел / K' : 'Space / K'}
                   </kbd>
 
-                  <span style={{ color: '#cbd5e1' }}>Перемотка назад / вперед (2 сек)</span>
+                  <span style={{ color: '#cbd5e1' }}>{lang === 'ru' ? 'Перемотка назад / вперед (2 сек)' : 'Seek backward / forward (2s)'}</span>
                   <kbd style={{ backgroundColor: '#232b3e', padding: '2px 8px', borderRadius: '4px', border: '1px solid #3b4662', color: '#38bdf8' }}>
                     ← / → (J / L)
                   </kbd>
 
-                  <span style={{ color: '#cbd5e1' }}>Быстрая перемотка (5 сек)</span>
+                  <span style={{ color: '#cbd5e1' }}>{lang === 'ru' ? 'Быстрая перемотка (5 сек)' : 'Fast seek (5s)'}</span>
                   <kbd style={{ backgroundColor: '#232b3e', padding: '2px 8px', borderRadius: '4px', border: '1px solid #3b4662', color: '#38bdf8' }}>
                     Shift + ← / →
                   </kbd>
 
-                  <span style={{ color: '#cbd5e1' }}>Покадровый шаг (-1 / +1 кадр 60fps)</span>
+                  <span style={{ color: '#cbd5e1' }}>{lang === 'ru' ? 'Покадровый шаг (-1 / +1 кадр 60fps)' : 'Frame step (-1 / +1 frame 60fps)'}</span>
                   <kbd style={{ backgroundColor: '#232b3e', padding: '2px 8px', borderRadius: '4px', border: '1px solid #3b4662', color: '#38bdf8' }}>
-                    , (Б) / . (Ю)
+                    , (&lt;) / . (&gt;)
                   </kbd>
 
-                  <span style={{ color: '#cbd5e1' }}>Громкость громче / тише</span>
+                  <span style={{ color: '#cbd5e1' }}>{lang === 'ru' ? 'Громкость громче / тише' : 'Volume Up / Down'}</span>
                   <kbd style={{ backgroundColor: '#232b3e', padding: '2px 8px', borderRadius: '4px', border: '1px solid #3b4662', color: '#38bdf8' }}>
                     ↑ / ↓
                   </kbd>
 
-                  <span style={{ color: '#cbd5e1' }}>Включить / отключить звук</span>
+                  <span style={{ color: '#cbd5e1' }}>{lang === 'ru' ? 'Включить / отключить звук' : 'Mute / Unmute'}</span>
                   <kbd style={{ backgroundColor: '#232b3e', padding: '2px 8px', borderRadius: '4px', border: '1px solid #3b4662', color: '#38bdf8' }}>
                     M
                   </kbd>
 
-                  <span style={{ color: '#cbd5e1' }}>Полноэкранный режим</span>
+                  <span style={{ color: '#cbd5e1' }}>{lang === 'ru' ? 'Полноэкранный режим' : 'Fullscreen'}</span>
                   <kbd style={{ backgroundColor: '#232b3e', padding: '2px 8px', borderRadius: '4px', border: '1px solid #3b4662', color: '#38bdf8' }}>
                     F
                   </kbd>
 
-                  <span style={{ color: '#cbd5e1' }}>Зациклить повтор (Loop)</span>
+                  <span style={{ color: '#cbd5e1' }}>{lang === 'ru' ? 'Зациклить повтор (Loop)' : 'Loop playback'}</span>
                   <kbd style={{ backgroundColor: '#232b3e', padding: '2px 8px', borderRadius: '4px', border: '1px solid #3b4662', color: '#38bdf8' }}>
                     R
                   </kbd>
@@ -983,7 +1006,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                 <button
                   type="button"
                   onClick={togglePlay}
-                  title={isPlaying ? 'Пауза (Пробел)' : 'Воспроизведение (Пробел)'}
+                  title={isPlaying ? (lang === 'ru' ? 'Пауза (Пробел)' : 'Pause (Space)') : (lang === 'ru' ? 'Воспроизведение (Пробел)' : 'Play (Space)')}
                   style={{
                     width: '38px',
                     height: '38px',
@@ -1017,7 +1040,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                 <button
                   type="button"
                   onClick={() => seekRelative(-5)}
-                  title="Назад на 5 секунд (←)"
+                  title={lang === 'ru' ? 'Назад на 5 секунд (←)' : 'Back 5 seconds (←)'}
                   style={{
                     background: 'none',
                     border: 'none',
@@ -1042,7 +1065,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                 <button
                   type="button"
                   onClick={() => seekRelative(5)}
-                  title="Вперед на 5 секунд (→)"
+                  title={lang === 'ru' ? 'Вперед на 5 секунд (→)' : 'Forward 5 seconds (→)'}
                   style={{
                     background: 'none',
                     border: 'none',
@@ -1067,7 +1090,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                 <button
                   type="button"
                   onClick={() => stepFrame('prev')}
-                  title="Предыдущий кадр (Запятая ',')"
+                  title={lang === 'ru' ? "Предыдущий кадр (Запятая ',')" : "Previous frame (Comma ',')"}
                   style={{
                     background: 'rgba(255, 255, 255, 0.08)',
                     border: '1px solid rgba(255, 255, 255, 0.15)',
@@ -1079,14 +1102,14 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                     borderRadius: '4px',
                   }}
                 >
-                  ◀ кадр
+                  {lang === 'ru' ? '◀ кадр' : '◀ frame'}
                 </button>
 
                 {/* Frame Step Forward */}
                 <button
                   type="button"
                   onClick={() => stepFrame('next')}
-                  title="Следующий кадр (Точка '.')"
+                  title={lang === 'ru' ? "Следующий кадр (Точка '.')" : "Next frame (Period '.')"}
                   style={{
                     background: 'rgba(255, 255, 255, 0.08)',
                     border: '1px solid rgba(255, 255, 255, 0.15)',
@@ -1098,7 +1121,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                     borderRadius: '4px',
                   }}
                 >
-                  кадр ▶
+                  {lang === 'ru' ? 'кадр ▶' : 'frame ▶'}
                 </button>
 
                 {/* Timestamp */}
@@ -1122,8 +1145,8 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                     }}
                     title={
                       is43Stretched
-                        ? 'Сейчас: 16:9 Stretched (растянуто без черных полос). Нажмите для 4:3 Native'
-                        : 'Сейчас: 4:3 Native (с черными полосами по бокам). Нажмите для 16:9 Stretched'
+                        ? (lang === 'ru' ? 'Сейчас: 16:9 Stretched (растянуто без черных полос). Нажмите для 4:3 Native' : 'Now: 16:9 Stretched (no black bars). Click for 4:3 Native')
+                        : (lang === 'ru' ? 'Сейчас: 4:3 Native (с черными полосами по бокам). Нажмите для 16:9 Stretched' : 'Now: 4:3 Native (black bars on sides). Click for 16:9 Stretched')
                     }
                     style={{
                       backgroundColor: is43Stretched ? 'rgba(56, 189, 248, 0.2)' : 'rgba(255, 255, 255, 0.08)',
@@ -1162,7 +1185,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                         color: playbackRate === s ? '#38bdf8' : '#94a3b8',
                         cursor: 'pointer',
                       }}
-                      title={`Скорость воспроизведения ${s}x`}
+                      title={lang === 'ru' ? `Скорость воспроизведения ${s}x` : `Playback speed ${s}x`}
                     >
                       {s}x
                     </button>
@@ -1173,7 +1196,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                 <button
                   type="button"
                   onClick={toggleLoop}
-                  title={isLooping ? 'Повтор включен (R)' : 'Повтор выключен (R)'}
+                  title={isLooping ? (lang === 'ru' ? 'Повтор включен (R)' : 'Loop enabled (R)') : (lang === 'ru' ? 'Повтор выключен (R)' : 'Loop disabled (R)')}
                   style={{
                     background: 'none',
                     border: 'none',
@@ -1194,7 +1217,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                   <button
                     type="button"
                     onClick={toggleMute}
-                    title={isMuted ? 'Включить звук (M)' : 'Выключить звук (M)'}
+                    title={isMuted ? (lang === 'ru' ? 'Включить звук (M)' : 'Unmute (M)') : (lang === 'ru' ? 'Выключить звук (M)' : 'Mute (M)')}
                     style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', padding: '4px' }}
                   >
                     {isMuted || volume === 0 ? (
@@ -1224,7 +1247,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                       cursor: 'pointer',
                       height: '4px',
                     }}
-                    title={`Громкость: ${Math.round((isMuted ? 0 : volume) * 100)}%`}
+                    title={lang === 'ru' ? `Громкость: ${Math.round((isMuted ? 0 : volume) * 100)}%` : `Volume: ${Math.round((isMuted ? 0 : volume) * 100)}%`}
                   />
                 </div>
 
@@ -1232,7 +1255,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                 <button
                   type="button"
                   onClick={togglePiP}
-                  title="Картинка в картинке"
+                  title={lang === 'ru' ? 'Картинка в картинке' : 'Picture-in-Picture'}
                   style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', padding: '4px' }}
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1245,7 +1268,7 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
                 <button
                   type="button"
                   onClick={toggleFullscreen}
-                  title={isFullscreen ? 'Выйти из полноэкранного режима (F)' : 'На весь экран (F)'}
+                  title={isFullscreen ? (lang === 'ru' ? 'Выйти из полноэкранного режима (F)' : 'Exit Fullscreen (F)') : (lang === 'ru' ? 'На весь экран (F)' : 'Fullscreen (F)')}
                   style={{ background: 'none', border: 'none', color: '#cbd5e1', cursor: 'pointer', padding: '4px' }}
                 >
                   {isFullscreen ? (
@@ -1275,7 +1298,8 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({
           }
         `}</style>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
 

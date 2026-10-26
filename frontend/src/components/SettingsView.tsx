@@ -3,7 +3,7 @@ import { api } from '../api'
 import { useTranslation } from '../i18n'
 
 export function SettingsView() {
-  const { t } = useTranslation()
+  const { t, lang } = useTranslation()
   const [outputDir, setOutputDir] = useState('')
   const [isWritable, setIsWritable] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
@@ -53,9 +53,9 @@ export function SettingsView() {
       const res = await api.setStorageSettings(outputDir.trim())
       setOutputDir(res.output_directory)
       setIsWritable(res.is_writable)
-      setSaveMessage('✓ Путь успешно проверен и сохранен!')
+      setSaveMessage(lang === 'ru' ? '✓ Путь успешно проверен и сохранен!' : '✓ Path verified and saved successfully!')
     } catch (err: any) {
-      setErrorMessage(err?.message || 'Ошибка сохранения пути')
+      setErrorMessage(err?.message || (lang === 'ru' ? 'Ошибка сохранения пути' : 'Failed to save path'))
     } finally {
       setIsSaving(false)
     }
@@ -65,7 +65,7 @@ export function SettingsView() {
     try {
       await api.openOutputFolder()
     } catch (err: any) {
-      setErrorMessage(err?.message || 'Не удалось открыть проводник')
+      setErrorMessage(err?.message || (lang === 'ru' ? 'Не удалось открыть проводник' : 'Failed to open file explorer'))
     }
   }
 
@@ -77,9 +77,9 @@ export function SettingsView() {
       const d = res.cleaned.directories || 0
       const w = res.cleaned.wav_files || 0
       const l = res.cleaned.log_files || 0
-      setCleanReport(`✓ Очищено временных папок: ${d}, промежуточных звуков .wav: ${w}, логов: ${l}. Готовые MP4 сохранены.`)
+      setCleanReport(lang === 'ru' ? `✓ Очищено временных папок: ${d}, промежуточных звуков .wav: ${w}, логов: ${l}. Готовые MP4 сохранены.` : `✓ Cleaned temporary folders: ${d}, audio files (.wav): ${w}, logs: ${l}. Finished MP4 clips preserved.`)
     } catch (err: any) {
-      setErrorMessage(err?.message || 'Ошибка очистки временных файлов')
+      setErrorMessage(err?.message || (lang === 'ru' ? 'Ошибка очистки временных файлов' : 'Failed to clean temporary files'))
     } finally {
       setIsCleaning(false)
     }
@@ -95,7 +95,7 @@ export function SettingsView() {
       const status = await api.getCS2ConfigStatus()
       setConfigStatus(status)
     } catch (err: any) {
-      setErrorMessage(err?.message || 'Ошибка восстановления конфигурации CS2')
+      setErrorMessage(err?.message || (lang === 'ru' ? 'Ошибка восстановления конфигурации CS2' : 'Failed to restore CS2 config'))
     } finally {
       setIsRestoringConfig(false)
     }
@@ -183,7 +183,7 @@ export function SettingsView() {
             type="button"
             className="btn btn-secondary"
             onClick={handleOpenExplorer}
-            title="Открыть папку в Проводнике Windows"
+            title={lang === "ru" ? "Открыть папку в Проводнике Windows" : "Open folder in Windows Explorer"}
           >
             📁 {t('common.explorer')}
           </button>
@@ -224,17 +224,17 @@ export function SettingsView() {
               border: '1px solid rgba(34, 197, 94, 0.3)',
             }}
           >
-            ✓ Защита активна
+            {lang === 'ru' ? '✓ Защита активна' : '✓ Protection active'}
           </span>
         </div>
 
         <div style={{ fontSize: '12px', color: '#94a3b8', lineHeight: '1.6', backgroundColor: '#0d0f14', padding: '14px 16px', borderRadius: '8px', border: '1px solid #1e2230' }}>
-          <div style={{ color: '#cbd5e1', fontWeight: 600, marginBottom: '4px' }}>🛡️ 4 уровня защиты:</div>
+          <div style={{ color: '#cbd5e1', fontWeight: 600, marginBottom: '4px' }}>{lang === 'ru' ? '🛡️ 4 уровня защиты:' : '🛡️ 4 Layers of Protection:'}</div>
           <ul style={{ margin: '0 0 0 16px', padding: 0 }}>
-            <li><strong>Read-Only Lock:</strong> Конфиги Steam блокируются на уровне Windows перед рендером — CS2 не может перезаписать ваш конфиг при выходе.</li>
-            <li><strong>In-Engine Auto-Revert:</strong> Перед выходом CS2 в игре автоматически откатываются радар, HUD и громкость в боевой режим.</li>
-            <li><strong>Autoexec:</strong> Скрипт <code>autoexec.cfg</code> в папке CS2 гарантирует применение ваших настроек при каждом обычном запуске игры.</li>
-            <li><strong>Ручное восстановление:</strong> В консоли CS2 в любой момент можно написать <code>exec restore_user</code>.</li>
+            <li>{lang === 'ru' ? <><strong>Read-Only Lock:</strong> Конфиги Steam блокируются на уровне Windows перед рендером — CS2 не может перезаписать ваш конфиг при выходе.</> : <><strong>Read-Only Lock:</strong> Steam configs are locked at OS level before rendering — CS2 cannot overwrite your config on exit.</>}</li>
+            <li>{lang === 'ru' ? <><strong>In-Engine Auto-Revert:</strong> Перед выходом CS2 в игре автоматически откатываются радар, HUD и громкость в боевой режим.</> : <><strong>In-Engine Auto-Revert:</strong> Prior to exit, CS2 automatically reverts radar, HUD, and volume back to normal combat mode.</>}</li>
+            <li>{lang === 'ru' ? <><strong>Autoexec:</strong> Скрипт <code>autoexec.cfg</code> в папке CS2 гарантирует применение ваших настроек при каждом обычном запуске игры.</> : <><strong>Autoexec:</strong> The <code>autoexec.cfg</code> script in CS2 ensures your settings are applied on every launch.</>}</li>
+            <li>{lang === 'ru' ? <><strong>Ручное восстановление:</strong> В консоли CS2 в любой момент можно написать <code>exec restore_user</code>.</> : <><strong>Manual Restore:</strong> You can type <code>exec restore_user</code> in CS2 console at any time.</>}</li>
           </ul>
         </div>
 
@@ -255,15 +255,15 @@ export function SettingsView() {
             {isRestoringConfig ? t('settings.restoring') : `🛡️ ${t('settings.restoreBtn')}`}
           </button>
           <span style={{ fontSize: '12px', color: '#64748b' }}>
-            Очистит демо-бинды, вернет вращающийся радар и синхронизирует профиль Steam.
+            {lang === 'ru' ? 'Очистит демо-бинды, вернет вращающийся радар и синхронизирует профиль Steam.' : 'Cleans demo binds, restores rotating radar, and synchronizes Steam profile.'}
           </span>
         </div>
 
         {configStatus && (
           <div style={{ display: 'flex', gap: '8px', fontSize: '11px', color: '#64748b', marginTop: '-4px' }}>
-            <span>autoexec.cfg: {configStatus.has_autoexec ? '✓ активен' : '—'}</span>
+            <span>autoexec.cfg: {configStatus.has_autoexec ? (lang === 'ru' ? '✓ активен' : '✓ active') : '—'}</span>
             <span>•</span>
-            <span>restore_user.cfg: {configStatus.has_restore_user ? '✓ готов' : '—'}</span>
+            <span>restore_user.cfg: {configStatus.has_restore_user ? (lang === 'ru' ? '✓ готов' : '✓ ready') : '—'}</span>
           </div>
         )}
       </div>

@@ -89,7 +89,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
   onUploadDemo,
   onParsePath: _onParsePath,
 }) => {
-  const { t } = useTranslation()
+  const { t, lang } = useTranslation()
   // 4-step wizard: 1 = Choose match, 2 = Choose player, 3 = Choose moments (2D Map), 4 = Compile montage
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3 | 4>(activeDemo ? 2 : 1)
   const [hoveredHighlightId, setHoveredHighlightId] = useState<string | null>(null)
@@ -139,7 +139,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
       })
       .catch((err) => {
         console.error('Failed to load round replay:', err)
-        setReplayError(err?.message || 'Не удалось загрузить данные тактического повтора раунда')
+        setReplayError(err?.message || (lang === 'ru' ? 'Не удалось загрузить данные тактического повтора раунда' : 'Failed to load tactical round replay data'))
         setIsReplayLoading(false)
       })
   }, [activeDemo, replayRoundNum, radarTab])
@@ -338,7 +338,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
     if (!activeDemo || selectedIds.size === 0 || !onSubmitRender) return
     setIsCompiling(true)
     setCompilationError(null)
-    setCompilationStatus('Добавление клипов в очередь...')
+    setCompilationStatus(lang === 'ru' ? 'Добавление клипов в очередь...' : 'Adding clips to render queue...')
     setCompilationProgress(5)
 
     try {
@@ -346,7 +346,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
       const submitted = await onSubmitRender(highlightIds)
       const targetJobIds = submitted && Array.isArray(submitted) ? submitted.map((j: any) => j.id) : []
 
-      setCompilationStatus(`Рендеринг клипов через CS2/HLAE (0/${highlightIds.length})...`)
+      setCompilationStatus(lang === 'ru' ? `Рендеринг клипов через CS2/HLAE (0/${highlightIds.length})...` : `Rendering clips via CS2/HLAE (0/${highlightIds.length})...`)
 
       const pollStart = Date.now()
       const maxWaitMs = 15 * 60 * 1000 // 15 mins
@@ -367,10 +367,10 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
 
         const pct = Math.min(90, Math.round((completedJobs.length / total) * 80) + 10)
         setCompilationProgress(pct)
-        setCompilationStatus(`Рендеринг: готово ${completedJobs.length} из ${total} клипов...`)
+        setCompilationStatus(lang === 'ru' ? `Рендеринг: готово ${completedJobs.length} из ${total} клипов...` : `Rendering: completed ${completedJobs.length} of ${total} clips...`)
 
         if (completedJobs.length === total && total > 0) {
-          setCompilationStatus('Склейка клипов в единый ролик MP4...')
+          setCompilationStatus(lang === 'ru' ? 'Склейка клипов в единый ролик MP4...' : 'Concatenating clips into single MP4...')
           setCompilationProgress(95)
           const validJobIds = completedJobs.map((j) => j.id)
           const montage = await api.createMontage({
@@ -386,7 +386,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
 
         if (failedJobs.length > 0 && completedJobs.length + failedJobs.length === total) {
           if (completedJobs.length > 0) {
-            setCompilationStatus('Склейка готовых клипов...')
+            setCompilationStatus(lang === 'ru' ? 'Склейка готовых клипов...' : 'Stitching completed clips...')
             const validJobIds = completedJobs.map((j) => j.id)
             const montage = await api.createMontage({
               demo_id: activeDemo.id,
@@ -395,10 +395,10 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
             })
             setCompiledMontage(montage)
             setCompilationError(
-              `Часть клипов (${failedJobs.length}) завершилась с ошибкой, но видео создано из ${completedJobs.length} готовых клипов.`
+              lang === 'ru' ? `Часть клипов (${failedJobs.length}) завершилась с ошибкой, но видео создано из ${completedJobs.length} готовых клипов.` : `Some clips (${failedJobs.length}) failed, but video was compiled from ${completedJobs.length} ready clips.`
             )
           } else {
-            throw new Error(failedJobs[0].error_summary || 'Рендер клипов в очереди завершился ошибкой в HLAE')
+            throw new Error(failedJobs[0].error_summary || (lang === 'ru' ? 'Рендер клипов в очереди завершился ошибкой в HLAE' : 'Render jobs in queue failed in HLAE'))
           }
           break
         }
@@ -406,7 +406,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
     } catch (err: any) {
       console.warn('Montage direct compilation wait note:', err)
       setCompilationError(
-        err?.message || 'Рендер запущен в очереди. Вы можете отслеживать прогресс во вкладке Очередь / Монтаж.'
+        err?.message || (lang === 'ru' ? 'Рендер запущен в очереди. Вы можете отслеживать прогресс во вкладке Очередь / Монтаж.' : 'Render job started in queue. You can track progress in Queue / Montage tab.')
       )
     } finally {
       setIsCompiling(false)
@@ -422,7 +422,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
           <div
             className={`compact-step-pill ${currentStep === 1 ? 'active' : currentStep > 1 ? 'done' : ''}`}
             onClick={() => setCurrentStep(1)}
-            title="Шаг 1: Выбор демки CS2"
+            title={lang === "ru" ? "Шаг 1: Выбор демки CS2" : "Step 1: Choose CS2 Demo"}
           >
             <span className="step-num">1</span>
             <span>{t('studio.step1').replace(/^\d+\.\s*/, '')}</span>
@@ -432,7 +432,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
             className={`compact-step-pill ${currentStep === 2 ? 'active' : currentStep > 2 ? 'done' : ''}`}
             onClick={() => activeDemo && setCurrentStep(2)}
             style={{ opacity: activeDemo ? 1 : 0.4, cursor: activeDemo ? 'pointer' : 'default' }}
-            title="Шаг 2: Выбор игрока"
+            title={lang === "ru" ? "Шаг 2: Выбор игрока" : "Step 2: Choose Player"}
           >
             <span className="step-num">2</span>
             <span>{t('studio.step2').replace(/^\d+\.\s*/, '')}</span>
@@ -442,7 +442,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
             className={`compact-step-pill ${currentStep === 3 ? 'active' : currentStep > 3 ? 'done' : ''}`}
             onClick={() => activeDemo && setCurrentStep(3)}
             style={{ opacity: activeDemo ? 1 : 0.4, cursor: activeDemo ? 'pointer' : 'default' }}
-            title="Шаг 3: Моменты и 2D Радар"
+            title={lang === "ru" ? "Шаг 3: Моменты и 2D Радар" : "Step 3: Highlights & 2D Radar"}
           >
             <span className="step-num">3</span>
             <span>{t('studio.step3').replace(/^\d+\.\s*/, '')}</span>
@@ -453,7 +453,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
             className={`compact-step-pill ${currentStep === 4 ? 'active' : ''}`}
             onClick={() => activeDemo && selectedIds.size > 0 && setCurrentStep(4)}
             style={{ opacity: activeDemo && selectedIds.size > 0 ? 1 : 0.4, cursor: activeDemo && selectedIds.size > 0 ? 'pointer' : 'default' }}
-            title="Шаг 4: Сборка и Настройки"
+            title={lang === "ru" ? "Шаг 4: Сборка и Настройки" : "Step 4: Montage & Settings"}
           >
             <span className="step-num">4</span>
             <span>{t('studio.step4').replace(/^\d+\.\s*/, '')}</span>
@@ -470,7 +470,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 onClick={() => setCurrentStep(1)}
                 style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 600 }}
               >
-                ← Сменить матч
+                ← {lang === "ru" ? "Сменить матч" : "Change Match"}
               </button>
               <button
                 type="button"
@@ -481,7 +481,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 }}
                 style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 700 }}
               >
-                Все игроки матча →
+                {lang === "ru" ? "Все игроки матча →" : "All Match Players →"}
               </button>
             </>
           )}
@@ -494,7 +494,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 onClick={() => setCurrentStep(2)}
                 style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 600 }}
               >
-                ← К игрокам
+                ← {lang === "ru" ? "К игрокам" : "Back to Players"}
               </button>
               <button
                 type="button"
@@ -503,7 +503,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 disabled={selectedIds.size === 0}
                 style={{ padding: '6px 16px', fontSize: '12px', fontWeight: 700 }}
               >
-                Далее: Настройки ({selectedIds.size}) ➔
+                {lang === "ru" ? `Далее: Настройки (${selectedIds.size}) ➔` : `Next: Settings (${selectedIds.size}) ➔`}
               </button>
             </>
           )}
@@ -516,24 +516,43 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 onClick={() => setCurrentStep(3)}
                 style={{ padding: '6px 12px', fontSize: '12px', fontWeight: 600 }}
               >
-                ← К моментам
+                ← {lang === "ru" ? "К моментам" : "Back to Highlights"}
               </button>
               <button
                 type="button"
-                className="btn btn-accent card-interactive"
+                className="btn card-interactive"
                 onClick={handleStartMontageCreation}
                 disabled={isCompiling || selectedIds.size === 0}
-                style={{ padding: '6px 18px', fontSize: '12px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                style={{
+                  padding: '9px 24px',
+                  fontSize: '13px',
+                  fontWeight: 800,
+                  letterSpacing: '0.03em',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  borderRadius: '6px',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  background: (isCompiling || selectedIds.size === 0)
+                    ? '#1e2433'
+                    : 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)',
+                  color: (isCompiling || selectedIds.size === 0) ? '#64748b' : '#040711',
+                  boxShadow: (isCompiling || selectedIds.size === 0)
+                    ? 'none'
+                    : '0 0 22px rgba(56, 189, 248, 0.45)',
+                  cursor: (isCompiling || selectedIds.size === 0) ? 'not-allowed' : 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
               >
                 {isCompiling ? (
                   <>
-                    <LoaderIcon size={13} color="#090d16" />
-                    <span>Сборка...</span>
+                    <LoaderIcon size={15} color="#64748b" />
+                    <span>{lang === "ru" ? "Сборка..." : "Compiling..."}</span>
                   </>
                 ) : (
                   <>
-                    <FilmIcon size={13} color="#090d16" />
-                    <span>Создать нарезку ({selectedIds.size})</span>
+                    <FilmIcon size={15} color="#040711" />
+                    <span>⚡ {lang === "ru" ? `Создать нарезку (${selectedIds.size})` : `Create Montage (${selectedIds.size})`}</span>
                   </>
                 )}
               </button>
@@ -548,7 +567,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
               style={{ padding: '6px 12px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
             >
               <FilmIcon size={12} color="#94a3b8" />
-              <span>Очередь</span>
+              <span>{lang === "ru" ? "Очередь" : "Queue"}</span>
             </button>
           )}
         </div>
@@ -617,20 +636,44 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
             />
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
               <FolderIcon size={24} color="#38bdf8" />
-              <div>
-                <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {isIngestingDemo ? (
-                    <>
-                      <LoaderIcon size={14} color="#38bdf8" />
-                      <span>Загрузка и парсинг CS2 демки...</span>
-                    </>
-                  ) : (
-                    'Перетащите .dem файл сюда или нажмите для выбора'
-                  )}
-                </div>
-                <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-                  Поддерживаются официальные демки CS2 (Matchmaking, Premier, Faceit, HLTV)
-                </div>
+              <div style={{ flex: 1 }}>
+                {isIngestingDemo ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{
+                        width: '20px',
+                        height: '20px',
+                        borderRadius: '50%',
+                        border: '2px solid rgba(56, 189, 248, 0.25)',
+                        borderTopColor: '#38bdf8',
+                        animation: 'spin 0.8s linear infinite',
+                      }} />
+                      <span style={{ fontSize: '13.5px', fontWeight: 800, color: '#38bdf8' }}>
+                        {lang === "ru" ? "Загрузка и парсинг CS2 демки движком Source 2..." : "Loading & parsing CS2 demo with Source 2 engine..."}
+                      </span>
+                    </div>
+                    <div style={{ width: '100%', height: '4px', backgroundColor: 'rgba(255, 255, 255, 0.08)', borderRadius: '2px', overflow: 'hidden' }}>
+                      <div style={{
+                        width: '100%',
+                        height: '100%',
+                        background: 'linear-gradient(90deg, #0284c7 0%, #38bdf8 50%, #818cf8 100%)',
+                        animation: 'pulse 1.8s ease-in-out infinite',
+                      }} />
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                      {lang === "ru" ? "Извлекаем тики, статистику раундов и автоматически рассчитываем лучшие моменты..." : "Extracting ticks, round statistics, and calculating top highlights..."}
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ fontSize: '13.5px', fontWeight: 700, color: '#f1f5f9' }}>
+                      {lang === "ru" ? "Перетащите .dem файл сюда или нажмите для выбора" : "Drag & drop .dem file here or click to browse"}
+                    </div>
+                    <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+                      {lang === "ru" ? "Поддерживаются официальные демки CS2 (Matchmaking, Premier, Faceit, HLTV)" : "Official CS2 demos supported (Matchmaking, Premier, Faceit, HLTV)"}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
             <button
@@ -638,7 +681,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
               className="btn btn-secondary"
               style={{ padding: '6px 14px', fontSize: '12px', pointerEvents: 'none' }}
             >
-              Выбрать файл .dem
+              {lang === "ru" ? "Выбрать файл .dem" : "Select .dem File"}
             </button>
           </div>
 
@@ -653,22 +696,22 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
           >
             <div style={{ padding: '16px 20px', borderBottom: '1px solid #232630', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div style={{ fontWeight: 700, fontSize: '14px', color: '#f1f5f9' }}>
-                Доступные матчи ({demos.length})
+                {lang === "ru" ? `Доступные матчи (${demos.length})` : `Available Matches (${demos.length})`}
               </div>
               <div style={{ fontSize: '12px', color: '#94a3b8' }}>
-                Выберите матч для поиска лучших моментов
+                {lang === "ru" ? "Выберите матч для поиска лучших моментов" : "Select a match to discover best highlights"}
               </div>
             </div>
 
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
             <thead>
               <tr style={{ color: '#64748b', borderBottom: '1px solid #232630', fontSize: '11px', textTransform: 'uppercase' }}>
-                <th style={{ padding: '12px 20px' }}>Карта</th>
-                <th style={{ padding: '12px 16px' }}>Дата</th>
-                <th style={{ padding: '12px 16px' }}>Счёт</th>
-                <th style={{ padding: '12px 16px' }}>Источник</th>
-                <th style={{ padding: '12px 16px' }}>Хайлайты</th>
-                <th style={{ padding: '12px 20px', textAlign: 'right' }}>Действие</th>
+                <th style={{ padding: '12px 20px' }}>{lang === "ru" ? "Карта" : "Map"}</th>
+                <th style={{ padding: '12px 16px' }}>{lang === "ru" ? "Дата" : "Date"}</th>
+                <th style={{ padding: '12px 16px' }}>{lang === "ru" ? "Счёт" : "Score"}</th>
+                <th style={{ padding: '12px 16px' }}>{lang === "ru" ? "Источник" : "Source"}</th>
+                <th style={{ padding: '12px 16px' }}>{lang === "ru" ? "Хайлайты" : "Highlights"}</th>
+                <th style={{ padding: '12px 20px', textAlign: 'right' }}>{lang === "ru" ? "Действие" : "Action"}</th>
               </tr>
             </thead>
             <tbody>
@@ -737,7 +780,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     <td style={{ padding: '14px 16px', color: '#f1f5f9', fontWeight: 600 }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                         <SparkleIcon size={13} color="#f59e0b" />
-                        <span>{d.highlights_count} моментов</span>
+                        <span>{d.highlights_count} {lang === "ru" ? "моментов" : "highlights"}</span>
                       </span>
                     </td>
                     <td style={{ padding: '14px 20px', textAlign: 'right' }}>
@@ -751,7 +794,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                           setCurrentStep(2)
                         }}
                       >
-                        Выбрать →
+                        {lang === "ru" ? "Выбрать →" : "Select →"}
                       </button>
                     </td>
                   </tr>
@@ -770,7 +813,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
           {/* Subheader Info Bar */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 4px' }}>
             <div style={{ fontSize: '12.5px', color: '#94a3b8' }}>
-              Матч: <strong style={{ color: '#38bdf8' }}>{(activeDemo?.map_name || 'Match').replace('de_', '').toUpperCase()}</strong> ({activeDemo?.rounds_count || 0} раундов) • Кликните на игрока для фильтрации хайлайтов и отображения на 2D радаре
+              {lang === 'ru' ? 'Матч:' : 'Match:'} <strong style={{ color: '#38bdf8' }}>{(activeDemo?.map_name || 'Match').replace('de_', '').toUpperCase()}</strong> ({activeDemo?.rounds_count || 0} раундов) • Кликните на игрока для фильтрации хайлайтов и отображения на 2D радаре
             </div>
             <button
               type="button"
@@ -778,7 +821,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
               onClick={() => setCurrentStep(1)}
               style={{ fontSize: '11px', padding: '4px 10px' }}
             >
-              ← Сменить матч
+              ← {lang === "ru" ? "Сменить матч" : "Change Match"}
             </button>
           </div>
 
@@ -863,7 +906,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                           letterSpacing: '0.04em',
                         }}
                       >
-                        ВЫБРАННЫЙ ИГРОК
+                        {lang === "ru" ? "ВЫБРАННЫЙ ИГРОК" : "SELECTED PLAYER"}
                       </span>
                       <span style={{ fontSize: '17px', fontWeight: 800, color: '#f8fafc', letterSpacing: '-0.02em' }}>
                         {inspectedPlayer.name}
@@ -883,11 +926,11 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11.5px', color: '#94a3b8' }}>
-                      <span>Раундов: <strong style={{ color: '#f1f5f9' }}>{activeDemo?.rounds_count || 0}</strong></span>
+                      <span>{lang === "ru" ? "Раундов:" : "Rounds:"} <strong style={{ color: '#f1f5f9' }}>{activeDemo?.rounds_count || 0}</strong></span>
                       <span>•</span>
-                      <span>Фрагов: <strong style={{ color: isCT ? '#38bdf8' : '#fbbf24' }}>{playerKills}</strong></span>
+                      <span>{lang === "ru" ? "Фрагов:" : "Frags:"} <strong style={{ color: isCT ? '#38bdf8' : '#fbbf24' }}>{playerKills}</strong></span>
                       <span>•</span>
-                      <span>Сторона: <strong style={{ color: isCT ? '#38bdf8' : '#f59e0b' }}>{isCT ? 'Спецназ (CT)' : 'Террористы (T)'}</strong></span>
+                      <span>{lang === "ru" ? "Сторона:" : "Side:"} <strong style={{ color: isCT ? '#38bdf8' : '#f59e0b' }}>{isCT ? (lang === 'ru' ? 'Спецназ (CT)' : 'Counter-Terrorists (CT)') : (lang === 'ru' ? 'Террористы (T)' : 'Terrorists (T)')}</strong></span>
                     </div>
                   </div>
                 </div>
@@ -903,7 +946,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     }}
                     style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 700 }}
                   >
-                    <span>Выбрать {inspectedPlayer.name} для нарезки</span>
+                    <span>{lang === "ru" ? `Выбрать ${inspectedPlayer.name} для нарезки` : `Select ${inspectedPlayer.name} for montage`}</span>
                     <span>➔</span>
                   </button>
                   <button
@@ -917,10 +960,10 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       })
                     }
                     style={{ padding: '6px 10px', fontSize: '11.5px' }}
-                    title="Аналитика раундов и ADR игрока"
+                    title={lang === "ru" ? "Аналитика раундов и ADR игрока" : "Player round analytics & ADR"}
                   >
                     <ActivityIcon size={12} color="#38bdf8" />
-                    <span>PR Анализ</span>
+                    <span>{lang === "ru" ? "PR Анализ" : "PR Analysis"}</span>
                   </button>
                 </div>
               </div>
@@ -949,14 +992,14 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <ZapIcon size={15} color="#f59e0b" />
               <span style={{ fontWeight: 700, fontSize: '13px', color: '#f1f5f9' }}>
-                Все игроки матча
+                {lang === "ru" ? "Все игроки матча" : "All Match Players"}
               </span>
               <span style={{ fontSize: '11.5px', color: '#94a3b8' }}>
-                ({highlights.length} ключевых хайлайтов со всех 10 игроков)
+                ({highlights.length} {lang === "ru" ? "ключевых хайлайтов со всех 10 игроков" : "key highlights from all 10 players"})
               </span>
             </div>
             <span style={{ fontSize: '11.5px', color: '#38bdf8', fontWeight: 700 }}>
-              Выбрать всех ➔
+              {lang === "ru" ? "Выбрать всех ➔" : "Select All ➔"}
             </span>
           </div>
 
@@ -1041,7 +1084,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                               }}
                             >
                               <SparkleIcon size={9} color="#fbbf24" />
-                              <span>ВЫ</span>
+                              <span>{lang === "ru" ? "ВЫ" : "YOU"}</span>
                             </span>
                           )}
                         </div>
@@ -1060,7 +1103,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         fontWeight: 700,
                       }}
                     >
-                      {pHighlights.length} хайлайтов
+                      {pHighlights.length} {lang === "ru" ? "хайлайтов" : "highlights"}
                     </span>
                   </div>
 
@@ -1075,17 +1118,17 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     {pMultikills > 0 && (
                       <span style={{ backgroundColor: 'rgba(139, 92, 246, 0.15)', color: '#c084fc', padding: '1px 6px', borderRadius: '4px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                         <SkullIcon size={11} color="#c084fc" />
-                        <span>{pMultikills} Мультикилл</span>
+                        <span>{pMultikills} {lang === "ru" ? "Мультикилл" : "Multikill"}</span>
                       </span>
                     )}
                     {pClutches > 0 && (
                       <span style={{ backgroundColor: 'rgba(16, 185, 129, 0.15)', color: '#34d399', padding: '1px 6px', borderRadius: '4px', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                         <ZapIcon size={11} color="#34d399" />
-                        <span>{pClutches} Клатч</span>
+                        <span>{pClutches} {lang === "ru" ? "Клатч" : "Clutch"}</span>
                       </span>
                     )}
                     {pHighlights.length === 0 && (
-                      <span style={{ color: '#64748b', fontStyle: 'italic' }}>Нет ключевых эпизодов</span>
+                      <span style={{ color: '#64748b', fontStyle: 'italic' }}>{lang === "ru" ? "Нет ключевых эпизодов" : "No key episodes"}</span>
                     )}
                   </div>
 
@@ -1112,10 +1155,10 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                           team: p.team,
                         })
                       }}
-                      title={`Подробный разбор ошибок и PR аналитика для ${p.name}`}
+                      title={lang === "ru" ? `Подробный разбор ошибок и PR аналитика для ${p.name}` : `Detailed error audit & PR analytics for ${p.name}`}
                     >
                       <ActivityIcon size={12} color="#38bdf8" />
-                      <span>Разбор & Ошибки</span>
+                      <span>{lang === "ru" ? "Разбор & Ошибки" : "Audit & Errors"}</span>
                     </button>
                     <button
                       type="button"
@@ -1131,7 +1174,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         setCurrentStep(3)
                       }}
                     >
-                      Выбрать →
+                      {lang === "ru" ? "Выбрать →" : "Select →"}
                     </button>
                   </div>
                 </div>
@@ -1155,10 +1198,10 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
           >
             <div>
               <div style={{ fontSize: '14px', fontWeight: 700, color: '#f1f5f9' }}>
-                Выбор игрока для нарезки
+                {lang === "ru" ? "Выбор игрока для нарезки" : "Select Player for Montage"}
               </div>
               <div style={{ fontSize: '11px', color: '#94a3b8' }}>
-                Выберите конкретного игрока выше или перейдите ко всем моментам матча
+                {lang === "ru" ? "Выберите конкретного игрока выше или перейдите ко всем моментам матча" : "Select a specific player above or proceed to all match highlights"}
               </div>
             </div>
 
@@ -1169,7 +1212,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 onClick={() => setCurrentStep(1)}
                 style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 600 }}
               >
-                ← Сменить матч
+                ← {lang === "ru" ? "Сменить матч" : "Change Match"}
               </button>
               <button
                 type="button"
@@ -1190,7 +1233,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   boxShadow: '0 0 16px rgba(56, 189, 248, 0.35)',
                 }}
               >
-                Далее: Все моменты матча ({highlights.length}) →
+                {lang === "ru" ? `Далее: Все моменты матча (${highlights.length}) →` : `Next: All Match Highlights (${highlights.length}) →`}
               </button>
             </div>
           </div>
@@ -1229,7 +1272,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 }}
               >
                 <CrosshairIcon size={13} color={radarTab === 'markers' ? '#090d16' : '#94a3b8'} />
-                <span>Маркеры хайлайтов</span>
+                <span>{lang === "ru" ? "Маркеры хайлайтов" : "Highlight Markers"}</span>
               </button>
               <button
                 type="button"
@@ -1253,7 +1296,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 }}
               >
                 <PlayIcon size={12} color={radarTab === 'replay' ? '#090d16' : '#94a3b8'} />
-                <span>2D Плеер раунда</span>
+                <span>{lang === "ru" ? "2D Плеер раунда" : "2D Round Player"}</span>
               </button>
             </div>
 
@@ -1272,7 +1315,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 {/* Quick Map Tips */}
                 <div style={{ marginTop: '12px', padding: '10px 14px', backgroundColor: '#131622', border: '1px solid #23283c', borderRadius: '8px', fontSize: '11px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <SparkleIcon size={14} color="#38bdf8" />
-                  <span>Кликните на маркер фраг-эпизода для выбора, или переключитесь на <strong>«2D Плеер раунда»</strong> для покадрового просмотра.</span>
+                  <span>{lang === 'ru' ? <>Кликните на маркер фраг-эпизода для выбора, или переключитесь на <strong>«2D Плеер раунда»</strong> для покадрового просмотра.</> : <>Click on a frag marker to select it, or switch to <strong>"2D Round Player"</strong> for tick-by-tick tactical inspection.</>}</span>
                 </div>
               </div>
             )}
@@ -1308,7 +1351,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         borderRadius: '4px',
                         cursor: 'pointer',
                       }}
-                      title="Предыдущий раунд"
+                      title={lang === "ru" ? "Предыдущий раунд" : "Previous round"}
                     >
                       ⏮️
                     </button>
@@ -1329,7 +1372,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     >
                       {demoRounds.map((r) => (
                         <option key={r.round_num} value={r.round_num}>
-                          Раунд {r.round_num} {r.winner ? `(${r.winner.toUpperCase()} Win)` : ''}
+                          {lang === "ru" ? "Раунд" : "Round"} {r.round_num} {r.winner ? `(${r.winner.toUpperCase()} Win)` : ''}
                         </option>
                       ))}
                     </select>
@@ -1348,7 +1391,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         borderRadius: '4px',
                         cursor: 'pointer',
                       }}
-                      title="Следующий раунд"
+                      title={lang === "ru" ? "Следующий раунд" : "Next round"}
                     >
                       ⏭️
                     </button>
@@ -1371,7 +1414,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                           cursor: 'pointer',
                         }}
                       >
-                        Верх (A)
+                        {lang === "ru" ? "Верх (A)" : "Upper (A)"}
                       </button>
                       <button
                         type="button"
@@ -1387,7 +1430,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                           cursor: 'pointer',
                         }}
                       >
-                        Низ (B)
+                        {lang === "ru" ? "Низ (B)" : "Lower (B)"}
                       </button>
                     </div>
                   )}
@@ -1401,7 +1444,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         onChange={(e) => setReplayShowTrails(e.target.checked)}
                         style={{ accentColor: '#38bdf8', cursor: 'pointer' }}
                       />
-                      <span>Следы</span>
+                      <span>{lang === "ru" ? "Следы" : "Trails"}</span>
                     </label>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
                       <input
@@ -1410,7 +1453,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         onChange={(e) => setReplayShowShots(e.target.checked)}
                         style={{ accentColor: '#fbbf24', cursor: 'pointer' }}
                       />
-                      <span>Выстрелы</span>
+                      <span>{lang === "ru" ? "Выстрелы" : "Shots"}</span>
                     </label>
                     <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
                       <input
@@ -1419,7 +1462,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         onChange={(e) => setReplayShowGrenades(e.target.checked)}
                         style={{ accentColor: '#10b981', cursor: 'pointer' }}
                       />
-                      <span>Гранаты</span>
+                      <span>{lang === "ru" ? "Гранаты" : "Grenades"}</span>
                     </label>
                   </div>
                 </div>
@@ -1429,7 +1472,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   {isReplayLoading && (
                     <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', backgroundColor: 'rgba(10, 12, 16, 0.85)', zIndex: 50, color: '#38bdf8', fontSize: '12px', borderRadius: '10px' }}>
                       <div className="spinner" style={{ width: '24px', height: '24px' }} />
-                      <span>Загрузка тактических тиков раунда...</span>
+                      <span>{lang === 'ru' ? 'Загрузка тактических тиков раунда...' : 'Loading tactical round ticks...'}</span>
                     </div>
                   )}
 
@@ -1494,7 +1537,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                           setReplayFrameIndex((prev) => Math.max(0, prev - framesToJump))
                         }}
                         style={{ padding: '4px 8px', fontSize: '11px', backgroundColor: '#181b26', border: '1px solid #282f42', borderRadius: '4px', color: '#cbd5e1', cursor: 'pointer' }}
-                        title="Назад на 5 секунд"
+                        title={lang === "ru" ? "Назад на 5 секунд" : "Back 5 seconds"}
                       >
                         ↺ 5s
                       </button>
@@ -1520,12 +1563,12 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         {isReplayPlaying ? (
                           <>
                             <PauseIcon size={12} color="#090d16" />
-                            <span>Пауза</span>
+                            <span>{lang === "ru" ? "Пауза" : "Pause"}</span>
                           </>
                         ) : (
                           <>
                             <PlayIcon size={12} color="#090d16" />
-                            <span>Плей</span>
+                            <span>{lang === 'ru' ? 'Плей' : 'Play'}</span>
                           </>
                         )}
                       </button>
@@ -1538,7 +1581,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                           setReplayFrameIndex((prev) => Math.min(maxFrames, prev + framesToJump))
                         }}
                         style={{ padding: '4px 8px', fontSize: '11px', backgroundColor: '#181b26', border: '1px solid #282f42', borderRadius: '4px', color: '#cbd5e1', cursor: 'pointer' }}
-                        title="Вперед на 5 секунд"
+                        title={lang === "ru" ? "Вперед на 5 секунд" : "Forward 5 seconds"}
                       >
                         5s ↻
                       </button>
@@ -1604,13 +1647,13 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     fontWeight: 600,
                   }}
                 >
-                  <option value="all">События: Все</option>
+                  <option value="all">{lang === "ru" ? "События: Все" : "Events: All"}</option>
                   <option value="ace">ACE (5K)</option>
-                  <option value="multikill_4k">4K Квадро</option>
-                  <option value="multikill_3k">3K Тройное</option>
-                  <option value="multikill_2k">2K Дабл-килл</option>
-                  <option value="clutch_candidate">Клатчи</option>
-                  <option value="kill">Одиночные киллы</option>
+                  <option value="multikill_4k">{lang === "ru" ? "4K Квадро" : "4K Quad"}</option>
+                  <option value="multikill_3k">{lang === "ru" ? "3K Тройное" : "3K Triple"}</option>
+                  <option value="multikill_2k">{lang === "ru" ? "2K Дабл-килл" : "2K Double"}</option>
+                  <option value="clutch_candidate">{lang === "ru" ? "Клатчи" : "Clutches"}</option>
+                  <option value="kill">{lang === "ru" ? "Одиночные киллы" : "Single Kills"}</option>
                 </select>
 
                 {/* Player Filter */}
@@ -1627,7 +1670,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     fontWeight: 600,
                   }}
                 >
-                  <option value="all">Игрок: Все ({players.length})</option>
+                  <option value="all">{lang === "ru" ? `Игрок: Все (${players.length})` : `Player: All (${players.length})`}</option>
                   {players.map((p) => (
                     <option key={p.steam_id || p.name} value={p.steam_id || ''}>
                       {p.name} ({p.team?.toUpperCase() || 'SPEC'})
@@ -1659,10 +1702,10 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         })
                       }
                     }}
-                    title="Открыть тактический разбор и PR рейтинг выбранного игрока"
+                    title={lang === "ru" ? "Открыть тактический разбор и PR рейтинг выбранного игрока" : "Open tactical analysis & PR rating for selected player"}
                   >
                     <ActivityIcon size={12} color="#38bdf8" />
-                    <span>Разбор игрока</span>
+                    <span>{lang === 'ru' ? 'Разбор игрока' : 'Player Audit'}</span>
                   </button>
                 )}
 
@@ -1681,7 +1724,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     fontWeight: 600,
                   }}
                 >
-                  <option value="all">Оружие: Все</option>
+                  <option value="all">{lang === "ru" ? "Оружие: Все" : "Weapon: All"}</option>
                   <option value="ak47">AK-47</option>
                   <option value="m4a1">M4A1 / M4A4</option>
                   <option value="awp">AWP</option>
@@ -1704,9 +1747,9 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     fontWeight: 600,
                   }}
                 >
-                  <option value="all">Все раунды ({roundNumbers.length})</option>
+                  <option value="all">{lang === "ru" ? "Все раунды" : "All rounds"} ({roundNumbers.length})</option>
                   {roundNumbers.map((r) => (
-                    <option key={r} value={r}>Раунд {r}</option>
+                    <option key={r} value={r}>{lang === "ru" ? "Раунд" : "Round"} {r}</option>
                   ))}
                 </select>
               </div>
@@ -1724,7 +1767,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     border: '1px solid #2b2e38',
                   }}
                 >
-                  {selectedIds.size}/{filteredHighlights.length} моментов
+                  {selectedIds.size}/{filteredHighlights.length} {lang === 'ru' ? 'моментов' : 'highlights'}
                 </span>
 
                 <button
@@ -1736,7 +1779,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   }}
                   style={{ padding: '5px 10px', fontSize: '11px' }}
                 >
-                  {allFilteredSelected ? 'Снять все' : 'Выбрать все'}
+                  {allFilteredSelected ? (lang === 'ru' ? 'Снять все' : 'Deselect all') : (lang === 'ru' ? 'Выбрать все' : 'Select all')}
                 </button>
               </div>
             </div>
@@ -1787,7 +1830,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                           {selectedPlayer.name}
                         </div>
                         <div style={{ fontSize: '11px', color: '#64748b' }}>
-                          SteamID: {selectedPlayer.steam_id || 'N/A'} • {playerHighlights.length} хайлайтов ({playerMultikills} мульти-киллов)
+                          SteamID: {selectedPlayer.steam_id || 'N/A'} • {playerHighlights.length} {lang === 'ru' ? 'хайлайтов' : 'highlights'} ({playerMultikills} {lang === 'ru' ? 'мульти-киллов' : 'multikills'})
                         </div>
                       </div>
                     </div>
@@ -1807,7 +1850,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                           }}
                         >
                           <SparkleIcon size={12} color="#090d16" />
-                          <span>Выбрать моменты {selectedPlayer.name} ({playerHighlights.length}) →</span>
+                          <span>{lang === 'ru' ? `Выбрать моменты ${selectedPlayer.name} (${playerHighlights.length}) →` : `Select highlights of ${selectedPlayer.name} (${playerHighlights.length}) →`}</span>
                         </button>
                       )}
                       <button
@@ -1816,7 +1859,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         style={{ padding: '6px 10px', fontSize: '11px' }}
                         onClick={() => onSetPlayerFilter(null)}
                       >
-                        ✕ Сбросить
+                        ✕ {lang === 'ru' ? 'Сбросить' : 'Reset'}
                       </button>
                     </div>
                   </div>
@@ -1828,7 +1871,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '520px', overflowY: 'auto' }}>
               {filteredHighlights.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px 0', color: '#64748b', fontSize: '13px' }}>
-                  Нет моментов, подходящих под выбранные фильтры.
+                  {lang === 'ru' ? 'Нет моментов, подходящих под выбранные фильтры.' : 'No highlights matching selected filters.'}
                 </div>
               ) : (
                 filteredHighlights.map((h) => {
@@ -1880,7 +1923,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                           textAlign: 'center',
                         }}
                       >
-                        Р {h.round_num}
+                        {lang === 'ru' ? 'Р' : 'R'} {h.round_num}
                       </span>
 
                       {/* Elapsed timing */}
@@ -1982,11 +2025,11 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                             }
                             setCurrentStep(4)
                           }}
-                          title="Выбрать и перейти к настройке записи этого момента"
+                          title={lang === "ru" ? "Выбрать и перейти к настройке записи этого момента" : "Select and configure recording for this highlight"}
                           style={{ padding: '3px 8px', fontSize: '11px', borderRadius: '4px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                         >
                           <FilmIcon size={11} color="#94a3b8" />
-                          <span>Запись →</span>
+                          <span>{lang === 'ru' ? 'Запись →' : 'Record →'}</span>
                         </button>
                       </div>
                     </div>
@@ -2011,12 +2054,12 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
             >
               <div>
                 <div style={{ fontSize: '14px', fontWeight: 700, color: '#f1f5f9' }}>
-                  Выбрано моментов: <strong style={{ color: '#38bdf8' }}>{selectedIds.size}</strong> из {highlights.length}
+                  {lang === 'ru' ? 'Выбрано моментов:' : 'Selected highlights:'} <strong style={{ color: '#38bdf8' }}>{selectedIds.size}</strong> {lang === 'ru' ? 'из' : 'of'} {highlights.length}
                 </div>
                 <div style={{ fontSize: '11px', color: '#94a3b8' }}>
                   {selectedIds.size === 0
-                    ? 'Отметьте хотя бы один момент галочкой для перехода к записи'
-                    : 'Моменты выбраны! Нажмите «Далее» для настройки 4:3, стилей радара и записи'}
+                    ? (lang === 'ru' ? 'Отметьте хотя бы один момент галочкой для перехода к записи' : 'Check at least one highlight box to proceed to recording')
+                    : (lang === 'ru' ? 'Моменты выбраны! Нажмите «Далее» для настройки 4:3, стилей радара и записи' : 'Highlights selected! Click "Next" to configure 4:3, radar styles, and rendering')}
                 </div>
               </div>
 
@@ -2027,7 +2070,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   onClick={() => setCurrentStep(2)}
                   style={{ padding: '8px 16px', fontSize: '12px', fontWeight: 600 }}
                 >
-                  ← Назад к игрокам
+                  ← {lang === 'ru' ? 'Назад к игрокам' : 'Back to Players'}
                 </button>
                 <button
                   type="button"
@@ -2047,7 +2090,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     transition: 'all 0.2s ease',
                   }}
                 >
-                  Далее: Настройки и запись ({selectedIds.size}) →
+                  {lang === 'ru' ? `Далее: Настройки и запись (${selectedIds.size}) →` : `Next: Settings & Record (${selectedIds.size}) →`}
                 </button>
               </div>
             </div>
@@ -2072,7 +2115,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
               }}
             >
               <label style={{ display: 'block', fontSize: '13px', fontWeight: 700, color: '#f1f5f9', marginBottom: '8px' }}>
-                Придумай название нарезки:
+                {lang === 'ru' ? 'Придумай название нарезки:' : 'Montage project title:'}
               </label>
               <input
                 type="text"
@@ -2106,10 +2149,10 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 <div>
                   <div style={{ fontSize: '15px', fontWeight: 700, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <SlidersIcon size={16} color="#38bdf8" />
-                    <span>Параметры видео и экспорта CS2</span>
+                    <span>{lang === 'ru' ? 'Параметры видео и экспорта CS2' : 'CS2 Video & Export Settings'}</span>
                   </div>
                   <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
-                    Режиссер POV, киберспортивный 4:3, стили радара и тактические тумблеры
+                    {lang === 'ru' ? 'Режиссер POV, киберспортивный 4:3, стили радара и тактические тумблеры' : 'Director POV, esports 4:3, radar styles, and tactical switches'}
                   </div>
                 </div>
               </div>
@@ -2119,12 +2162,12 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
                   <div style={{ fontSize: '12px', fontWeight: 700, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <CameraIcon size={14} color="#38bdf8" />
-                    <span>РЕЖИССЕР КАМЕРЫ (POV)</span>
+                    <span>{lang === "ru" ? "РЕЖИССЕР КАМЕРЫ (POV)" : "CAMERA DIRECTOR (POV)"}</span>
                   </div>
                   <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 600 }}>
                     {clipSettings?.perspective === 'dynamic_killcam'
-                      ? '⚡ Килл-кам PRO (2 запуска CS2)'
-                      : '🎬 Главный герой (1 запуск CS2)'}
+                      ? (lang === 'ru' ? '⚡ Килл-кам PRO (2 запуска CS2)' : '⚡ Kill-cam PRO (2 runs)')
+                      : (lang === 'ru' ? '🎬 Главный герой (1 запуск CS2)' : '🎬 Hero POV (Single run)')}
                   </span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
@@ -2150,14 +2193,14 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: '12px', fontWeight: 700, color: (!clipSettings?.perspective || clipSettings?.perspective === 'attacker') ? '#38bdf8' : '#e2e8f0' }}>
-                        🎬 Главный Герой
+                        🎬 {lang === 'ru' ? 'Главный Герой' : 'Hero POV'}
                       </span>
                       {(!clipSettings?.perspective || clipSettings?.perspective === 'attacker') && (
-                        <span style={{ fontSize: '10px', color: '#38bdf8', fontWeight: 800 }}>✓ АКТИВЕН</span>
+                        <span style={{ fontSize: '10px', color: '#38bdf8', fontWeight: 800 }}>{lang === 'ru' ? '✓ АКТИВЕН' : '✓ ACTIVE'}</span>
                       )}
                     </div>
                     <div style={{ fontSize: '10px', color: '#94a3b8', lineHeight: '1.3' }}>
-                      100% от автора фрагов без лишних перезаходов (1 запуск CS2)
+                      {lang === 'ru' ? '100% от автора фрагов без лишних перезаходов (1 запуск CS2)' : '100% fragger POV without extra relaunches (Single CS2 launch)'}
                     </div>
                   </button>
 
@@ -2183,14 +2226,14 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span style={{ fontSize: '12px', fontWeight: 700, color: clipSettings?.perspective === 'dynamic_killcam' ? '#a78bfa' : '#e2e8f0' }}>
-                        ⚡ Килл-кам PRO
+                        ⚡ {lang === 'ru' ? 'Килл-кам PRO' : 'Kill-cam PRO'}
                       </span>
                       {clipSettings?.perspective === 'dynamic_killcam' && (
-                        <span style={{ fontSize: '10px', color: '#a78bfa', fontWeight: 800 }}>✓ АКТИВЕН</span>
+                        <span style={{ fontSize: '10px', color: '#a78bfa', fontWeight: 800 }}>{lang === 'ru' ? '✓ АКТИВЕН' : '✓ ACTIVE'}</span>
                       )}
                     </div>
                     <div style={{ fontSize: '10px', color: '#94a3b8', lineHeight: '1.3' }}>
-                      Смерти всех жертв ➔ Откат ➔ Триумф ГГ (ровно 2 запуска CS2)
+                      {lang === 'ru' ? 'Смерти всех жертв ➔ Откат ➔ Триумф ГГ (ровно 2 запуска CS2)' : 'Victim deaths ➔ Rollback ➔ Hero Triumph (Exactly 2 launches)'}
                     </div>
                   </button>
                 </div>
@@ -2200,14 +2243,14 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', backgroundColor: '#12141c', padding: '14px', borderRadius: '8px', border: '1px solid #232734' }}>
                 <div style={{ fontSize: '12px', fontWeight: 700, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <CrosshairIcon size={14} color="#38bdf8" />
-                  <span>ФОРМАТ, РАЗРЕШЕНИЕ И УГОЛ ОБЗОРА (FOV)</span>
+                  <span>{lang === "ru" ? "ФОРМАТ, РАЗРЕШЕНИЕ И УГОЛ ОБЗОРА (FOV)" : "FORMAT, RESOLUTION & FOV"}</span>
                 </div>
 
                 {/* Aspect Ratio */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <span style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'block' }}>Формат экрана CS2</span>
-                    <span style={{ fontSize: '10px', color: '#94a3b8' }}>4:3 расширяет модельки врагов на 33%</span>
+                    <span style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'block' }}>{lang === 'ru' ? 'Формат экрана CS2' : 'CS2 Aspect Ratio'}</span>
+                    <span style={{ fontSize: '10px', color: '#94a3b8' }}>{lang === 'ru' ? '4:3 расширяет модельки врагов на 33%' : '4:3 stretches enemy models 33% wider'}</span>
                   </div>
                   <div style={{ display: 'flex', gap: '4px', backgroundColor: '#0e1118', padding: '2px', borderRadius: '6px', border: '1px solid #232734' }}>
                     <button
@@ -2230,7 +2273,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         color: (clipSettings?.aspectRatio === '4:3' || aspectRatio === '4:3') ? '#090d16' : '#94a3b8',
                       }}
                     >
-                      4:3 (Киберспорт)
+                      4:3 ({lang === 'ru' ? 'Киберспорт' : 'Esports'})
                     </button>
                     <button
                       type="button"
@@ -2252,7 +2295,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         color: (clipSettings?.aspectRatio !== '4:3' && aspectRatio !== '4:3') ? '#090d16' : '#94a3b8',
                       }}
                     >
-                      16:9 (Широкий)
+                      16:9 ({lang === 'ru' ? 'Широкий' : 'Widescreen'})
                     </button>
                   </div>
                 </div>
@@ -2261,10 +2304,10 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #1c202d', paddingTop: '8px' }}>
                   <div>
                     <span style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'block' }}>
-                      {(clipSettings?.aspectRatio === '4:3' || aspectRatio === '4:3') ? 'Разрешение 4:3' : 'Разрешение 16:9'}
+                      {(clipSettings?.aspectRatio === '4:3' || aspectRatio === '4:3') ? (lang === 'ru' ? 'Разрешение 4:3' : '4:3 Resolution') : (lang === 'ru' ? 'Разрешение 16:9' : '16:9 Resolution')}
                     </span>
                     <span style={{ fontSize: '10px', color: '#94a3b8' }}>
-                      {(clipSettings?.aspectRatio === '4:3' || aspectRatio === '4:3') ? '1280x960 — выбор s1mple & m0NESY' : '1920x1080 — стандарт Full HD'}
+                      {(clipSettings?.aspectRatio === '4:3' || aspectRatio === '4:3') ? (lang === 'ru' ? '1280x960 — выбор s1mple & m0NESY' : '1280x960 — pro choice (s1mple & m0NESY)') : (lang === 'ru' ? '1920x1080 — стандарт Full HD' : '1920x1080 — Full HD Standard')}
                     </span>
                   </div>
                   <div style={{ display: 'flex', gap: '5px' }}>
@@ -2362,7 +2405,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', borderTop: '1px solid #1c202d', paddingTop: '8px' }}>
                   {/* FPS */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>Частота кадров (FPS)</span>
+                    <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>{lang === 'ru' ? 'Частота кадров (FPS)' : 'Frame Rate (FPS)'}</span>
                     <div style={{ display: 'flex', gap: '4px' }}>
                       {([30, 60, 120] as const).map((fpsVal) => {
                         const isSelected = (clipSettings?.fps || 60) === fpsVal
@@ -2393,10 +2436,10 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
 
                   {/* FOV (Field of View) */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>Угол обзора (FOV)</span>
+                    <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>{lang === 'ru' ? 'Угол обзора (FOV)' : 'Field of View (FOV)'}</span>
                     <div style={{ display: 'flex', gap: '4px' }}>
                       {[
-                        { val: 68, label: '68° Дефолт' },
+                        { val: 68, label: lang === 'ru' ? '68° Дефолт' : '68° Default' },
                         { val: 90, label: '90° Pro' },
                         { val: 100, label: '100° Wide' },
                       ].map((f) => {
@@ -2434,21 +2477,21 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
                   <div style={{ fontSize: '12px', fontWeight: 700, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <RadarIcon size={14} color="#38bdf8" />
-                    <span>МИНИ-КАРТА / 2D РАДАР</span>
+                    <span>{lang === "ru" ? "МИНИ-КАРТА / 2D РАДАР" : "MINI-MAP / 2D RADAR"}</span>
                   </div>
                   <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 600 }}>
                     {clipSettings?.radarMode === 'broadcast'
-                      ? 'Турнирный BLAST'
+                      ? (lang === 'ru' ? 'Турнирный BLAST' : 'Tournament BLAST')
                       : clipSettings?.radarMode === 'hidden'
-                      ? 'Скрыт'
-                      : 'Круглый (Слежение)'}
+                      ? (lang === 'ru' ? 'Скрыт' : 'Hidden')
+                      : (lang === 'ru' ? 'Круглый (Слежение)' : 'Rotating (Focus)')}
                   </span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
                   {[
-                    { id: 'player_focus', label: 'Круглый (Слежение)', desc: 'Центр на игроке, стандарт OBS' },
-                    { id: 'broadcast', label: 'Турнирный BLAST', desc: 'Вся карта как на трансляциях' },
-                    { id: 'hidden', label: 'Без радара', desc: 'Скрыт для чистого экрана' },
+                    { id: 'player_focus', label: lang === 'ru' ? 'Круглый (Слежение)' : 'Rotating (Focus)', desc: lang === 'ru' ? 'Центр на игроке, стандарт OBS' : 'Center on player, OBS standard' },
+                    { id: 'broadcast', label: lang === 'ru' ? 'Турнирный BLAST' : 'Tournament BLAST', desc: lang === 'ru' ? 'Вся карта как на трансляциях' : 'Full map overview as on stream' },
+                    { id: 'hidden', label: lang === 'ru' ? 'Без радара' : 'No Radar', desc: lang === 'ru' ? 'Скрыт для чистого экрана' : 'Hidden for clean screen' },
                   ].map((r) => {
                     const isSelected = (clipSettings?.radarMode || 'player_focus') === r.id
                     return (
@@ -2483,7 +2526,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', backgroundColor: '#12141c', padding: '14px', borderRadius: '8px', border: '1px solid #232734' }}>
                 <div style={{ fontSize: '12px', fontWeight: 700, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
                   <SlidersIcon size={14} color="#38bdf8" />
-                  <span>ТАКТИЧЕСКИЕ ТУМБЛЕРЫ [ВКЛ / ВЫКЛ]</span>
+                  <span>{lang === "ru" ? "ТАКТИЧЕСКИЕ ТУМБЛЕРЫ [ВКЛ / ВЫКЛ]" : "TACTICAL TOGGLES [ON / OFF]"}</span>
                 </div>
 
                 {/* Switch 1: REAL OBS Mode */}
@@ -2491,15 +2534,15 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   <div>
                     <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <CameraIcon size={13} color="#38bdf8" />
-                      <span>Режим REAL OBS (Вид живого матча)</span>
+                      <span>{lang === 'ru' ? 'Режим REAL OBS (Вид живого матча)' : 'REAL OBS Mode (Live Match Look)'}</span>
                     </div>
                     <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-                      1:1 как при живой игре: скрывает нижнюю спектатор-плашку и анимированные аватары
+                      {lang === 'ru' ? '1:1 как при живой игре: скрывает нижнюю спектатор-плашку и анимированные аватары' : '1:1 live gameplay: hides bottom spectator bar & animated avatars'}
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '10px', fontWeight: 700, color: clipSettings?.hudMode === 'real' ? '#38bdf8' : '#64748b' }}>
-                      {clipSettings?.hudMode === 'real' ? 'ВКЛ' : 'ВЫКЛ'}
+                      {clipSettings?.hudMode === 'real' ? (lang === 'ru' ? 'ВКЛ' : 'ON') : (lang === 'ru' ? 'ВЫКЛ' : 'OFF')}
                     </span>
                     <label className="toggle-switch">
                       <input
@@ -2527,15 +2570,15 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   <div>
                     <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <EyeIcon size={13} color="#38bdf8" />
-                      <span>Силуэты сквозь стены (X-Ray)</span>
+                      <span>{lang === 'ru' ? 'Силуэты сквозь стены (X-Ray)' : 'Player Silhouettes (X-Ray)'}</span>
                     </div>
                     <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-                      Подсветка контуров игроков через препятствия (spec_show_xray)
+                      {lang === 'ru' ? 'Подсветка контуров игроков через препятствия (spec_show_xray)' : 'Highlight player outlines through walls (spec_show_xray)'}
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '10px', fontWeight: 700, color: clipSettings?.xray !== false ? '#38bdf8' : '#64748b' }}>
-                      {clipSettings?.xray !== false ? 'ВКЛ' : 'ВЫКЛ'}
+                      {clipSettings?.xray !== false ? (lang === 'ru' ? 'ВКЛ' : 'ON') : (lang === 'ru' ? 'ВЫКЛ' : 'OFF')}
                     </span>
                     <label className="toggle-switch">
                       <input
@@ -2553,15 +2596,15 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   <div>
                     <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <CrosshairIcon size={13} color="#38bdf8" />
-                      <span>Ники над головами</span>
+                      <span>{lang === 'ru' ? 'Ники над головами' : 'Overhead Player Tags'}</span>
                     </div>
                     <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-                      Имена и шкала здоровья над персонажами (cl_teamid_overhead_mode)
+                      {lang === 'ru' ? 'Имена и шкала здоровья над персонажами (cl_teamid_overhead_mode)' : 'Player names & HP bars above character models (cl_teamid_overhead_mode)'}
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '10px', fontWeight: 700, color: clipSettings?.overheadMode !== false ? '#38bdf8' : '#64748b' }}>
-                      {clipSettings?.overheadMode !== false ? 'ВКЛ' : 'ВЫКЛ'}
+                      {clipSettings?.overheadMode !== false ? (lang === 'ru' ? 'ВКЛ' : 'ON') : (lang === 'ru' ? 'ВЫКЛ' : 'OFF')}
                     </span>
                     <label className="toggle-switch">
                       <input
@@ -2579,15 +2622,15 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   <div>
                     <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <SkullIcon size={13} color="#38bdf8" />
-                      <span>Только Киллфид (Чистый экран)</span>
+                      <span>{lang === 'ru' ? 'Только Киллфид (Чистый экран)' : 'Killfeed Only (Clean Screen)'}</span>
                     </div>
                     <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-                      Скрывает полосы патронов и HP, оставляя только уведомления о фрагах
+                      {lang === 'ru' ? 'Скрывает полосы патронов и HP, оставляя только уведомления о фрагах' : 'Hides HP and ammo bars, keeping only kill notifications'}
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '10px', fontWeight: 700, color: clipSettings?.killfeedOnly ? '#38bdf8' : '#64748b' }}>
-                      {clipSettings?.killfeedOnly ? 'ВКЛ' : 'ВЫКЛ'}
+                      {clipSettings?.killfeedOnly ? (lang === 'ru' ? 'ВКЛ' : 'ON') : (lang === 'ru' ? 'ВЫКЛ' : 'OFF')}
                     </span>
                     <label className="toggle-switch">
                       <input
@@ -2605,15 +2648,15 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   <div>
                     <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <ActivityIcon size={13} color="#38bdf8" />
-                      <span>Счётчик живых (5 v 3 цифрами)</span>
+                      <span>{lang === 'ru' ? 'Счётчик живых (5 v 3 цифрами)' : 'Alive Players Counter (5 v 3)'}</span>
                     </div>
                     <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-                      Компактные цифры счета живых игроков сверху вместо больших аватаров
+                      {lang === 'ru' ? 'Компактные цифры счета живых игроков сверху вместо больших аватаров' : 'Compact living players score counter at top instead of big avatars'}
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '10px', fontWeight: 700, color: clipSettings?.teamcounterMode ? '#38bdf8' : '#64748b' }}>
-                      {clipSettings?.teamcounterMode ? 'ВКЛ' : 'ВЫКЛ'}
+                      {clipSettings?.teamcounterMode ? (lang === 'ru' ? 'ВКЛ' : 'ON') : (lang === 'ru' ? 'ВЫКЛ' : 'OFF')}
                     </span>
                     <label className="toggle-switch">
                       <input
@@ -2635,13 +2678,13 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       style={{ height: '18px', maxWidth: '55px', objectFit: 'contain' }}
                     />
                     <div>
-                      <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600 }}>Водяной знак dem.Toshka</div>
-                      <div style={{ fontSize: '10px', color: '#94a3b8' }}>Фирменный полупрозрачный логотип слева сверху</div>
+                      <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600 }}>{lang === 'ru' ? 'Водяной знак dem.Toshka' : 'dem.Toshka Watermark'}</div>
+                      <div style={{ fontSize: '10px', color: '#94a3b8' }}>{lang === 'ru' ? 'Фирменный полупрозрачный логотип слева сверху' : 'Signature subtle logo in top left corner'}</div>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '10px', fontWeight: 700, color: clipSettings?.watermark !== false ? '#38bdf8' : '#64748b' }}>
-                      {clipSettings?.watermark !== false ? 'ВКЛ' : 'ВЫКЛ'}
+                      {clipSettings?.watermark !== false ? (lang === 'ru' ? 'ВКЛ' : 'ON') : (lang === 'ru' ? 'ВЫКЛ' : 'OFF')}
                     </span>
                     <label className="toggle-switch">
                       <input
@@ -2662,7 +2705,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ fontSize: '12px', fontWeight: 700, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <SlidersIcon size={14} color="#38bdf8" />
-                    <span>МАСШТАБ HUD И ТУРНИРНЫЙ ОВЕРЛЕЙ</span>
+                    <span>{lang === "ru" ? "МАСШТАБ HUD И ТУРНИРНЫЙ ОВЕРЛЕЙ" : "HUD SCALE & TOURNAMENT OVERLAYS"}</span>
                   </div>
                   <button
                     type="button"
@@ -2683,20 +2726,20 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     }}
                   >
                     <TrophyIcon size={11} color="#fbbf24" />
-                    <span>Турнирный HUD (GSI)...</span>
+                    <span>{lang === "ru" ? "Турнирный HUD (GSI)..." : "Tournament HUD (GSI)..."}</span>
                   </button>
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600, display: 'block' }}>Масштаб HUD в CS2</span>
-                    <span style={{ fontSize: '10px', color: '#94a3b8' }}>Размер полосок HP, радара и патронов</span>
+                    <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600, display: 'block' }}>{lang === "ru" ? "Масштаб HUD" : "HUD Scale"} в CS2</span>
+                    <span style={{ fontSize: '10px', color: '#94a3b8' }}>{lang === 'ru' ? 'Размер полосок HP, радара и патронов' : 'Scale of HP bars, radar, and ammo'}</span>
                   </div>
                   <div style={{ display: 'flex', gap: '6px' }}>
                     {[
-                      { scale: 0.95, label: '95% Компакт' },
+                      { scale: 0.95, label: lang === 'ru' ? '95% Компакт' : '95% Compact' },
                       { scale: 1.0, label: '100% 1:1' },
-                      { scale: 1.15, label: '115% Кибер' },
+                      { scale: 1.15, label: lang === 'ru' ? '115% Кибер' : '115% Esports' },
                     ].map((s) => (
                       <button
                         key={s.scale}
@@ -2762,19 +2805,19 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div style={{ fontSize: '12px', fontWeight: 700, color: '#f1f5f9', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <CrosshairIcon size={14} color="#38bdf8" />
-                    <span>Выбор прицела для записи</span>
+                    <span>{lang === "ru" ? "Выбор прицела для записи" : "Select Crosshair for Recording"}</span>
                   </div>
                   <span style={{ fontSize: '10px', color: '#38bdf8', fontWeight: 600 }}>
-                    Превью обновляется сразу ↑
+                    {lang === "ru" ? "Превью обновляется сразу ↑" : "Live preview updates above ↑"}
                   </span>
                 </div>
 
                 {/* Preset buttons */}
                 <div style={{ display: 'flex', gap: '6px' }}>
                   {[
-                    { p: 'default', label: '🎯 Дефолт CS2' },
-                    { p: 'pro_cyan', label: '⚡ Pro Цветной' },
-                    { p: 'hidden', label: '🚫 Без прицела' },
+                    { p: 'default', label: lang === 'ru' ? '🎯 Дефолт CS2' : '🎯 Default CS2' },
+                    { p: 'pro_cyan', label: lang === 'ru' ? '⚡ Pro Цветной' : '⚡ Pro Color' },
+                    { p: 'hidden', label: lang === 'ru' ? '🚫 Без прицела' : '🚫 No Crosshair' },
                   ].map((c) => {
                     const isSelected = (clipSettings?.crosshairPreset || 'default') === c.p
                     return (
@@ -2825,15 +2868,15 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     }}
                   >
                     <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>
-                      Цвет прицела:
+                      {lang === "ru" ? "Цвет прицела:" : "Crosshair Color:"}
                     </span>
                     <div style={{ display: 'flex', gap: '10px' }}>
                       {[
-                        { name: 'cyan', hex: '#00ffff', label: 'Циан' },
-                        { name: 'green', hex: '#00ff00', label: 'Зелёный' },
-                        { name: 'yellow', hex: '#ffff00', label: 'Жёлтый' },
-                        { name: 'white', hex: '#ffffff', label: 'Белый' },
-                        { name: 'pink', hex: '#ff00ff', label: 'Розовый' },
+                        { name: 'cyan', hex: '#00ffff', label: lang === 'ru' ? 'Циан' : 'Cyan' },
+                        { name: 'green', hex: '#00ff00', label: lang === 'ru' ? 'Зелёный' : 'Green' },
+                        { name: 'yellow', hex: '#ffff00', label: lang === 'ru' ? 'Жёлтый' : 'Yellow' },
+                        { name: 'white', hex: '#ffffff', label: lang === 'ru' ? 'Белый' : 'White' },
+                        { name: 'pink', hex: '#ff00ff', label: lang === 'ru' ? 'Розовый' : 'Pink' },
                       ].map((col) => (
                         <button
                           key={col.name}
@@ -2905,13 +2948,13 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   <div>
                     <div style={{ fontSize: '12px', fontWeight: 700, color: '#f1f5f9' }}>
                       {clipSettings?.previewRecording !== false
-                        ? 'Режим записи: Видеть и слышать CS2'
-                        : 'Режим записи: Тихий фоновый'}
+                        ? (lang === 'ru' ? 'Режим записи: Видеть и слышать CS2' : 'Recording Mode: Full Video & Audio')
+                        : (lang === 'ru' ? 'Режим записи: Тихий фоновый' : 'Recording Mode: Silent Background')}
                     </div>
                     <div style={{ fontSize: '11px', color: '#64748b' }}>
                       {clipSettings?.previewRecording !== false
-                        ? 'Окно игры открыто на экране, воспроизводятся звуки выстрелов и эффекты'
-                        : 'Звук CS2 отключен (volume 0), чтобы не мешать работе за ПК'}
+                        ? (lang === 'ru' ? 'Окно игры открыто на экране, воспроизводятся звуки выстрелов и эффекты' : 'Game window is visible, firing sounds and effects are audible')
+                        : (lang === 'ru' ? 'Звук CS2 отключен (volume 0), чтобы не мешать работе за ПК' : 'CS2 audio muted (volume 0) for silent multitasking')}
                     </div>
                   </div>
                 </div>
@@ -2945,12 +2988,12 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   {clipSettings?.previewRecording !== false ? (
                     <>
                       <VolumeIcon size={13} color="#38bdf8" />
-                      <span>Звук и Окно: ВКЛ</span>
+                      <span>{lang === "ru" ? "Звук и Окно: ВКЛ" : "Audio & Window: ON"}</span>
                     </>
                   ) : (
                     <>
                       <VolumeMuteIcon size={13} color="#94a3b8" />
-                      <span>Тихий режим</span>
+                      <span>{lang === "ru" ? "Тихий режим" : "Silent Mode"}</span>
                     </>
                   )}
                 </button>
@@ -2959,29 +3002,48 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <div>
                   <div style={{ fontSize: '15px', fontWeight: 700, color: '#f1f5f9' }}>
-                    Мы создадим нарезку из {selectedHighlights.length} {selectedHighlights.length === 1 ? 'момента' : 'моментов'}
+                    {lang === 'ru' ? `Мы создадим нарезку из ${selectedHighlights.length} ${selectedHighlights.length === 1 ? 'момента' : 'моментов'}` : `Compiling montage from ${selectedHighlights.length} highlights`}
                   </div>
                   <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
-                    Примерное время генерации: ~{Math.max(1, Math.ceil(selectedHighlights.length * 0.8))} минут
+                    {lang === "ru" ? "Примерное время генерации:" : "Estimated render time:"} ~{Math.max(1, Math.ceil(selectedHighlights.length * 0.8))} минут
                   </div>
                 </div>
 
                 <button
                   type="button"
-                  className="btn btn-accent card-interactive"
+                  className="btn card-interactive"
                   onClick={handleStartMontageCreation}
                   disabled={isCompiling || selectedHighlights.length === 0}
-                  style={{ padding: '8px 20px', fontSize: '13px', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '8px' }}
+                  style={{
+                    padding: '14px 34px',
+                    fontSize: '15px',
+                    fontWeight: 900,
+                    letterSpacing: '0.04em',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(255, 255, 255, 0.4)',
+                    background: (isCompiling || selectedHighlights.length === 0)
+                      ? '#1e2433'
+                      : 'linear-gradient(135deg, #38bdf8 0%, #0284c7 100%)',
+                    color: (isCompiling || selectedHighlights.length === 0) ? '#64748b' : '#040711',
+                    boxShadow: (isCompiling || selectedHighlights.length === 0)
+                      ? 'none'
+                      : '0 0 30px rgba(56, 189, 248, 0.55), 0 4px 14px rgba(0, 0, 0, 0.5)',
+                    cursor: (isCompiling || selectedHighlights.length === 0) ? 'not-allowed' : 'pointer',
+                    transition: 'all 0.22s ease',
+                  }}
                 >
                   {isCompiling ? (
                     <>
-                      <LoaderIcon size={13} color="#090d16" />
-                      <span>Запись...</span>
+                      <LoaderIcon size={18} color="#64748b" />
+                      <span>{lang === "ru" ? "Идет нарезка в CS2..." : "Recording in CS2..."}</span>
                     </>
                   ) : (
                     <>
-                      <FilmIcon size={13} color="#090d16" />
-                      <span>Создать нарезку</span>
+                      <FilmIcon size={18} color="#040711" />
+                      <span>⚡ {lang === "ru" ? "СОЗДАТЬ НАРЕЗКУ" : "CREATE MONTAGE"} ({selectedHighlights.length})</span>
                     </>
                   )}
                 </button>
@@ -3001,7 +3063,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                     <span style={{ fontSize: '12px', fontWeight: 600, color: '#38bdf8', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                       <LoaderIcon size={12} color="#38bdf8" />
-                      <span>{compilationStatus || 'Идет обработка...'}</span>
+                      <span>{compilationStatus || (lang === 'ru' ? 'Идет обработка...' : 'Processing...')}</span>
                     </span>
                     <button
                       type="button"
@@ -3015,7 +3077,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         fontSize: '11px',
                       }}
                     >
-                      Открыть очередь
+                      {lang === "ru" ? "Открыть очередь" : "Open queue"}
                     </button>
                   </div>
                   <div
@@ -3052,10 +3114,10 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     <div>
                       <span style={{ fontSize: '13px', fontWeight: 700, color: '#4ade80', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                         <CheckIcon size={13} color="#4ade80" />
-                        <span>Готовый ролик: {compiledMontage.filename}</span>
+                        <span>{lang === 'ru' ? 'Готовый ролик:' : 'Finished video:'} {compiledMontage.filename}</span>
                       </span>
                       <span style={{ fontSize: '11px', color: '#94a3b8', display: 'block', marginTop: '2px' }}>
-                        Длительность: {compiledMontage.duration_seconds.toFixed(1)} с • {compiledMontage.total_clips} клипов • 1080p60 H.264
+                        {lang === 'ru' ? 'Длительность:' : 'Duration:'} {compiledMontage.duration_seconds.toFixed(1)} {lang === 'ru' ? 'с' : 's'} • {compiledMontage.total_clips} {lang === 'ru' ? 'клипов' : 'clips'} • 1080p60 H.264
                       </span>
                     </div>
                     <div style={{ display: 'flex', gap: '8px' }}>
@@ -3066,13 +3128,13 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                           setActiveModalVideo({
                             url: `/api/montage/${compiledMontage.filename}`,
                             title: compiledMontage.filename,
-                            subtitle: `Монтаж (${compiledMontage.duration_seconds.toFixed(1)} с, ${compiledMontage.total_clips} клипов)`,
+                            subtitle: lang === 'ru' ? `Монтаж (${compiledMontage.duration_seconds.toFixed(1)} с, ${compiledMontage.total_clips} клипов)` : `Montage (${compiledMontage.duration_seconds.toFixed(1)}s, ${compiledMontage.total_clips} clips)`,
                           })
                         }
                         style={{ padding: '6px 14px', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                       >
                         <PlayIcon size={11} color="#090d16" />
-                        <span>Смотреть в плеере</span>
+                        <span>{lang === "ru" ? "Смотреть в плеере" : "Watch in player"}</span>
                       </button>
                       <a
                         href={`/api/montage/${compiledMontage.filename}`}
@@ -3080,7 +3142,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         className="btn btn-secondary card-interactive"
                         style={{ padding: '6px 12px', fontSize: '12px', textDecoration: 'none' }}
                       >
-                        ⬇ Скачать MP4
+                        ⬇ {lang === "ru" ? "Скачать MP4" : "Download MP4"}
                       </a>
                     </div>
                   </div>
@@ -3112,7 +3174,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     >
                       <span style={{ color: '#64748b', fontWeight: 700 }}>#{i + 1}</span>
                       <span style={{ backgroundColor: '#1c1f28', padding: '2px 6px', borderRadius: '4px', fontWeight: 700, textAlign: 'center' }}>
-                        Р {h.round_num}
+                        {lang === 'ru' ? 'Р' : 'R'} {h.round_num}
                       </span>
                       <span style={{ color: '#94a3b8', fontFamily: 'monospace' }}>
                         {formatRoundTime(h.kill_start_tick)}
@@ -3140,7 +3202,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
         isOpen={!!activeModalVideo}
         onClose={() => setActiveModalVideo(null)}
         videoUrl={activeModalVideo?.url || ''}
-        title={activeModalVideo?.title || 'Нарезка матча'}
+        title={activeModalVideo?.title || (lang === 'ru' ? 'Нарезка матча' : 'Match Montage')}
         subtitle={activeModalVideo?.subtitle}
       />
 

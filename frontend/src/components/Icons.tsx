@@ -285,5 +285,29 @@ export const GrenadeIcon: React.FC<IconProps> = ({ size = 16, color = 'currentCo
     <line x1="8" y1="16" x2="16" y2="16" />
   </svg>
 )
+/** Esports champion crown icon (for Match MVP) */
+export const CrownIcon: React.FC<IconProps> = ({ size = 16, color = 'currentColor', className, style }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+    <path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7z" fill={color} fillOpacity="0.2" />
+    <path d="M5 20h14" />
+  </svg>
+)
 
+/** Team players / roster icon (for overall ranking) */
+export const UsersIcon: React.FC<IconProps> = ({ size = 16, color = 'currentColor', className, style }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+    <circle cx="9" cy="7" r="4" />
+    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+  </svg>
+)
 
+/** CS2 weapon / firearm icon */
+export const WeaponIcon: React.FC<IconProps> = ({ size = 16, color = 'currentColor', className, style }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} style={style}>
+    <path d="M3 14h5l2-2h8l2 2h2v-3h-2l-2-2h-6l-2 2H3v3z" fill={color} fillOpacity="0.2" />
+    <line x1="6" y1="14" x2="6" y2="18" />
+    <line x1="14" y1="12" x2="14" y2="16" />
+  </svg>
+)

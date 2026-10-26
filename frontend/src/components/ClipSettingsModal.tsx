@@ -6,8 +6,6 @@ import {
   RadarIcon,
   CameraIcon,
   SlidersIcon,
-  VolumeIcon,
-  VolumeMuteIcon,
   SkullIcon,
   FolderIcon,
   EyeIcon,
@@ -27,7 +25,7 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
   settings,
   onUpdateSettings,
 }) => {
-  const { t } = useTranslation()
+  const { t, lang } = useTranslation()
 
   if (!isOpen) return null
 
@@ -59,17 +57,15 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
               <div style={{ fontSize: '12px', fontWeight: 700, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <CameraIcon size={14} color="#38bdf8" />
-                <span>РЕЖИССЕР КАМЕРЫ (POV)</span>
+                <span>{lang === 'ru' ? 'РЕЖИССЕР КАМЕРЫ (POV)' : 'CAMERA DIRECTOR (POV)'}</span>
               </div>
               <span style={{ fontSize: '11px', color: '#38bdf8', fontWeight: 600 }}>
                 {settings.perspective === 'dynamic_killcam'
-                  ? '⚡ Килл-кам PRO (2 запуска)'
-                  : settings.perspective === 'victim'
-                  ? '💀 Лицо жертвы'
-                  : '🎬 Главный герой (ГГ)'}
+                  ? (lang === 'ru' ? '⚡ Килл-кам PRO (2 запуска)' : '⚡ Kill-cam PRO (2 runs)')
+                  : (lang === 'ru' ? '🎬 Главный герой (ГГ)' : '🎬 Hero POV')}
               </span>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
               <button
                 type="button"
                 className="btn card-interactive"
@@ -89,10 +85,10 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
                 }}
               >
                 <span style={{ fontSize: '11px', fontWeight: 700, color: (!settings.perspective || settings.perspective === 'attacker') ? '#38bdf8' : '#e2e8f0' }}>
-                  🎬 Главный Герой
+                  🎬 {lang === 'ru' ? 'Главный Герой' : 'Hero POV'}
                 </span>
                 <span style={{ fontSize: '9px', color: '#94a3b8', lineHeight: '1.2' }}>
-                  100% от автора фрагов (1 запуск CS2)
+                  {lang === 'ru' ? '100% от автора фрагов (1 запуск CS2)' : '100% from fragger POV (Single CS2 launch)'}
                 </span>
               </button>
 
@@ -115,36 +111,10 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
                 }}
               >
                 <span style={{ fontSize: '11px', fontWeight: 700, color: settings.perspective === 'dynamic_killcam' ? '#a78bfa' : '#e2e8f0' }}>
-                  ⚡ Килл-кам PRO
+                  ⚡ {lang === 'ru' ? 'Килл-кам PRO' : 'Kill-cam PRO'}
                 </span>
                 <span style={{ fontSize: '9px', color: '#94a3b8', lineHeight: '1.2' }}>
-                  Смерти жертв ➔ Откат ➔ Триумф ГГ (2 запуска)
-                </span>
-              </button>
-
-              <button
-                type="button"
-                className="btn card-interactive"
-                onClick={() => onUpdateSettings({ ...settings, perspective: 'victim' })}
-                style={{
-                  padding: '10px',
-                  textAlign: 'left',
-                  backgroundColor: settings.perspective === 'victim' ? 'rgba(239, 68, 68, 0.15)' : '#16181f',
-                  borderColor: settings.perspective === 'victim' ? '#ef4444' : '#282d3c',
-                  borderWidth: '1px',
-                  borderStyle: 'solid',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '4px',
-                }}
-              >
-                <span style={{ fontSize: '11px', fontWeight: 700, color: settings.perspective === 'victim' ? '#f87171' : '#e2e8f0' }}>
-                  💀 Только Жертва
-                </span>
-                <span style={{ fontSize: '9px', color: '#94a3b8', lineHeight: '1.2' }}>
-                  Камера от лица погибших врагов
+                  {lang === 'ru' ? 'Смерти жертв ➔ Откат ➔ Триумф ГГ (2 запуска)' : 'Victim POVs ➔ Rollback ➔ Hero Triumph (2 runs)'}
                 </span>
               </button>
             </div>
@@ -154,14 +124,14 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', backgroundColor: '#131620', padding: '14px', borderRadius: '10px', border: '1px solid #232838' }}>
             <div style={{ fontSize: '12px', fontWeight: 700, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <CrosshairIcon size={14} color="#38bdf8" />
-              <span>ФОРМАТ, РАЗРЕШЕНИЕ И УГОЛ ОБЗОРА (FOV)</span>
+              <span>{lang === 'ru' ? 'ФОРМАТ, РАЗРЕШЕНИЕ И УГОЛ ОБЗОРА (FOV)' : 'FORMAT, RESOLUTION & FOV'}</span>
             </div>
 
             {/* Aspect Ratio */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <span style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'block' }}>Формат экрана CS2</span>
-                <span style={{ fontSize: '10px', color: '#94a3b8' }}>4:3 делает модели врагов шире на 33%</span>
+                <span style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'block' }}>{lang === 'ru' ? 'Формат экрана CS2' : 'CS2 Aspect Ratio'}</span>
+                <span style={{ fontSize: '10px', color: '#94a3b8' }}>{lang === 'ru' ? '4:3 делает модели врагов шире на 33%' : '4:3 makes enemy models 33% wider'}</span>
               </div>
               <div style={{ display: 'flex', gap: '4px', backgroundColor: '#0d1017', padding: '2px', borderRadius: '6px', border: '1px solid #232734' }}>
                 <button
@@ -179,7 +149,7 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
                     color: settings.aspectRatio === '4:3' ? '#090d16' : '#94a3b8',
                   }}
                 >
-                  4:3 (Киберспорт)
+                  4:3 ({lang === 'ru' ? 'Киберспорт' : 'Esports'})
                 </button>
                 <button
                   type="button"
@@ -196,7 +166,7 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
                     color: settings.aspectRatio !== '4:3' ? '#090d16' : '#94a3b8',
                   }}
                 >
-                  16:9 (Широкий)
+                  16:9 ({lang === 'ru' ? 'Широкий' : 'Widescreen'})
                 </button>
               </div>
             </div>
@@ -205,10 +175,12 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid #1c202d', paddingTop: '8px' }}>
               <div>
                 <span style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'block' }}>
-                  {settings.aspectRatio === '4:3' ? 'Разрешение 4:3' : 'Разрешение 16:9'}
+                  {settings.aspectRatio === '4:3' ? (lang === 'ru' ? 'Разрешение 4:3' : '4:3 Resolution') : (lang === 'ru' ? 'Разрешение 16:9' : '16:9 Resolution')}
                 </span>
                 <span style={{ fontSize: '10px', color: '#94a3b8' }}>
-                  {settings.aspectRatio === '4:3' ? '1280x960 — выбор s1mple & m0NESY' : '1920x1080 — стандарт Full HD'}
+                  {settings.aspectRatio === '4:3'
+                    ? (lang === 'ru' ? '1280x960 — выбор s1mple & m0NESY' : '1280x960 — pro choice (s1mple & m0NESY)')
+                    : (lang === 'ru' ? '1920x1080 — стандарт Full HD' : '1920x1080 — Full HD Standard')}
                 </span>
               </div>
               <div style={{ display: 'flex', gap: '5px' }}>
@@ -305,7 +277,7 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
             {/* FPS & FOV row */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', borderTop: '1px solid #1c202d', paddingTop: '8px' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>Частота кадров (FPS)</span>
+                <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>{lang === 'ru' ? 'Частота кадров (FPS)' : 'Frame Rate (FPS)'}</span>
                 <div style={{ display: 'flex', gap: '4px' }}>
                   {([30, 60, 120] as const).map((fpsVal) => (
                     <button
@@ -332,10 +304,10 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>Угол обзора (FOV)</span>
+                <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>{lang === 'ru' ? 'Угол обзора (FOV)' : 'Field of View (FOV)'}</span>
                 <div style={{ display: 'flex', gap: '4px' }}>
                   {[
-                    { val: 68, label: '68° Дефолт' },
+                    { val: 68, label: lang === 'ru' ? '68° Дефолт' : '68° Default' },
                     { val: 90, label: '90° Pro' },
                     { val: 100, label: '100° Wide' },
                   ].map((f) => (
@@ -370,21 +342,21 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '8px' }}>
               <div style={{ fontSize: '12px', fontWeight: 700, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <RadarIcon size={14} color="#38bdf8" />
-                <span>МИНИ-КАРТА / 2D РАДАР</span>
+                <span>{lang === 'ru' ? 'МИНИ-КАРТА / 2D РАДАР' : 'MINI-MAP / 2D RADAR'}</span>
               </div>
               <span style={{ fontSize: '11px', color: '#10b981', fontWeight: 600 }}>
                 {settings.radarMode === 'broadcast'
-                  ? 'Турнирный BLAST'
+                  ? (lang === 'ru' ? 'Турнирный BLAST' : 'Tournament BLAST')
                   : settings.radarMode === 'hidden'
-                  ? 'Скрыт'
-                  : 'Круглый (Слежение)'}
+                  ? (lang === 'ru' ? 'Скрыт' : 'Hidden')
+                  : (lang === 'ru' ? 'Круглый (Слежение)' : 'Rotating (Focus)')}
               </span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
               {[
-                { id: 'player_focus', label: 'Круглый (Слежение)', desc: 'Центр на игроке, стандарт OBS' },
-                { id: 'broadcast', label: 'Турнирный BLAST', desc: 'Вся карта как на трансляциях' },
-                { id: 'hidden', label: 'Без радара', desc: 'Скрыт для чистого экрана' },
+                { id: 'player_focus', label: lang === 'ru' ? 'Круглый (Слежение)' : 'Rotating (Focus)', desc: lang === 'ru' ? 'Центр на игроке, стандарт OBS' : 'Center on player, OBS standard' },
+                { id: 'broadcast', label: lang === 'ru' ? 'Турнирный BLAST' : 'Tournament BLAST', desc: lang === 'ru' ? 'Вся карта как на трансляциях' : 'Full map overview as on stream' },
+                { id: 'hidden', label: lang === 'ru' ? 'Без радара' : 'No Radar', desc: lang === 'ru' ? 'Скрыт для чистого экрана' : 'Hidden for clean cinematic' },
               ].map((r) => {
                 const isSelected = (settings.radarMode || 'player_focus') === r.id
                 return (
@@ -419,7 +391,7 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', backgroundColor: '#131620', padding: '14px', borderRadius: '10px', border: '1px solid #232838' }}>
             <div style={{ fontSize: '12px', fontWeight: 700, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
               <SlidersIcon size={14} color="#38bdf8" />
-              <span>ТАКТИЧЕСКИЕ ТУМБЛЕРЫ [ВКЛ / ВЫКЛ]</span>
+              <span>{lang === 'ru' ? 'ТАКТИЧЕСКИЕ ТУМБЛЕРЫ [ВКЛ / ВЫКЛ]' : 'TACTICAL TOGGLES [ON / OFF]'}</span>
             </div>
 
             {/* Switch 1: REAL OBS Mode */}
@@ -427,15 +399,15 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
               <div>
                 <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <CameraIcon size={13} color="#38bdf8" />
-                  <span>Режим REAL OBS (Вид живого матча)</span>
+                  <span>{lang === 'ru' ? 'Режим REAL OBS (Вид живого матча)' : 'REAL OBS Mode (Live Match View)'}</span>
                 </div>
                 <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-                  1:1 как при живой игре: скрывает спектаторскую плашку и анимированные аватары
+                  {lang === 'ru' ? '1:1 как при живой игре: скрывает спектаторскую плашку и анимированные аватары' : '1:1 live gameplay: hides spectator bar and animated avatars'}
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '10px', fontWeight: 700, color: settings.hudMode === 'real' ? '#38bdf8' : '#64748b' }}>
-                  {settings.hudMode === 'real' ? 'ВКЛ' : 'ВЫКЛ'}
+                  {settings.hudMode === 'real' ? (lang === 'ru' ? 'ВКЛ' : 'ON') : (lang === 'ru' ? 'ВЫКЛ' : 'OFF')}
                 </span>
                 <label className="toggle-switch">
                   <input
@@ -461,15 +433,15 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
               <div>
                 <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <EyeIcon size={13} color="#38bdf8" />
-                  <span>Силуэты сквозь стены (X-Ray)</span>
+                  <span>{lang === 'ru' ? 'Силуэты сквозь стены (X-Ray)' : 'Player Silhouettes (X-Ray)'}</span>
                 </div>
                 <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-                  Подсветка контуров игроков через стены (spec_show_xray)
+                  {lang === 'ru' ? 'Подсветка контуров игроков через стены (spec_show_xray)' : 'Player glowing outlines through obstacles (spec_show_xray)'}
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '10px', fontWeight: 700, color: settings.xray !== false ? '#38bdf8' : '#64748b' }}>
-                  {settings.xray !== false ? 'ВКЛ' : 'ВЫКЛ'}
+                  {settings.xray !== false ? (lang === 'ru' ? 'ВКЛ' : 'ON') : (lang === 'ru' ? 'ВЫКЛ' : 'OFF')}
                 </span>
                 <label className="toggle-switch">
                   <input
@@ -487,15 +459,15 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
               <div>
                 <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <CrosshairIcon size={13} color="#38bdf8" />
-                  <span>Ники над головами</span>
+                  <span>{lang === 'ru' ? 'Ники над головами' : 'Overhead Player Tags'}</span>
                 </div>
                 <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-                  Имена и шкала здоровья над персонажами (cl_teamid_overhead_mode)
+                  {lang === 'ru' ? 'Имена и шкала здоровья над персонажами (cl_teamid_overhead_mode)' : 'Player names & HP bars above character models (cl_teamid_overhead_mode)'}
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '10px', fontWeight: 700, color: settings.overheadMode !== false ? '#38bdf8' : '#64748b' }}>
-                  {settings.overheadMode !== false ? 'ВКЛ' : 'ВЫКЛ'}
+                  {settings.overheadMode !== false ? (lang === 'ru' ? 'ВКЛ' : 'ON') : (lang === 'ru' ? 'ВЫКЛ' : 'OFF')}
                 </span>
                 <label className="toggle-switch">
                   <input
@@ -513,15 +485,15 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
               <div>
                 <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <SkullIcon size={13} color="#38bdf8" />
-                  <span>Только Киллфид (Чистый экран)</span>
+                  <span>{lang === 'ru' ? 'Только Киллфид (Чистый экран)' : 'Killfeed Only (Clean Screen)'}</span>
                 </div>
                 <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-                  Скрывает полосы патронов и HP, оставляя только уведомления о фрагах
+                  {lang === 'ru' ? 'Скрывает полосы патронов и HP, оставляя только уведомления о фрагах' : 'Hides HP and ammo bars, keeping only kill notifications'}
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '10px', fontWeight: 700, color: settings.killfeedOnly ? '#38bdf8' : '#64748b' }}>
-                  {settings.killfeedOnly ? 'ВКЛ' : 'ВЫКЛ'}
+                  {settings.killfeedOnly ? (lang === 'ru' ? 'ВКЛ' : 'ON') : (lang === 'ru' ? 'ВЫКЛ' : 'OFF')}
                 </span>
                 <label className="toggle-switch">
                   <input
@@ -539,15 +511,15 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
               <div>
                 <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <ActivityIcon size={13} color="#38bdf8" />
-                  <span>Счётчик живых (5 v 3 цифрами)</span>
+                  <span>{lang === 'ru' ? 'Счётчик живых (5 v 3 цифрами)' : 'Alive Players Counter (5 v 3)'}</span>
                 </div>
                 <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-                  Компактные цифры счета живых игроков сверху вместо больших аватаров
+                  {lang === 'ru' ? 'Компактные цифры счета живых игроков сверху вместо больших аватаров' : 'Compact living players score counter at top instead of big avatars'}
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '10px', fontWeight: 700, color: settings.teamcounterMode ? '#38bdf8' : '#64748b' }}>
-                  {settings.teamcounterMode ? 'ВКЛ' : 'ВЫКЛ'}
+                  {settings.teamcounterMode ? (lang === 'ru' ? 'ВКЛ' : 'ON') : (lang === 'ru' ? 'ВЫКЛ' : 'OFF')}
                 </span>
                 <label className="toggle-switch">
                   <input
@@ -569,13 +541,13 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
                   style={{ height: '18px', maxWidth: '55px', objectFit: 'contain' }}
                 />
                 <div>
-                  <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600 }}>Водяной знак dem.Toshka</div>
-                  <div style={{ fontSize: '10px', color: '#94a3b8' }}>Фирменный логотип в верхнем углу клипа</div>
+                  <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600 }}>{lang === 'ru' ? 'Водяной знак dem.Toshka' : 'dem.Toshka Watermark'}</div>
+                  <div style={{ fontSize: '10px', color: '#94a3b8' }}>{lang === 'ru' ? 'Фирменный логотип в верхнем углу клипа' : 'Subtle studio logo in top corner of clip'}</div>
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <span style={{ fontSize: '10px', fontWeight: 700, color: settings.watermark !== false ? '#38bdf8' : '#64748b' }}>
-                  {settings.watermark !== false ? 'ВКЛ' : 'ВЫКЛ'}
+                  {settings.watermark !== false ? (lang === 'ru' ? 'ВКЛ' : 'ON') : (lang === 'ru' ? 'ВЫКЛ' : 'OFF')}
                 </span>
                 <label className="toggle-switch">
                   <input
@@ -587,50 +559,24 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
                 </label>
               </div>
             </div>
-
-            {/* Switch 7: Preview Recording Window & Sound */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', backgroundColor: '#161922', borderRadius: '6px', border: '1px solid #232738' }}>
-              <div>
-                <div style={{ fontSize: '12px', color: '#f1f5f9', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  {settings.previewRecording !== false ? <VolumeIcon size={13} color="#38bdf8" /> : <VolumeMuteIcon size={13} color="#94a3b8" />}
-                  <span>Окно CS2 и звук записи</span>
-                </div>
-                <div style={{ fontSize: '10px', color: '#94a3b8' }}>
-                  {settings.previewRecording !== false ? 'Окно игры видно, звук включен' : 'Тихий фоновый режим без звука'}
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '10px', fontWeight: 700, color: settings.previewRecording !== false ? '#38bdf8' : '#64748b' }}>
-                  {settings.previewRecording !== false ? 'ВКЛ' : 'ТИХИЙ'}
-                </span>
-                <label className="toggle-switch">
-                  <input
-                    type="checkbox"
-                    checked={settings.previewRecording !== false}
-                    onChange={(e) => onUpdateSettings({ ...settings, previewRecording: e.target.checked })}
-                  />
-                  <span className="toggle-slider" />
-                </label>
-              </div>
-            </div>
           </div>
 
           {/* 5. HUD SCALE, PRE/POST-ROLL & CROSSHAIR */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', backgroundColor: '#131620', padding: '14px', borderRadius: '10px', border: '1px solid #232838' }}>
             <div style={{ fontSize: '12px', fontWeight: 700, color: '#e2e8f0', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <CrosshairIcon size={14} color="#38bdf8" />
-              <span>РАЗМЕР HUD, ПРИЦЕЛ И ТАЙМИНГИ</span>
+              <span>{lang === 'ru' ? 'РАЗМЕР HUD, ПРИЦЕЛ И ТАЙМИНГИ' : 'HUD SCALE, CROSSHAIR & TIMINGS'}</span>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               {/* HUD Scale */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>Размер HUD</span>
+                <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>{lang === 'ru' ? 'Размер HUD' : 'HUD Scale'}</span>
                 <div style={{ display: 'flex', gap: '4px' }}>
                   {[
-                    { scale: 0.95, label: '95% Компакт' },
+                    { scale: 0.95, label: lang === 'ru' ? '95% Компакт' : '95% Compact' },
                     { scale: 1.0, label: '100% 1:1' },
-                    { scale: 1.15, label: '115% Кибер' },
+                    { scale: 1.15, label: lang === 'ru' ? '115% Кибер' : '115% Esports' },
                   ].map((s) => (
                     <button
                       key={s.scale}
@@ -658,12 +604,12 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
 
               {/* Crosshair Preset */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>Прицел в CS2</span>
+                <span style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600 }}>{lang === 'ru' ? 'Прицел в CS2' : 'CS2 Crosshair'}</span>
                 <div style={{ display: 'flex', gap: '4px' }}>
                   {[
-                    { p: 'default', label: 'Дефолт' },
-                    { p: 'pro_cyan', label: 'Pro Цветной' },
-                    { p: 'hidden', label: 'Скрыт' },
+                    { p: 'default', label: lang === 'ru' ? 'Дефолт' : 'Default' },
+                    { p: 'pro_cyan', label: lang === 'ru' ? 'Pro Цветной' : 'Pro Color' },
+                    { p: 'hidden', label: lang === 'ru' ? 'Скрыт' : 'Hidden' },
                   ].map((c) => {
                     const isSelected = (settings.crosshairPreset || 'default') === c.p
                     return (
@@ -703,7 +649,7 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', borderTop: '1px solid #1c202d', paddingTop: '8px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#94a3b8', marginBottom: '4px' }}>
-                  Секунды до фрага (Pre-roll)
+                  {lang === 'ru' ? 'Секунды до фрага (Pre-roll)' : 'Pre-roll lead time (seconds)'}
                 </label>
                 <input
                   type="number"
@@ -725,7 +671,7 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, color: '#94a3b8', marginBottom: '4px' }}>
-                  Секунды после фрага (Post-roll)
+                  {lang === 'ru' ? 'Секунды после фрага (Post-roll)' : 'Post-roll tail time (seconds)'}
                 </label>
                 <input
                   type="number"
@@ -751,10 +697,10 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
 
         <div className="modal-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: '12px', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <FolderIcon size={14} color="#94a3b8" /> Сохранение клипов в <code>renders/</code>
+            <FolderIcon size={14} color="#94a3b8" /> {lang === 'ru' ? 'Сохранение клипов в' : 'Saving clips to'} <code>renders/</code>
           </div>
           <button className="btn btn-primary" onClick={onClose} style={{ padding: '6px 18px', fontWeight: 700 }}>
-            Применить настройки
+            {lang === 'ru' ? 'Применить настройки' : 'Apply Settings'}
           </button>
         </div>
       </div>

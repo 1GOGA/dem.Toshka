@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from '../i18n'
 
 interface TournamentHudModalProps {
   isOpen: boolean
@@ -6,6 +7,7 @@ interface TournamentHudModalProps {
 }
 
 export const TournamentHudModal: React.FC<TournamentHudModalProps> = ({ isOpen, onClose }) => {
+  const { lang } = useTranslation()
   const [copied, setCopied] = useState(false)
 
   if (!isOpen) return null
@@ -51,7 +53,7 @@ export const TournamentHudModal: React.FC<TournamentHudModalProps> = ({ isOpen, 
       >
         <div className="modal-header">
           <h3 className="modal-title" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            🏆 Турнирные HUD и Сторонние Оверлеи CS2
+            {lang === 'ru' ? '🏆 Турнирные HUD и Сторонние Оверлеи CS2' : '🏆 Tournament HUDs & Third-Party Overlays'}
           </h3>
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
@@ -69,9 +71,9 @@ export const TournamentHudModal: React.FC<TournamentHudModalProps> = ({ isOpen, 
               color: '#c7d2fe',
             }}
           >
-            <strong>Как делают кастомный HUD на турнирах (BLAST, PGL, ESL)?</strong>
+            <strong>{lang === 'ru' ? 'Как делают кастомный HUD на турнирах (BLAST, PGL, ESL)?' : 'How custom HUDs are made at tournaments (BLAST, PGL, ESL)?'}</strong>
             <p style={{ margin: '6px 0 0 0', color: '#94a3b8' }}>
-              В Counter-Strike 2 официальный HUD игры отключают через <code>cl_drawhud 0</code>, а поверх видео накладывают веб-интерфейс, получающий данные о матче в реальном времени через <strong>CS2 Game State Integration (GSI)</strong>.
+              {lang === 'ru' ? <>В Counter-Strike 2 официальный HUD игры отключают через <code>cl_drawhud 0</code>, а поверх видео накладывают веб-интерфейс, получающий данные о матче в реальном времени через <strong>CS2 Game State Integration (GSI)</strong>.</> : <>In Counter-Strike 2, the built-in game HUD is disabled via <code>cl_drawhud 0</code>, and web overlays are displayed on top, receiving match data in real time via <strong>CS2 Game State Integration (GSI)</strong>.</>}
             </p>
           </div>
 
@@ -98,7 +100,7 @@ export const TournamentHudModal: React.FC<TournamentHudModalProps> = ({ isOpen, 
                   </span>
                 </div>
                 <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>
-                  Самый популярный опенсорсный инструмент для турнирных трансляций. Поддерживает десятки кастомных скинов (BLAST, PGL, IEM), аватарки команд, полоски здоровья и статистику.
+                  {lang === 'ru' ? 'Самый популярный опенсорсный инструмент для турнирных трансляций. Поддерживает десятки кастомных скинов (BLAST, PGL, IEM), аватарки команд, полоски здоровья и статистику.' : 'The most popular open-source tool for tournament broadcasts. Supports custom skins (BLAST, PGL, IEM), team avatars, health bars, and statistics.'}
                 </p>
               </div>
               <a
@@ -108,7 +110,7 @@ export const TournamentHudModal: React.FC<TournamentHudModalProps> = ({ isOpen, 
                 className="btn btn-secondary"
                 style={{ fontSize: '12px', textAlign: 'center', textDecoration: 'none', padding: '6px 12px' }}
               >
-                ↗ Открыть Lexogrine Website
+                ↗ {lang === 'ru' ? 'Открыть Lexogrine Website' : 'Open Lexogrine Website'}
               </a>
             </div>
 
@@ -133,7 +135,7 @@ export const TournamentHudModal: React.FC<TournamentHudModalProps> = ({ isOpen, 
                   </span>
                 </div>
                 <p style={{ fontSize: '12px', color: '#94a3b8', margin: 0 }}>
-                  Легковесные HTML5/React оверлеи для OBS и видеоредакторов. Открытый исходный код на GitHub, легко менять цвета и шрифты под свои мувики.
+                  {lang === 'ru' ? 'Легковесные HTML5/React оверлеи для OBS и видеоредакторов. Открытый исходный код на GitHub, легко менять цвета и шрифты под свои мувики.' : 'Lightweight HTML5/React overlays for OBS and video editors. Open-source on GitHub, easy to tweak colors and fonts for your highlights.'}
                 </p>
               </div>
               <a
@@ -158,20 +160,20 @@ export const TournamentHudModal: React.FC<TournamentHudModalProps> = ({ isOpen, 
             }}
           >
             <div style={{ fontSize: '13px', fontWeight: 700, color: '#f1f5f9', marginBottom: '8px' }}>
-              Как использовать кастомный HUD в нашей студии:
+              {lang === 'ru' ? 'Как использовать кастомный HUD в нашей студии:' : 'How to use custom HUD in Highlights Studio:'}
             </div>
             <ol style={{ margin: 0, paddingLeft: '18px', fontSize: '12px', color: '#94a3b8', display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <li>
-                В настройках съемки выберите <strong>«Без HUD (Cinematic No-HUD)»</strong> или <strong>«Только Killfeed»</strong>.
+                {lang === 'ru' ? <>В настройках съемки выберите <strong>«Без HUD (Cinematic No-HUD)»</strong> или <strong>«Только Killfeed»</strong>.</> : <>In capture settings, select <strong>"Cinematic No-HUD"</strong> or <strong>"Killfeed Only"</strong>.</>}
               </li>
               <li>
-                Запустите съемку клипов — CS2 снимет чистый 1080p60 видеоряд без лишних пикселей стандартного интерфейса.
+                {lang === 'ru' ? 'Запустите съемку клипов — CS2 снимет чистый 1080p60 видеоряд без лишних пикселей стандартного интерфейса.' : 'Start recording clips — CS2 will capture clean 1080p60 footage without standard UI clutter.'}
               </li>
               <li>
-                Запустите <strong>Lexogrine HUD Manager</strong> на вашем ПК, чтобы просматривать демку с профессиональным турнирным скином в реальном времени.
+                {lang === 'ru' ? <>Запустите <strong>Lexogrine HUD Manager</strong> на вашем ПК, чтобы просматривать демку с профессиональным турнирным скином в реальном времени.</> : <>Run <strong>Lexogrine HUD Manager</strong> on your PC to view the demo with a professional tournament skin in real time.</>}
               </li>
               <li>
-                Или наложите оверлей поверх готового MP4 в видеоредакторе (Premiere Pro, CapCut, DaVinci).
+                {lang === 'ru' ? 'Или наложите оверлей поверх готового MP4 в видеоредакторе (Premiere Pro, CapCut, DaVinci).' : 'Or composite the overlay on top of finished MP4 clips in Premiere Pro, CapCut, or DaVinci.'}
               </li>
             </ol>
           </div>
@@ -187,7 +189,7 @@ export const TournamentHudModal: React.FC<TournamentHudModalProps> = ({ isOpen, 
           >
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
               <span style={{ fontSize: '12px', fontWeight: 700, color: '#cbd5e1' }}>
-                📄 Конфиг GSI: <code>gamestate_integration_hud.cfg</code>
+                {lang === 'ru' ? '📄 Конфиг GSI: ' : '📄 GSI Config: '}<code>gamestate_integration_hud.cfg</code>
               </span>
               <button
                 type="button"
@@ -195,7 +197,7 @@ export const TournamentHudModal: React.FC<TournamentHudModalProps> = ({ isOpen, 
                 onClick={handleCopy}
                 style={{ padding: '4px 10px', fontSize: '11px' }}
               >
-                {copied ? '✓ Скопировано!' : '📋 Копировать конфиг'}
+                {copied ? (lang === 'ru' ? '✓ Скопировано!' : '✓ Copied!') : (lang === 'ru' ? '📋 Копировать конфиг' : '📋 Copy Config')}
               </button>
             </div>
             <pre
@@ -214,14 +216,14 @@ export const TournamentHudModal: React.FC<TournamentHudModalProps> = ({ isOpen, 
               {gsiConfigSample}
             </pre>
             <div style={{ fontSize: '11px', color: '#64748b', marginTop: '6px' }}>
-              Положите этот файл в папку <code>game/csgo/cfg/</code> для автоматической отправки событий матча в сторонний HUD.
+              {lang === 'ru' ? <>Положите этот файл в папку <code>game/csgo/cfg/</code> для автоматической отправки событий матча в сторонний HUD.</> : <>Place this file in <code>game/csgo/cfg/</code> for automatic CS2 match events delivery to third-party HUD.</>}
             </div>
           </div>
         </div>
 
         <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <button type="button" className="btn btn-primary" onClick={onClose}>
-            Понятно, закрыть
+            {lang === 'ru' ? 'Понятно, закрыть' : 'Got it, close'}
           </button>
         </div>
       </div>

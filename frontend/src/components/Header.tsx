@@ -30,7 +30,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSettings,
   currentDemo,
 }) => {
-  const { t } = useTranslation()
+  const { t, lang } = useTranslation()
 
   return (
     <header className="app-header">
@@ -75,7 +75,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           className={`nav-tab nav-tab-studio ${activeTab === 'studio' ? 'active' : ''}`}
           onClick={() => onTabChange('studio')}
-          title="Студия хайлайтов CS2 — выбор раундов, фильтры игроков, HLAE/OBS настройки и рендер"
+          title={lang === 'ru' ? 'Студия хайлайтов CS2 — выбор раундов, фильтры игроков, HLAE/OBS настройки и рендер' : 'CS2 Highlights Studio — round selection, player filters, HLAE/OBS settings and render'}
         >
           <ClapperboardIcon size={15} color={activeTab === 'studio' ? '#38bdf8' : '#38bdf8'} />
           <span>{t('nav.studio')}</span>
@@ -85,7 +85,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           className={`nav-tab ${activeTab === 'replay' ? 'active' : ''}`}
           onClick={() => onTabChange('replay')}
-          title="Тактический 2D Реплей — радар, траектории игроков и таймеры гранат"
+          title={lang === 'ru' ? 'Тактический 2D Реплей — радар, траектории игроков и таймеры гранат' : 'Tactical 2D Replay — radar, player paths and grenade timers'}
         >
           <RadarIcon size={15} color={activeTab === 'replay' ? '#38bdf8' : 'currentColor'} />
           <span>{t('nav.replay')}</span>
@@ -95,7 +95,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           className={`nav-tab ${activeTab === 'overview' ? 'active' : ''}`}
           onClick={() => onTabChange('overview')}
-          title="Аналитика матча — таблица счёта, ADR, HS%, раунды и фраги"
+          title={lang === 'ru' ? 'Аналитика матча — таблица счёта, ADR, HS%, раунды и фраги' : 'Match Analytics — scoreboard, ADR, HS%, rounds and kills'}
         >
           <ChartIcon size={15} color={activeTab === 'overview' ? '#38bdf8' : 'currentColor'} />
           <span>{t('nav.match')}</span>
@@ -105,7 +105,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           className={`nav-tab ${activeTab === 'clips' ? 'active' : ''}`}
           onClick={() => onTabChange('clips')}
-          title="Готовые клипы и монтаж — видеотека MP4 и объединение в ролики"
+          title={lang === 'ru' ? 'Готовые клипы и монтаж — видеотека MP4 и объединение в ролики' : 'Clips & Montage — MP4 gallery and highlight compilation'}
         >
           <FilmIcon size={15} color={activeTab === 'clips' ? '#38bdf8' : 'currentColor'} />
           <span>{t('nav.clips')}</span>
@@ -115,7 +115,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           className={`nav-tab ${activeTab === 'library' ? 'active' : ''}`}
           onClick={() => onTabChange('library')}
-          title="Библиотека CS2 демок — импорт .dem, парсинг и переключение матчей"
+          title={lang === 'ru' ? 'Библиотека CS2 демок — импорт .dem, парсинг и переключение матчей' : 'CS2 Demo Library — import .dem, parse and switch matches'}
         >
           <FolderIcon size={15} color={activeTab === 'library' ? '#38bdf8' : 'currentColor'} />
           <span>{t('nav.library')}</span>
@@ -125,7 +125,7 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           className={`nav-tab ${activeTab === 'settings' ? 'active' : ''}`}
           onClick={() => onTabChange('settings')}
-          title="Настройки — CS2 Config Shield, HLAE, каталоги сохранения и очистка"
+          title={lang === 'ru' ? 'Настройки — CS2 Config Shield, HLAE, каталоги сохранения и очистка' : 'Settings — CS2 Config Shield, HLAE, save directories and cleanup'}
         >
           <SettingsIcon size={15} color={activeTab === 'settings' ? '#38bdf8' : 'currentColor'} />
           <span>{t('nav.settings')}</span>
@@ -188,7 +188,7 @@ export const Header: React.FC<HeaderProps> = ({
           <div
             className="header-demo-pill"
             onClick={() => onTabChange('library')}
-            title="Активная демка. Нажмите для выбора другой в Библиотеке"
+            title={lang === 'ru' ? 'Активная демка. Нажмите для выбора другой в Библиотеке' : 'Active demo. Click to select another in Library'}
           >
             <span className="header-demo-map">
               {(currentDemo.map_name || 'Match').replace('de_', '').toUpperCase()}
@@ -201,10 +201,10 @@ export const Header: React.FC<HeaderProps> = ({
             type="button"
             className="header-no-demo-pill"
             onClick={() => onTabChange('library')}
-            title="Нажмите, чтобы выбрать или загрузить демку в Библиотеке"
+            title={lang === 'ru' ? 'Нажмите, чтобы выбрать или загрузить демку в Библиотеке' : 'Click to select or upload a demo in Library'}
           >
             <FolderIcon size={12} color="#38bdf8" />
-            <span>Выбрать демку</span>
+            <span>{lang === 'ru' ? 'Выбрать демку' : 'Select Demo'}</span>
           </button>
         )}
 
@@ -219,7 +219,11 @@ export const Header: React.FC<HeaderProps> = ({
         )}
 
         {/* Render Queue Modal Trigger */}
-        <button className="btn btn-queue" onClick={onOpenQueue} title="Очередь рендера и мониторинг задач">
+        <button
+          className="btn btn-queue"
+          onClick={onOpenQueue}
+          title={lang === 'ru' ? 'Очередь рендера и мониторинг задач' : 'Render queue and job monitoring'}
+        >
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
           </svg>

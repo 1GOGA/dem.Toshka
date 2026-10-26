@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
 import type { ReplayPlayerState, ReplayKillItem, ReplayGrenadeItem, ReplayBombData } from '../types'
 import { SkullIcon, SmokeIcon, FlameIcon, FlashIcon, GrenadeIcon } from './Icons'
+import { useTranslation } from '../i18n'
 
 export interface TacticalReplayRadarProps {
   radarImageUrl?: string
@@ -41,6 +42,7 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
   onJumpToTick,
   maxContainerHeight = '560px',
 }) => {
+  const { lang } = useTranslation()
   // Zoom & Pan state
   const [zoom, setZoom] = useState<number>(1)
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
@@ -53,8 +55,8 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
   // Dynamic scaling for nicknames so they shrink and remain unobtrusive when zooming in
   const nameScale = useMemo(() => {
     // Base inverse zoom exponential: at zoom 1.0 -> 1.0, at zoom 2.0 -> 0.39, at zoom 3.0 -> 0.22
-    const base = 1 / Math.pow(zoom, 1.35)
-    if (nameDensity === 'compact') return base * 0.7
+    const base = Math.max(0.55, 1 / Math.pow(zoom, 0.55))
+    if (nameDensity === 'compact') return base * 0.8
     if (nameDensity === 'minimal') return 0
     return Math.max(0.2, base)
   }, [zoom, nameDensity])
@@ -229,18 +231,18 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
           {bomb && currentTick >= bomb.plant_tick && currentTick <= bomb.plant_tick + 40 * tickrate && (
             <div
               onClick={() => onJumpToTick?.(bomb.plant_tick)}
-              title="Бомба C4 установлена. Клик для перехода к моменту установки"
+              title={lang === 'ru' ? 'Бомба C4 установлена. Клик для перехода к моменту установки' : 'C4 Bomb planted. Click to jump to plant tick'}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '5px',
-                padding: '3px 8px',
+                padding: '2px 6px',
                 borderRadius: '6px',
                 backgroundColor: 'rgba(220, 38, 38, 0.95)',
                 border: '1.5px solid #ffffff',
                 boxShadow: '0 0 14px rgba(239, 68, 68, 0.9)',
                 color: '#ffffff',
-                fontSize: '11px',
+                fontSize: '10px',
                 fontWeight: 900,
                 fontFamily: 'monospace',
                 animation: 'radarBombPing 1s ease-out infinite',
@@ -248,7 +250,7 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
               }}
             >
               <span>💣</span>
-              <span>ПЛЕНТ {bomb.site || 'CS2'}:</span>
+              <span>{lang === 'ru' ? 'ПЛЕНТ' : 'PLANT'} {bomb.site || 'CS2'}:</span>
               <span style={{ color: '#fef08a' }}>
                 {Math.max(0, 40 - (currentTick - bomb.plant_tick) / tickrate).toFixed(1)}s
               </span>
@@ -264,7 +266,7 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
               <div
                 key={`hud-util-${g.id}`}
                 onClick={() => onJumpToTick?.(g.detonate_tick)}
-                title={`Клик для перехода к подрыву: ${isMolotov ? 'Молотов' : 'Смок'} (${g.thrower_name})`}
+                title={lang === 'ru' ? `Клик для перехода к подрыву: ${isMolotov ? 'Молотов' : 'Смок'} (${g.thrower_name})` : `Click to jump to detonation: ${isMolotov ? 'Molotov' : 'Smoke'} (${g.thrower_name})`}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -311,7 +313,11 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
           onClick={() => {
             setNameDensity((prev) => (prev === 'auto' ? 'compact' : prev === 'compact' ? 'minimal' : 'auto'))
           }}
-          title={`Масштаб ников: ${nameDensity === 'auto' ? 'Авто (уменьшаются при зуме)' : nameDensity === 'compact' ? 'Мини (сокращённые)' : 'Скрыть (только точки)'}`}
+          title={
+            lang === 'ru'
+              ? `Масштаб ников: ${nameDensity === 'auto' ? 'Авто (уменьшаются при зуме)' : nameDensity === 'compact' ? 'Мини (сокращённые)' : 'Скрыть (только точки)'}`
+              : `Player Names Density: ${nameDensity === 'auto' ? 'Auto (scale with zoom)' : nameDensity === 'compact' ? 'Mini (compact tags)' : 'Hidden (dots only)'}`
+          }
           style={{
             backgroundColor: 'rgba(11, 15, 23, 0.92)',
             backdropFilter: 'blur(8px)',
@@ -328,9 +334,13 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
             boxShadow: '0 4px 14px rgba(0, 0, 0, 0.6)',
           }}
         >
-          <span>👥 Ники:</span>
+          <span>👥 {lang === 'ru' ? 'Ники:' : 'Names:'}</span>
           <span style={{ color: nameDensity === 'minimal' ? '#94a3b8' : '#ffffff' }}>
-            {nameDensity === 'auto' ? 'Авто' : nameDensity === 'compact' ? 'Мини' : 'Выкл'}
+            {nameDensity === 'auto'
+              ? (lang === 'ru' ? 'Авто' : 'Auto')
+              : nameDensity === 'compact'
+              ? (lang === 'ru' ? 'Мини' : 'Mini')
+              : (lang === 'ru' ? 'Выкл' : 'Off')}
           </span>
         </button>
 
@@ -352,7 +362,7 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
           type="button"
           onClick={handleZoomOut}
           disabled={zoom <= 1}
-          title="Отдалить (-)"
+          title={lang === 'ru' ? 'Отдалить (-)' : 'Zoom Out (-)'}
           style={{
             background: 'transparent',
             border: 'none',
@@ -369,7 +379,7 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
         <button
           type="button"
           onClick={handleResetZoom}
-          title="Сбросить масштаб (100%)"
+          title={lang === 'ru' ? 'Сбросить масштаб (100%)' : 'Reset Zoom (100%)'}
           style={{
             fontSize: '11px',
             color: '#94a3b8',
@@ -388,7 +398,7 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
           type="button"
           onClick={handleZoomIn}
           disabled={zoom >= 3.5}
-          title="Приблизить (+)"
+          title={lang === 'ru' ? 'Приблизить (+)' : 'Zoom In (+)'}
           style={{
             background: 'transparent',
             border: 'none',
@@ -434,7 +444,7 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
                 <strong>{hoveredKill.attacker_name}</strong> [{hoveredKill.weapon || 'kill'}] ➔{' '}
                 <strong>{hoveredKill.victim_name}</strong>
               </span>
-              <span style={{ color: '#64748b', fontSize: '10px' }}>(клик для перехода к тику)</span>
+              <span style={{ color: '#64748b', fontSize: '10px' }}>{lang === 'ru' ? '(клик для перехода к тику)' : '(click to jump to tick)'}</span>
             </>
           )}
           {hoveredGrenade && !hoveredKill && (
@@ -446,17 +456,17 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
               <span>
                 <strong>
                   {hoveredGrenade.type === 'smoke'
-                    ? 'Дым'
+                    ? (lang === 'ru' ? 'Дым' : 'Smoke')
                     : hoveredGrenade.type === 'molotov'
-                    ? 'Огонь / Молотов'
+                    ? (lang === 'ru' ? 'Огонь / Молотов' : 'Incendiary / Molotov')
                     : hoveredGrenade.type === 'flash'
-                    ? 'Световая граната'
-                    : 'Осколочная граната (HE)'}
+                    ? (lang === 'ru' ? 'Световая граната' : 'Flashbang')
+                    : (lang === 'ru' ? 'Осколочная граната (HE)' : 'HE Grenade')}
                 </strong>
-                {hoveredGrenade.thrower_name ? ` (бросил: ${hoveredGrenade.thrower_name})` : ''}
+                {hoveredGrenade.thrower_name ? (lang === 'ru' ? ` (бросил: ${hoveredGrenade.thrower_name})` : ` (thrown by: ${hoveredGrenade.thrower_name})`) : ''}
                 {hoveredGrenade.type === 'smoke' || hoveredGrenade.type === 'molotov' ? (
                   <span style={{ color: '#38bdf8', marginLeft: '6px' }}>
-                    Осталось: {Math.max(0, (hoveredGrenade.end_tick - currentTick) / tickrate).toFixed(1)}с
+                    {lang === 'ru' ? 'Осталось:' : 'Remaining:'} {Math.max(0, (hoveredGrenade.end_tick - currentTick) / tickrate).toFixed(1)}s
                   </span>
                 ) : null}
               </span>
@@ -881,7 +891,7 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '9px',
+                  fontSize: '10px',
                   fontWeight: 900,
                   color: '#ffffff',
                   transform: `scale(${dotScale})`,
@@ -898,7 +908,7 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
                     marginTop: '2px',
                     backgroundColor: 'rgba(9, 12, 18, 0.92)',
                     backdropFilter: 'blur(4px)',
-                    padding: nameDensity === 'compact' ? '1px 3px' : '1px 5px',
+                    padding: nameDensity === 'compact' ? '1px 4px' : '2px 6px',
                     borderRadius: '4px',
                     border: `1px solid ${color}66`,
                     fontSize: '9px',
@@ -913,11 +923,12 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
                     transformOrigin: 'top center',
                   }}
                 >
-                  <span>{nameDensity === 'compact' ? p.name.slice(0, 5) : p.name.slice(0, 9)}</span>
+                  <span>{nameDensity === 'compact' ? p.name.slice(0, 5) : p.name.slice(0, 11)}</span>
                   <span
                     style={{
                       color: p.health >= 50 ? '#22c55e' : p.health >= 20 ? '#f59e0b' : '#ef4444',
-                      fontSize: '8.5px',
+                      fontSize: '9.5px',
+                    fontWeight: 800,
                     }}
                   >
                     {Math.round(p.health)}
@@ -944,7 +955,11 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
                 onClick={() => onJumpToTick?.(g.detonate_tick)}
                 onMouseEnter={() => setHoveredGrenade(g)}
                 onMouseLeave={() => setHoveredGrenade(null)}
-                title={`${isSmoke ? '💨 Дым' : '🔥 Огонь'}: осталось ${isSmoke ? Math.ceil(remainingSec) : remainingSec.toFixed(1)}с. Бросил: ${g.thrower_name || 'Игрок'}`}
+                title={
+                  lang === 'ru'
+                    ? `${isSmoke ? '💨 Дым' : '🔥 Огонь'}: осталось ${isSmoke ? Math.ceil(remainingSec) : remainingSec.toFixed(1)}с. Бросил: ${g.thrower_name || 'Игрок'}`
+                    : `${isSmoke ? '💨 Smoke' : '🔥 Fire'}: ${isSmoke ? Math.ceil(remainingSec) : remainingSec.toFixed(1)}s remaining. Thrown by: ${g.thrower_name || 'Player'}`
+                }
                 style={{
                   position: 'absolute',
                   left: `${Math.max(2, Math.min(98, g.x))}%`,
@@ -997,7 +1012,7 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
               cursor: 'pointer',
             }}
             onClick={() => onJumpToTick?.(bomb.plant_tick)}
-            title={`💣 Бомба C4 установлена на Плент ${bomb.site || 'CS2'}. Клик для перехода к установке`}
+            title={lang === 'ru' ? `💣 Бомба C4 установлена на Плент ${bomb.site || 'CS2'}. Клик для перехода к установке` : `💣 C4 planted at Site ${bomb.site || 'CS2'}. Click to jump to plant`}
           >
             {/* Pulsing Beacon Ring */}
             <div
@@ -1032,7 +1047,7 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
               }}
             >
               <span>💣</span>
-              <span>{bomb.site ? `ПЛЕНТ ${bomb.site}` : 'C4'}:</span>
+              <span>{bomb.site ? (lang === 'ru' ? `ПЛЕНТ ${bomb.site}` : `PLANT ${bomb.site}`) : 'C4'}:</span>
               <span style={{ color: '#fef08a' }}>
                 {Math.max(0, 40 - (currentTick - bomb.plant_tick) / tickrate).toFixed(1)}s
               </span>
@@ -1055,7 +1070,7 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
                 onClick={() => onJumpToTick?.(k.tick)}
                 onMouseEnter={() => setHoveredKill(k)}
                 onMouseLeave={() => setHoveredKill(null)}
-                title={`💀 Килл: ${k.attacker_name} ➔ ${k.victim_name}. Клик для перехода`}
+                title={lang === 'ru' ? `💀 Килл: ${k.attacker_name} ➔ ${k.victim_name}. Клик для перехода` : `💀 Kill: ${k.attacker_name} ➔ ${k.victim_name}. Click to jump`}
                 style={{
                   position: 'absolute',
                   left: `${Math.max(2, Math.min(98, k.victim_x))}%`,
@@ -1108,7 +1123,7 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
               onClick={() => onJumpToTick?.(k.tick)}
               onMouseEnter={() => setHoveredKill(k)}
               onMouseLeave={() => setHoveredKill(null)}
-              title={`💀 ${k.attacker_name} [${k.weapon || 'kill'}] ➔ ${k.victim_name}. Клик для перехода к тику`}
+              title={lang === 'ru' ? `💀 ${k.attacker_name} [${k.weapon || 'kill'}] ➔ ${k.victim_name}. Клик для перехода к тику` : `💀 ${k.attacker_name} [${k.weapon || 'kill'}] ➔ ${k.victim_name}. Click to jump to tick`}
               style={{
                 position: 'absolute',
                 left: `${Math.max(2, Math.min(98, k.victim_x))}%`,

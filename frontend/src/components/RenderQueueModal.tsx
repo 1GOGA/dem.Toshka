@@ -27,7 +27,7 @@ export const RenderQueueModal: React.FC<RenderQueueModalProps> = ({
   onSubmitRender,
   tickrate,
 }) => {
-  const { t } = useTranslation()
+  const { t, lang } = useTranslation()
   const [activeTab, setActiveTab] = useState<'queue' | 'history'>('queue')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isRetrying, setIsRetrying] = useState(false)
@@ -194,7 +194,7 @@ export const RenderQueueModal: React.FC<RenderQueueModalProps> = ({
         : historyJobs.filter((j) => j.status === 'completed').map((j) => j.id)
 
       if (jobIds.length === 0) {
-        throw new Error('Выберите хотя бы один готовый клип для сборки нарезки')
+        throw new Error(lang === 'ru' ? 'Выберите хотя бы один готовый клип для сборки нарезки' : 'Select at least one completed clip to compile montage')
       }
 
       const result = await api.createMontage({ demo_id: demoId, job_ids: jobIds })
@@ -295,35 +295,35 @@ export const RenderQueueModal: React.FC<RenderQueueModalProps> = ({
               onClick={async () => {
                 try {
                   const res = await api.cleanupRenderLogs()
-                  alert(`Очищено файлов логов: ${res.count}`)
+                  alert(lang === 'ru' ? `Очищено файлов логов: ${res.count}` : `Log files cleaned: ${res.count}`)
                 } catch (e: any) {
-                  alert(`Ошибка: ${e.message}`)
+                  alert((lang === 'ru' ? 'Ошибка: ' : 'Error: ') + e.message)
                 }
               }}
               style={{ fontSize: '11px', padding: '3px 8px' }}
-              title="Очистить все файлы логов (.log) HLAE и FFmpeg"
+              title={lang === "ru" ? "Очистить все файлы логов (.log) HLAE и FFmpeg" : "Clean all HLAE and FFmpeg .log files"}
             >
-              📄 Очистить логи
+              📄 {lang === 'ru' ? 'Очистить логи' : 'Clean logs'}
             </button>
             {demoId && (
               <button
                 type="button"
                 className="btn btn-secondary"
                 onClick={async () => {
-                  if (!confirm('Удалить клипы этой карты?')) return
+                  if (!confirm(lang === 'ru' ? 'Удалить клипы этой карты?' : 'Delete clips for this map?')) return
                   try {
                     const res = await api.cleanupDemoClips(demoId)
-                    alert(`Удалено клипов: ${res.count}`)
+                    alert(lang === 'ru' ? `Удалено клипов: ${res.count}` : `Deleted clips: ${res.count}`)
                     const hist = await api.listRenderJobs(demoId)
                     setHistoryJobs(hist)
                   } catch (e: any) {
-                    alert(`Ошибка: ${e.message}`)
+                    alert((lang === 'ru' ? 'Ошибка: ' : 'Error: ') + e.message)
                   }
                 }}
                 style={{ fontSize: '11px', padding: '3px 8px', color: '#fb923c' }}
-                title="Удалить клипы этой демки"
+                title={lang === "ru" ? "Удалить клипы этой демки" : "Delete clips of this demo"}
               >
-                🗑 Клипы карты
+                🗑 {lang === 'ru' ? 'Клипы карты' : 'Map clips'}
               </button>
             )}
           </div>
@@ -543,14 +543,14 @@ export const RenderQueueModal: React.FC<RenderQueueModalProps> = ({
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                       <div style={{ fontWeight: 700, fontSize: '13px', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span>🎬 Montage Compiler (Объединение клипов в 1 видео)</span>
+                        <span>🎬 {lang === 'ru' ? 'Montage Compiler (Объединение клипов в 1 видео)' : 'Montage Compiler (Join clips into 1 video)'}</span>
                       </div>
                       <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
-                        Объединяет отрендеренные MP4 со звуком в единый плавный ролик без пережатия (FFmpeg concat).
+                        {lang === 'ru' ? 'Объединяет отрендеренные MP4 со звуком в единый плавный ролик без пережатия (FFmpeg concat).' : 'Joins rendered MP4 clips with audio into a single seamless video without re-encoding (FFmpeg concat).'}
                       </div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px' }}>
                         <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-                          Выбрано клипов: <strong style={{ color: '#38bdf8' }}>{selectedMontageJobIds.size}</strong> из {historyJobs.filter((j) => j.status === 'completed').length}
+                          {lang === 'ru' ? 'Выбрано клипов:' : 'Clips selected:'} <strong style={{ color: '#38bdf8' }}>{selectedMontageJobIds.size}</strong> {lang === 'ru' ? 'из' : 'of'} {historyJobs.filter((j) => j.status === 'completed').length}
                         </span>
                         <button
                           type="button"
@@ -558,7 +558,7 @@ export const RenderQueueModal: React.FC<RenderQueueModalProps> = ({
                           onClick={handleSelectAllMontageJobs}
                           style={{ padding: '2px 8px', fontSize: '10px' }}
                         >
-                          Выбрать все
+                          {lang === 'ru' ? 'Выбрать все' : 'Select all'}
                         </button>
                         <button
                           type="button"
@@ -566,7 +566,7 @@ export const RenderQueueModal: React.FC<RenderQueueModalProps> = ({
                           onClick={handleClearMontageSelection}
                           style={{ padding: '2px 8px', fontSize: '10px' }}
                         >
-                          Снять выбор
+                          {lang === 'ru' ? 'Снять выбор' : 'Deselect all'}
                         </button>
                       </div>
                     </div>
@@ -577,7 +577,7 @@ export const RenderQueueModal: React.FC<RenderQueueModalProps> = ({
                       disabled={montageState.isCreating || selectedMontageJobIds.size === 0}
                       style={{ padding: '6px 14px', fontSize: '12px', fontWeight: 600, whiteSpace: 'nowrap' }}
                     >
-                      {montageState.isCreating ? '⏳ Сборка монтажа...' : `🎬 Собрать монтаж (${selectedMontageJobIds.size} клипов)`}
+                      {montageState.isCreating ? (lang === 'ru' ? '⏳ Сборка монтажа...' : '⏳ Compiling montage...') : (lang === 'ru' ? `🎬 Собрать монтаж (${selectedMontageJobIds.size} клипов)` : `🎬 Compile Montage (${selectedMontageJobIds.size} clips)`)}
                     </button>
                   </div>
 
@@ -591,7 +591,7 @@ export const RenderQueueModal: React.FC<RenderQueueModalProps> = ({
                     <div style={{ marginTop: '4px', paddingTop: '10px', borderTop: '1px solid var(--border)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                         <span style={{ fontSize: '12px', fontWeight: 600, color: '#34d399' }}>
-                          ✓ Единый ролик готов: {montageState.montage.filename} ({montageState.montage.duration_seconds.toFixed(1)} сек, {montageState.montage.total_clips} клипов)
+                          {lang === 'ru' ? '✓ Единый ролик готов:' : '✓ Montage ready:'} {montageState.montage.filename} ({montageState.montage.duration_seconds.toFixed(1)} {lang === 'ru' ? 'сек' : 's'}, {montageState.montage.total_clips} {lang === 'ru' ? 'клипов' : 'clips'})
                         </span>
                         <div style={{ display: 'flex', gap: '8px' }}>
                           <button
@@ -606,7 +606,7 @@ export const RenderQueueModal: React.FC<RenderQueueModalProps> = ({
                             }
                             style={{ padding: '3px 10px', fontSize: '11px', color: '#38bdf8' }}
                           >
-                            ▶ Смотреть в плеере
+                            ▶ {lang === 'ru' ? 'Смотреть в плеере' : 'Watch in player'}
                           </button>
                           <a
                             href={`/api/montage/${montageState.montage.filename}`}
@@ -614,7 +614,7 @@ export const RenderQueueModal: React.FC<RenderQueueModalProps> = ({
                             className="btn btn-secondary"
                             style={{ padding: '3px 10px', fontSize: '11px', color: 'var(--text-main)', textDecoration: 'none' }}
                           >
-                            ⬇ Скачать монтаж
+                            ⬇ {lang === 'ru' ? 'Скачать монтаж' : 'Download montage'}
                           </a>
                         </div>
                       </div>
@@ -633,7 +633,7 @@ export const RenderQueueModal: React.FC<RenderQueueModalProps> = ({
                     disabled={!historyJobs.some((j) => j.status === 'completed' || j.status === 'failed' || j.status === 'cancelled')}
                     style={{ padding: '4px 10px', fontSize: '11px', color: '#94a3b8' }}
                   >
-                    🗑 Очистить завершенные
+                    🗑 {lang === 'ru' ? 'Очистить завершенные' : 'Clear completed'}
                   </button>
                 </div>
               )}
@@ -671,7 +671,7 @@ export const RenderQueueModal: React.FC<RenderQueueModalProps> = ({
                                   type="checkbox"
                                   checked={selectedMontageJobIds.has(job.id)}
                                   onChange={() => handleToggleMontageJob(job.id)}
-                                  title="Включить в единый монтаж"
+                                  title={lang === "ru" ? "Включить в единый монтаж" : "Include in montage"}
                                   style={{ cursor: 'pointer', accentColor: '#38bdf8', width: '15px', height: '15px' }}
                                 />
                               )}
@@ -685,7 +685,7 @@ export const RenderQueueModal: React.FC<RenderQueueModalProps> = ({
                               <button
                                 type="button"
                                 onClick={() => handleDeleteJob(job.id)}
-                                title="Удалить задачу"
+                                title={lang === "ru" ? "Удалить задачу" : "Delete job"}
                                 style={{
                                   background: 'none',
                                   border: 'none',
@@ -759,7 +759,7 @@ export const RenderQueueModal: React.FC<RenderQueueModalProps> = ({
                               }}
                               style={{ padding: '3px 10px', fontSize: '11px', color: '#38bdf8' }}
                             >
-                              ▶ Смотреть в плеере
+                              ▶ {lang === 'ru' ? 'Смотреть в плеере' : 'Watch in player'}
                             </button>
                             <a
                               href={`/api/videos/${job.id}`}

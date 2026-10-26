@@ -11,7 +11,7 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
   onOpenStudio,
   onOpenLibrary,
 }) => {
-  const { t } = useTranslation()
+  const { t, lang } = useTranslation()
 
   const scrollToSection = (id: string) => {
     const el = document.getElementById(id)
@@ -58,7 +58,7 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                     type="button"
                     onClick={onOpenStudio}
                     className="btn-hero-studio-primary"
-                    title="Перейти в рабочий интерфейс студии хайлайтов"
+                    title={lang === "ru" ? "Перейти в рабочий интерфейс студии хайлайтов" : "Open Highlights Studio"}
                   >
                     <span className="btn-hero-studio-icon">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -66,7 +66,6 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                       </svg>
                     </span>
                     <span>{t('showcase.openStudioBtn')}</span>
-                    <span className="btn-hero-studio-badge">⚡ 120 FPS</span>
                     <span className="btn-hero-studio-arrow">➔</span>
                   </button>
                 )}
@@ -77,7 +76,7 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn-hero-telegram"
-                  title="Официальный Telegram канал разработчика @thepytoshka"
+                  title={lang === "ru" ? "Официальный Telegram канал разработчика @thepytoshka" : "Official developer Telegram channel @thepytoshka"}
                 >
                   <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
@@ -129,37 +128,43 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                 />
                 <div className="hero-artwork-vignette" />
 
-                {/* Layered Floating HUD Badges */}
-                <div className="hero-floating-hud-top">
-                  <span className="floating-hud-badge">LIVE DEMO</span>
-                  <span className="floating-hud-title">de_mirage // SUBTICK</span>
+                {/* Layered Floating Header Bar (No Button Overlap) */}
+                <div className="hero-artwork-top-bar">
+                  <div className="hero-floating-hud-top">
+                    <span className="floating-hud-badge">LIVE DEMO</span>
+                    <span className="floating-hud-title">de_mirage // SUBTICK</span>
+                  </div>
+
+                  {onOpenStudio && (
+                    <button
+                      type="button"
+                      className="hero-floating-studio-cta"
+                      onClick={onOpenStudio}
+                      title={lang === "ru" ? "Перейти в Студию хайлайтов" : "Go to Highlights Studio"}
+                    >
+                      <span className="live-pulse-dot" />
+                      <span>{t('showcase.openInStudio')}</span>
+                      <span>➔</span>
+                    </button>
+                  )}
                 </div>
 
-                {/* Floating Studio Quick Action Badge */}
-                {onOpenStudio && (
-                  <button
-                    type="button"
-                    className="hero-floating-studio-cta"
-                    onClick={onOpenStudio}
-                    title="Открыть этот момент в Студии хайлайтов"
-                  >
-                    <span className="live-pulse-dot" />
-                    <span>{t('showcase.openInStudio')}</span>
-                    <span>➔</span>
-                  </button>
-                )}
-
+                {/* Layered Bottom Card: Clear Highlight Detection Showcase */}
                 <div className="hero-floating-killfeed">
+                  <div className="killfeed-badge-header">
+                    <span className="killfeed-pill-accent">🎯 {lang === "ru" ? "ПРИМЕР ХАЙЛАЙТА" : "HIGHLIGHT EXAMPLE"}</span>
+                    <span className="killfeed-pill-badge">CLUTCH 1v3</span>
+                  </div>
                   <div className="killfeed-row">
-                    <span className="killfeed-attacker">pytoshka</span>
+                    <span className="killfeed-attacker">pytoshka <small>({lang === "ru" ? "Игрок" : "Player"})</small></span>
                     <span className="killfeed-weapon">
-                      ⚡ AK-47 <span style={{ color: '#ef4444' }}>HS</span>
+                      ⚡ AK-47 <span style={{ color: '#ef4444' }}>HEADSHOT</span>
                     </span>
-                    <span className="killfeed-victim">s1mple</span>
+                    <span className="killfeed-victim">s1mple <small>({lang === "ru" ? "Жертва" : "Victim"})</small></span>
                   </div>
                   <div className="killfeed-meta">
-                    <span>ROUND 24 // CLUTCH 1v3</span>
-                    <span style={{ color: '#38bdf8' }}>+3 KILLS IN 2.4s</span>
+                    <span>{lang === "ru" ? "РАУНД 24 // ТАКТИЧЕСКИЙ РАЗМЕН" : "ROUND 24 // TACTICAL TRADE"}</span>
+                    <span style={{ color: '#38bdf8', fontWeight: 700 }}>{lang === "ru" ? "+3 КИЛЛА ЗА 2.4 СЕК" : "+3 KILLS IN 2.4S"}</span>
                   </div>
                 </div>
               </div>
@@ -185,7 +190,7 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                   type="button"
                   onClick={onOpenStudio}
                   className="btn-strip-studio"
-                  title="Открыть рабочую студию хайлайтов"
+                  title={lang === "ru" ? "Открыть рабочую студию хайлайтов" : "Launch Highlights Studio"}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                     <polygon points="5 3 19 12 5 21 5 3" />
@@ -199,7 +204,7 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                   type="button"
                   onClick={onOpenLibrary}
                   className="btn-strip-library"
-                  title="Перейти в Библиотеку сохраненных матчей"
+                  title={lang === "ru" ? "Перейти в Библиотеку сохраненных матчей" : "Go to Match Library"}
                 >
                   <span>{t('showcase.stripLibraryBtn')}</span>
                 </button>
@@ -227,17 +232,18 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
             <div className="feature-card">
               <div className="feature-card-header">
                 <span className="feature-index">SYS.01</span>
-                <span className="status-badge ready">ГОТОВО В СТУДИИ</span>
+                <span className="status-badge ready">{lang === "ru" ? "ГОТОВО В СТУДИИ" : "STUDIO READY"}</span>
               </div>
               <div className="feature-icon-wrap">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                 </svg>
               </div>
-              <h3 className="feature-title">Автоматический поиск хайлайтов</h3>
+              <h3 className="feature-title">{lang === "ru" ? "Автоматический поиск хайлайтов" : "Automated Highlight Discovery"}</h3>
               <p className="feature-text">
-                Парсер Source 2 сканирует всю демку и мгновенно находит мультикиллы (3K, 4K, ACE),
-                выигранные клатчи 1vX, ниндзя-дефьюзы и спрей-трансферы с таймкодами.
+                {lang === "ru"
+                  ? "Парсер Source 2 сканирует всю демку и мгновенно находит мультикиллы (3K, 4K, ACE), выигранные клатчи 1vX, ниндзя-дефьюзы и спрей-трансферы с таймкодами."
+                  : "Source 2 parser scans the entire demo and instantly detects multikills (3K, 4K, ACE), won 1vX clutches, ninja defuses, and spray transfers with precise tick timestamps."}
               </p>
               <div className="feature-footer-tags">
                 <span className="tech-tag">ACE DETECTOR</span>
@@ -250,7 +256,7 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
             <div className="feature-card">
               <div className="feature-card-header">
                 <span className="feature-index">SYS.02</span>
-                <span className="status-badge ready">ГОТОВО В СТУДИИ</span>
+                <span className="status-badge ready">{lang === "ru" ? "ГОТОВО В СТУДИИ" : "STUDIO READY"}</span>
               </div>
               <div className="feature-icon-wrap">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -258,11 +264,11 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                   <circle cx="12" cy="13" r="4" />
                 </svg>
               </div>
-              <h3 className="feature-title">Любой ракурс POV</h3>
+              <h3 className="feature-title">{lang === "ru" ? "Любой ракурс POV" : "Any Camera Angle & POV"}</h3>
               <p className="feature-text">
-                Смотри эпизод от своего первого лица (Hero POV), от лица соперника или включи
-                турнирный динамический килл-кам, который показывает удержание угла жертвой и
-                переключается на стрелка за 2 секунды до выстрела.
+                {lang === "ru"
+                  ? "Смотри эпизод от своего первого лица (Hero POV), от лица соперника или включи турнирный динамический килл-кам, который показывает удержание угла жертвой и переключается на стрелка за 2 секунды до выстрела."
+                  : "Watch clips from first-person Hero POV, opponent perspective, or tournament dynamic killcam showing victim crosshair hold and switching to fragger 2s before firing."}
               </p>
               <div className="feature-footer-tags">
                 <span className="tech-tag">HERO POV</span>
@@ -275,7 +281,7 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
             <div className="feature-card">
               <div className="feature-card-header">
                 <span className="feature-index">SYS.03</span>
-                <span className="status-badge ready">ГОТОВО В СТУДИИ</span>
+                <span className="status-badge ready">{lang === "ru" ? "ГОТОВО В СТУДИИ" : "STUDIO READY"}</span>
               </div>
               <div className="feature-icon-wrap">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -284,10 +290,11 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                   <line x1="12" y1="17" x2="12" y2="21" />
                 </svg>
               </div>
-              <h3 className="feature-title">Твой HUD — твой стиль</h3>
+              <h3 className="feature-title">{lang === "ru" ? "Твой HUD — твой стиль" : "Your HUD — Your Signature Style"}</h3>
               <p className="feature-text">
-                Полный контроль над визуалом кадра: классический CS2 интерфейс, спектаторский режим,
-                минималистичный только-киллфид или абсолютно чистый No-HUD для кинематографичных монтажей.
+                {lang === "ru"
+                  ? "Полный контроль над визуалом кадра: классический CS2 интерфейс, спектаторский режим, минималистичный только-киллфид или абсолютно чистый No-HUD для кинематографичных монтажей."
+                  : "Complete aesthetic control: classic CS2 interface, spectator mode, minimalist killfeed-only, or clean cinematic No-HUD for movie edits."}
               </p>
               <div className="feature-footer-tags">
                 <span className="tech-tag">KILLFEED-ONLY</span>
@@ -300,7 +307,7 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
             <div className="feature-card">
               <div className="feature-card-header">
                 <span className="feature-index">SYS.04</span>
-                <span className="status-badge ready">ГОТОВО В СТУДИИ</span>
+                <span className="status-badge ready">{lang === "ru" ? "ГОТОВО В СТУДИИ" : "STUDIO READY"}</span>
               </div>
               <div className="feature-icon-wrap">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -308,10 +315,11 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                   <polygon points="10 8 16 12 10 16 10 8" />
                 </svg>
               </div>
-              <h3 className="feature-title">Запись в стиле OBS (Режим REAL)</h3>
+              <h3 className="feature-title">{lang === "ru" ? "Запись в стиле OBS (Режим REAL)" : "OBS-Style Recording (REAL Mode)"}</h3>
               <p className="feature-text">
-                Отключение X-Ray и спектаторских панелей со счетом внизу. Видео выглядит в точности
-                как чистый захват экрана от лица игрока во время живого матча: с его здоровьем, патронами и круглым радаром.
+                {lang === "ru"
+                  ? "Отключение X-Ray и спектаторских панелей со счетом внизу. Видео выглядит в точности как чистый захват экрана от лица игрока во время живого матча: с его здоровьем, патронами и круглым радаром."
+                  : "Disables X-Ray and spectator score bars. Captured video looks identical to a genuine live game stream from player POV with health, ammo and rotating mini-map."}
               </p>
               <div className="feature-footer-tags">
                 <span className="tech-tag">ZERO X-RAY</span>
@@ -324,7 +332,7 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
             <div className="feature-card">
               <div className="feature-card-header">
                 <span className="feature-index">SYS.05</span>
-                <span className="status-badge ready">ГОТОВО В СТУДИИ</span>
+                <span className="status-badge ready">{lang === "ru" ? "ГОТОВО В СТУДИИ" : "STUDIO READY"}</span>
               </div>
               <div className="feature-icon-wrap">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -333,10 +341,11 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                   <line x1="6" y1="20" x2="6" y2="14" />
                 </svg>
               </div>
-              <h3 className="feature-title">История матчей и аналитика</h3>
+              <h3 className="feature-title">{lang === "ru" ? "История матчей и аналитика" : "Match History & Tactical Analytics"}</h3>
               <p className="feature-text">
-                Внутренняя библиотека ранее сыгранных матчей, интерактивная 2D карта,
-                разбор выигранных дуэлей, ADR и объективный анализ полезности игрока по раундам.
+                {lang === "ru"
+                  ? "Внутренняя библиотека ранее сыгранных матчей, интерактивная 2D карта, разбор выигранных дуэлей, ADR и объективный анализ полезности игрока по раундам."
+                  : "Integrated demo library, interactive 2D replay radar, opening duel efficiency, ADR, and round-by-round player impact breakdown."}
               </p>
               <div className="feature-footer-tags">
                 <span className="tech-tag">MATCH ARCHIVE</span>
@@ -349,7 +358,7 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
             <div className="feature-card">
               <div className="feature-card-header">
                 <span className="feature-index">SYS.06</span>
-                <span className="status-badge ready">ГОТОВО В СТУДИИ</span>
+                <span className="status-badge ready">{lang === "ru" ? "ГОТОВО В СТУДИИ" : "STUDIO READY"}</span>
               </div>
               <div className="feature-icon-wrap">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -359,10 +368,11 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                   <line x1="2" y1="12" x2="22" y2="12" />
                 </svg>
               </div>
-              <h3 className="feature-title">Пакетный рендер и монтаж</h3>
+              <h3 className="feature-title">{lang === "ru" ? "Пакетный рендер и монтаж" : "Continuous Batch Render & Montage"}</h3>
               <p className="feature-text">
-                Single-Launch Continuous Batching: CS2 запускается один раз и по очереди записывает
-                все выбранные моменты без перезапуска игры. FFmpeg объединяет клипы в готовый хайлайт-ролик.
+                {lang === "ru"
+                  ? "Single-Launch Continuous Batching: CS2 запускается один раз и по очереди записывает все выбранные моменты без перезапуска игры. FFmpeg объединяет клипы в готовый хайлайт-ролик."
+                  : "Single-Launch Continuous Batching: CS2 opens once and records all selected clips in sequence without restarting. FFmpeg stitches clips into a ready-to-share montage."}
               </p>
               <div className="feature-footer-tags">
                 <span className="tech-tag">CONTINUOUS BATCHING</span>
@@ -442,28 +452,31 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
             <div className="philosophy-pillars">
               <div className="pillar-item">
                 <span className="pillar-icon">🛡️</span>
-                <h3 className="pillar-heading">100% Local-First & Приватность</h3>
+                <h3 className="pillar-heading">{lang === "ru" ? "100% Local-First & Приватность" : "100% Local-First & Privacy"}</h3>
                 <p className="pillar-text">
-                  Все демки, лог-файлы и записанные видеоролики остаются исключительно на вашем
-                  компьютере. Никакой передачи конфиденциальных файлов в облако.
+                  {lang === "ru"
+                    ? "Все демки, лог-файлы и записанные видеоролики остаются исключительно на вашем компьютере. Никакой передачи конфиденциальных файлов в облако."
+                    : "All demos, logs, and rendered video clips stay exclusively on your computer. Zero uploads to external servers or cloud services."}
                 </p>
               </div>
 
               <div className="pillar-item">
                 <span className="pillar-icon">⚡</span>
-                <h3 className="pillar-heading">Честное исходное качество</h3>
+                <h3 className="pillar-heading">{lang === "ru" ? "Честное исходное качество" : "True Pristine Engine Quality"}</h3>
                 <p className="pillar-text">
-                  Запись через движок CS2 гарантирует честные 60 или 120 кадров в секунду,
-                  высокий битрейт и отсутствие артефактов стороннего сжатия.
+                  {lang === "ru"
+                    ? "Запись через движок CS2 гарантирует честные 60 или 120 кадров в секунду, высокий битрейт и отсутствие артефактов стороннего сжатия."
+                    : "In-engine CS2 rendering guarantees genuine 60 or 120 FPS, maximum crisp bitrate, and zero compression artifacts."}
                 </p>
               </div>
 
               <div className="pillar-item">
                 <span className="pillar-icon">🖤</span>
-                <h3 className="pillar-heading">Сделано для сообщества</h3>
+                <h3 className="pillar-heading">{lang === "ru" ? "Сделано для сообщества" : "Crafted for the Community"}</h3>
                 <p className="pillar-text">
-                  Разработка ведется независимым автором с любовью к киберспорту CS2
-                  и мувимейкингу.
+                  {lang === "ru"
+                    ? "Разработка ведется независимым автором с любовью к киберспорту CS2 и мувимейкингу."
+                    : "Developed by an independent creator with a genuine passion for CS2 esports and cinematic moviemaking."}
                 </p>
               </div>
             </div>
@@ -494,10 +507,10 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                   </svg>
                 </div>
                 <div className="creator-card-info">
-                  <h3 className="creator-channel-name">Telegram-канал</h3>
+                  <h3 className="creator-channel-name">{lang === "ru" ? "Telegram-канал" : "Telegram Channel"}</h3>
                   <div className="creator-channel-handle">@thepytoshka</div>
                   <p className="creator-channel-desc">
-                    Дневники разработки, анонсы новых версий, опросы по функционалу и закрытые бета-тесты.
+                    {lang === "ru" ? "Дневники разработки, анонсы новых версий, опросы по функционалу и закрытые бета-тесты." : "Devlogs, new feature announcements, community polls, and closed beta access."}
                   </p>
                 </div>
               </div>
@@ -508,7 +521,7 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                 rel="noopener noreferrer"
                 className="btn-channel-action tg"
               >
-                ПЕРЕЙТИ В TELEGRAM
+                {lang === "ru" ? "ПЕРЕЙТИ В TELEGRAM" : "OPEN TELEGRAM"}
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                   <polyline points="15 3 21 3 21 9" />
@@ -526,10 +539,10 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                   </svg>
                 </div>
                 <div className="creator-card-info">
-                  <h3 className="creator-channel-name">YouTube-канал</h3>
+                  <h3 className="creator-channel-name">{lang === "ru" ? "YouTube-канал" : "YouTube Channel"}</h3>
                   <div className="creator-channel-handle crimson">@thePytoshka</div>
                   <p className="creator-channel-desc">
-                    Видеодемонстрации работы студии, туториалы по рендеру через HLAE и готовые кинематографичные хайлайты.
+                    {lang === "ru" ? "Видеодемонстрации работы студии, туториалы по рендеру через HLAE и готовые кинематографичные хайлайты." : "Studio video showcases, HLAE rendering guides, and cinematic community highlights."}
                   </p>
                 </div>
               </div>
@@ -540,7 +553,7 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                 rel="noopener noreferrer"
                 className="btn-channel-action yt"
               >
-                СМОТРЕТЬ НА YOUTUBE
+                {lang === "ru" ? "СМОТРЕТЬ НА YOUTUBE" : "WATCH ON YOUTUBE"}
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                   <polyline points="15 3 21 3 21 9" />
@@ -563,23 +576,23 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
                 dem.Toshka <span className="accent">|</span> pytoshka
               </div>
               <div className="footer-tagline">
-                Твои демки — твои лучшие моменты.
+                {lang === "ru" ? "Твои демки — твои лучшие моменты." : "Your demos — your best moments."}
               </div>
             </div>
 
             <div className="footer-links-group">
               <div className="footer-nav-col">
-                <span className="footer-col-title">НАВИГАЦИЯ</span>
+                <span className="footer-col-title">{lang === "ru" ? "НАВИГАЦИЯ" : "NAVIGATION"}</span>
                 <button type="button" className="footer-link" onClick={() => scrollToSection('features')}>
-                  Возможности
+                  {lang === "ru" ? "Возможности" : "Features"}
                 </button>
                 <button type="button" className="footer-link" onClick={() => scrollToSection('workflow')}>
-                  Как это работает
+                  {lang === "ru" ? "Как это работает" : "How it Works"}
                 </button>
               </div>
 
               <div className="footer-nav-col">
-                <span className="footer-col-title">СООБЩЕСТВО</span>
+                <span className="footer-col-title">{lang === "ru" ? "СООБЩЕСТВО" : "COMMUNITY"}</span>
                 <a
                   href="https://t.me/thepytoshka"
                   target="_blank"
@@ -600,13 +613,13 @@ export const CinematicShowcaseView: React.FC<CinematicShowcaseViewProps> = ({
 
               {onOpenStudio && (
                 <div className="footer-nav-col">
-                  <span className="footer-col-title">ПРИЛОЖЕНИЕ</span>
+                  <span className="footer-col-title">{lang === "ru" ? "ПРИЛОЖЕНИЕ" : "APPLICATION"}</span>
                   <button type="button" className="footer-link" onClick={onOpenStudio}>
-                    Студия хайлайтов
+                    {lang === "ru" ? "Студия хайлайтов" : "Highlights Studio"}
                   </button>
                   {onOpenLibrary && (
                     <button type="button" className="footer-link" onClick={onOpenLibrary}>
-                      Библиотека демок
+                      {lang === "ru" ? "Библиотека демок" : "Match Library"}
                     </button>
                   )}
                 </div>

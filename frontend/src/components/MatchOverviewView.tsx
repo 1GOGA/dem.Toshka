@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react'
 import type { DemoSummary, MatchScoreboard, PlayerStats, RoundDTO } from '../types'
+import { useTranslation } from '../i18n'
 import { PlayerAnalyticsModal } from './PlayerAnalyticsModal'
+import {
+  CrownIcon,
+  CrosshairIcon,
+  ZapIcon,
+  TrophyIcon,
+  UsersIcon,
+  WeaponIcon,
+  ActivityIcon,
+} from './Icons'
 
 interface MatchOverviewViewProps {
   demo: DemoSummary
@@ -17,6 +27,7 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
   isLoading,
   onFilterPlayerHighlights,
 }) => {
+  const { lang } = useTranslation()
   const [selectedPlayerForAnalytics, setSelectedPlayerForAnalytics] = useState<{
     steamIdOrName: string
     name: string
@@ -124,14 +135,14 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
                   border: `1px solid ${isWinner ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)'}`,
                 }}
               >
-                {isWinner ? '🏆 ПОБЕДИТЕЛЬ' : 'ПОРАЖЕНИЕ'}
+                {isWinner ? (lang === 'ru' ? '🏆 ПОБЕДИТЕЛЬ' : '🏆 WINNER') : (lang === 'ru' ? 'ПОРАЖЕНИЕ' : 'DEFEAT')}
               </span>
             )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {teamScore !== undefined && (
               <div style={{ fontSize: '18px', fontWeight: 900, color: teamColor || '#f1f5f9' }}>
-                {teamScore} <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>РАУНДОВ</span>
+                {teamScore} <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>{lang === 'ru' ? 'РАУНДОВ' : 'ROUNDS'}</span>
               </div>
             )}
           </div>
@@ -142,7 +153,7 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
       <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '13px' }}>
         <thead>
           <tr style={{ backgroundColor: '#0f1218', color: '#64748b', borderBottom: '1px solid #1e2433', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            <th style={{ padding: '12px 18px' }}>Игрок</th>
+            <th style={{ padding: '12px 18px' }}>{lang === 'ru' ? 'Игрок' : 'Player'}</th>
             <th style={{ padding: '12px 10px', textAlign: 'center' }} title="PR — pytoshka Rating (1-10)">PR</th>
             <th style={{ padding: '12px 10px', textAlign: 'right' }}>K - D - A</th>
             <th style={{ padding: '12px 10px', textAlign: 'right' }}>+/-</th>
@@ -150,8 +161,8 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
             <th style={{ padding: '12px 10px', textAlign: 'right' }}>KR</th>
             <th style={{ padding: '12px 10px', textAlign: 'right' }}>HS%</th>
             <th style={{ padding: '12px 10px', textAlign: 'right' }}>FK</th>
-            <th style={{ padding: '12px 10px', textAlign: 'center' }}>Мультикиллы</th>
-            <th style={{ padding: '12px 18px', textAlign: 'right' }}>Действия</th>
+            <th style={{ padding: '12px 10px', textAlign: 'center' }}>{lang === 'ru' ? 'Мультикиллы' : 'Multikills'}</th>
+            <th style={{ padding: '12px 18px', textAlign: 'right' }}>{lang === 'ru' ? 'Действия' : 'Actions'}</th>
           </tr>
         </thead>
         <tbody>
@@ -209,7 +220,7 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
                               border: '1px solid rgba(245, 158, 11, 0.4)',
                             }}
                           >
-                            ⭐ ВЫ
+                            ⭐ {lang === 'ru' ? 'ВЫ' : 'YOU'}
                           </span>
                         )}
                       </div>
@@ -334,9 +345,10 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
                           team: p.team,
                         })
                       }
-                      title={`Подробный разбор ошибок и FACEIT аналитика для ${p.name}`}
+                      title={lang === 'ru' ? `Подробный разбор ошибок и FACEIT аналитика для ${p.name}` : `Detailed mistake breakdown and FACEIT analytics for ${p.name}`}
                     >
-                      📊 Анализ & Ошибки
+                      <ActivityIcon size={12} color="#38bdf8" />
+                      <span>{lang === 'ru' ? 'Анализ & Ошибки' : 'Analytics & Mistakes'}</span>
                     </button>
                     <button
                       className="btn btn-secondary"
@@ -344,7 +356,7 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
                       onClick={() => onFilterPlayerHighlights(p.steam_id)}
                       title={`Open Highlights Studio filtered for ${p.name}`}
                     >
-                      Хайлайты →
+                      {lang === 'ru' ? 'Хайлайты →' : 'Highlights →'}
                     </button>
                   </div>
                 </td>
@@ -392,7 +404,7 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
             </span>
           </div>
           <div style={{ fontSize: '13px', color: '#94a3b8', marginTop: '4px' }}>
-            Всего раундов: <strong>{stats.total_rounds}</strong> • Архитектура: <strong>Subtick</strong> • Игроков: <strong>{stats.players.length}</strong>
+            {lang === 'ru' ? 'Всего раундов:' : 'Total rounds:'} <strong>{stats.total_rounds}</strong> {lang === 'ru' ? '• Архитектура:' : '• Architecture:'} <strong>Subtick</strong> {lang === 'ru' ? '• Игроков:' : '• Players:'} <strong>{stats.players.length}</strong>
           </div>
         </div>
 
@@ -422,39 +434,39 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '14px', marginBottom: '20px' }}>
         {matchMvp && (
           <div style={{ backgroundColor: '#131620', border: '1px solid #232a3c', borderRadius: '12px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' }}>
-              👑
+            <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: 'rgba(245, 158, 11, 0.15)', border: '1px solid rgba(245, 158, 11, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 16px rgba(245, 158, 11, 0.25)' }}>
+              <CrownIcon size={24} color="#fbbf24" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase' }}>Матч MVP</div>
+              <div style={{ fontSize: '11px', fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase' }}>{lang === 'ru' ? 'Матч MVP' : 'Match MVP'}</div>
               <div style={{ fontSize: '15px', fontWeight: 800, color: '#f1f5f9' }}>{matchMvp.name}</div>
-              <div style={{ fontSize: '11px', color: '#94a3b8' }}>Рейтинг: <strong>{(matchMvp.performance_rating || 1.0).toFixed(2)}</strong> • K/D: <strong>{matchMvp.kd_ratio.toFixed(2)}</strong></div>
+              <div style={{ fontSize: '11px', color: '#94a3b8' }}>{lang === 'ru' ? 'Рейтинг:' : 'Rating:'} <strong>{(matchMvp.performance_rating || 1.0).toFixed(2)}</strong> • K/D: <strong>{matchMvp.kd_ratio.toFixed(2)}</strong></div>
             </div>
           </div>
         )}
 
         {topFragger && (
           <div style={{ backgroundColor: '#131620', border: '1px solid #232a3c', borderRadius: '12px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' }}>
-              🎯
+            <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: 'rgba(56, 189, 248, 0.15)', border: '1px solid rgba(56, 189, 248, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 16px rgba(56, 189, 248, 0.25)' }}>
+              <CrosshairIcon size={22} color="#38bdf8" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', fontWeight: 700, color: '#38bdf8', textTransform: 'uppercase' }}>Топ Фраггер</div>
+              <div style={{ fontSize: '11px', fontWeight: 700, color: '#38bdf8', textTransform: 'uppercase' }}>{lang === 'ru' ? 'Топ Фраггер' : 'Top Fragger'}</div>
               <div style={{ fontSize: '15px', fontWeight: 800, color: '#f1f5f9' }}>{topFragger.name}</div>
-              <div style={{ fontSize: '11px', color: '#94a3b8' }}>Фрагов: <strong>{topFragger.kills}</strong> • HS: <strong>{topFragger.headshot_pct.toFixed(0)}%</strong></div>
+              <div style={{ fontSize: '11px', color: '#94a3b8' }}>{lang === 'ru' ? 'Фрагов:' : 'Kills:'} <strong>{topFragger.kills}</strong> • HS: <strong>{topFragger.headshot_pct.toFixed(0)}%</strong></div>
             </div>
           </div>
         )}
 
         {topOpener && (
           <div style={{ backgroundColor: '#131620', border: '1px solid #232a3c', borderRadius: '12px', padding: '14px 18px', display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: 'rgba(34, 197, 94, 0.15)', border: '1px solid rgba(34, 197, 94, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '22px' }}>
-              ⚡
+            <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: 'rgba(34, 197, 94, 0.15)', border: '1px solid rgba(34, 197, 94, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 16px rgba(34, 197, 94, 0.25)' }}>
+              <ZapIcon size={22} color="#22c55e" />
             </div>
             <div>
-              <div style={{ fontSize: '11px', fontWeight: 700, color: '#22c55e', textTransform: 'uppercase' }}>Мастер первых дуэлей</div>
+              <div style={{ fontSize: '11px', fontWeight: 700, color: '#22c55e', textTransform: 'uppercase' }}>{lang === 'ru' ? 'Мастер первых дуэлей' : 'Opening Duel Master'}</div>
               <div style={{ fontSize: '15px', fontWeight: 800, color: '#f1f5f9' }}>{topOpener.name}</div>
-              <div style={{ fontSize: '11px', color: '#94a3b8' }}>Первых киллов (FK): <strong>{topOpener.opening_kills || 0}</strong></div>
+              <div style={{ fontSize: '11px', color: '#94a3b8' }}>{lang === 'ru' ? 'Первых киллов (FK):' : 'First Kills (FK):'} <strong>{topOpener.opening_kills || 0}</strong></div>
             </div>
           </div>
         )}
@@ -472,7 +484,7 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
           }}
         >
           <div style={{ fontSize: '11px', fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px' }}>
-            ХРОНОЛОГИЯ ПОБЕД В РАУНДАХ
+            {lang === 'ru' ? 'ХРОНОЛОГИЯ ПОБЕД В РАУНДАХ' : 'ROUND WIN HISTORY'}
           </div>
           <div style={{ display: 'flex', gap: '5px', overflowX: 'auto', paddingBottom: '4px' }}>
             {rounds.map((r) => {
@@ -481,7 +493,7 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
               return (
                 <div
                   key={r.id}
-                  title={`Раунд ${r.round_num}: Победитель ${r.winner?.toUpperCase() || 'Неизвестно'} (${r.reason || 'Ликвидация'})`}
+                  title={lang === 'ru' ? `Раунд ${r.round_num}: Победитель ${r.winner?.toUpperCase() || 'Неизвестно'} (${r.reason || 'Ликвидация'})` : `Round ${r.round_num}: Winner ${r.winner?.toUpperCase() || 'Unknown'} (${r.reason || 'Elimination'})`}
                   style={{
                     minWidth: '30px',
                     height: '34px',
@@ -512,30 +524,33 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
             type="button"
             className={viewMode === 'pr' ? 'btn btn-primary' : 'btn btn-secondary'}
             onClick={() => setViewMode('pr')}
-            style={{ fontSize: '12px', padding: '7px 14px', display: 'flex', alignItems: 'center', gap: '6px' }}
+            style={{ fontSize: '12px', padding: '7px 14px', display: 'flex', alignItems: 'center', gap: '8px' }}
           >
-            <span>🏆 PR Табло команд</span>
+            <TrophyIcon size={14} color={viewMode === 'pr' ? '#ffffff' : '#38bdf8'} />
+            <span>{lang === 'ru' ? 'PR Табло команд' : 'PR Team Scoreboard'}</span>
           </button>
           <button
             type="button"
             className={viewMode === 'all' ? 'btn btn-primary' : 'btn btn-secondary'}
             onClick={() => setViewMode('all')}
-            style={{ fontSize: '12px', padding: '7px 14px', display: 'flex', alignItems: 'center', gap: '6px' }}
+            style={{ fontSize: '12px', padding: '7px 14px', display: 'flex', alignItems: 'center', gap: '8px' }}
           >
-            <span>📋 Общий рейтинг (Все игроки)</span>
+            <UsersIcon size={14} color={viewMode === 'all' ? '#ffffff' : '#94a3b8'} />
+            <span>{lang === 'ru' ? 'Общий рейтинг (Все игроки)' : 'Overall Rating (All Players)'}</span>
           </button>
           <button
             type="button"
             className={viewMode === 'weapons' ? 'btn btn-primary' : 'btn btn-secondary'}
             onClick={() => setViewMode('weapons')}
-            style={{ fontSize: '12px', padding: '7px 14px', display: 'flex', alignItems: 'center', gap: '6px' }}
+            style={{ fontSize: '12px', padding: '7px 14px', display: 'flex', alignItems: 'center', gap: '8px' }}
           >
-            <span>🎯 Оружие матча</span>
+            <WeaponIcon size={14} color={viewMode === 'weapons' ? '#ffffff' : '#94a3b8'} />
+            <span>{lang === 'ru' ? 'Оружие матча' : 'Match Weapons'}</span>
           </button>
         </div>
 
         <div style={{ fontSize: '12px', color: '#64748b' }}>
-          Кликните <strong>📊 Анализ & Ошибки</strong> любого игрока для глубокого разбора SWING и тактики
+          {lang === 'ru' ? 'Нажмите «Анализ & Ошибки» у любого игрока для глубокого разбора SWING и тактики' : 'Click "Analytics & Mistakes" on any player for deep SWING and tactical breakdown'}
         </div>
       </div>
 
@@ -544,7 +559,7 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
         <>
           {ctPlayers.length > 0 && renderPlayerTable(ctPlayers, 'COUNTER-TERRORISTS', ctScore, isCtWinner, '#38bdf8')}
           {tPlayers.length > 0 && renderPlayerTable(tPlayers, 'TERRORISTS', tScore, isTWinner, '#f59e0b')}
-          {otherPlayers.length > 0 && renderPlayerTable(otherPlayers, 'ДРУГИЕ ИГРОКИ')}
+          {otherPlayers.length > 0 && renderPlayerTable(otherPlayers, lang === 'ru' ? 'ДРУГИЕ ИГРОКИ' : 'OTHER PLAYERS')}
         </>
       )}
 
@@ -561,7 +576,7 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
           }}
         >
           <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#f1f5f9', marginBottom: '16px' }}>
-            Распределение фрагов по типам оружия
+            {lang === 'ru' ? 'Распределение фрагов по типам оружия' : 'Kill distribution by weapon type'}
           </h3>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '12px' }}>
             {Object.entries(stats.weapon_summary)
@@ -583,7 +598,7 @@ export const MatchOverviewView: React.FC<MatchOverviewViewProps> = ({
                     {weapon.replace('weapon_', '').replace('_', ' ')}
                   </span>
                   <span className="num" style={{ fontSize: '15px', fontWeight: 800, color: '#fbbf24' }}>
-                    {count} фрагов
+                    {count} {lang === 'ru' ? 'фрагов' : 'kills'}
                   </span>
                 </div>
               ))}

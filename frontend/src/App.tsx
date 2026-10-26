@@ -254,7 +254,7 @@ export function App() {
         <div key={activeTab} className="scene-transition">
         {activeTab === 'showcase' && (
           <CinematicShowcaseView
-            onOpenStudio={() => handleTabChange('studio')}
+            onOpenStudio={() => handleTabChange('library')}
             onOpenLibrary={() => handleTabChange('library')}
           />
         )}
@@ -295,6 +295,7 @@ export function App() {
           <LibraryView
             demos={demos}
             activeDemoId={activeDemo?.id ?? null}
+            activeDemo={activeDemo}
             onSelectDemo={(demo) => {
               selectDemo(demo)
               setActiveTab('studio')

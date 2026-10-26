@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useTranslation } from '../i18n'
 
 export interface CrosshairConfig {
   preset: string
@@ -50,7 +51,7 @@ const SCENES: SceneInfo[] = [
     id: 'dust2',
     name: 'Dust II — Long A',
     map: 'de_dust2',
-    desc: 'Песчаные текстуры и яркое освещение угла Long',
+    desc: 'Dust II Long Corner',
     bgGradient: 'radial-gradient(ellipse at 50% 45%, #7a6345 0%, #3e3223 50%, #1f1912 100%)',
     accentColor: '#d4a373',
   },
@@ -58,7 +59,7 @@ const SCENES: SceneInfo[] = [
     id: 'mirage',
     name: 'Mirage — A-Site / Palace',
     map: 'de_mirage',
-    desc: 'Контрастные тени дворца и кирпичные ящики плента',
+    desc: 'Mirage A Site & Palace',
     bgGradient: 'radial-gradient(ellipse at 50% 50%, #524738 0%, #29241c 55%, #13110d 100%)',
     accentColor: '#c99a5b',
   },
@@ -66,7 +67,7 @@ const SCENES: SceneInfo[] = [
     id: 'inferno',
     name: 'Inferno — Banana',
     map: 'de_inferno',
-    desc: 'Каменная кладка, тени и желтоватая плитка банана',
+    desc: 'Inferno Banana Cobblestone',
     bgGradient: 'radial-gradient(ellipse at 50% 50%, #544c41 0%, #2d2822 60%, #14120f 100%)',
     accentColor: '#ddb892',
   },
@@ -74,7 +75,7 @@ const SCENES: SceneInfo[] = [
     id: 'nuke',
     name: 'Nuke — Ramp Site',
     map: 'de_nuke',
-    desc: 'Тёмный индустриальный металл и холодный бетон',
+    desc: 'Nuke Ramp & Industrial Concrete',
     bgGradient: 'radial-gradient(ellipse at 50% 50%, #323d4c 0%, #18202b 60%, #0a0e14 100%)',
     accentColor: '#64748b',
   },
@@ -82,7 +83,7 @@ const SCENES: SceneInfo[] = [
     id: 'skybox',
     name: 'Bright Sky / Sun',
     map: 'skybox',
-    desc: 'Экстремально яркий скайбокс — тест читаемости прицела на солнце',
+    desc: 'Skybox Bright Sun Contrast Test',
     bgGradient: 'radial-gradient(ellipse at 50% 40%, #e0f2fe 0%, #7dd3fc 45%, #0284c7 90%)',
     accentColor: '#38bdf8',
   },
@@ -90,7 +91,7 @@ const SCENES: SceneInfo[] = [
     id: 'smoke',
     name: 'CS2 Volumetric Smoke',
     map: 'smoke',
-    desc: 'Густая серая дымовая завеса',
+    desc: 'Dense Volumetric Smoke Test',
     bgGradient: 'radial-gradient(ellipse at 50% 50%, #475569 0%, #1e293b 60%, #0f172a 100%)',
     accentColor: '#94a3b8',
   },
@@ -101,6 +102,7 @@ export const InteractiveCrosshairPreview: React.FC<InteractiveCrosshairPreviewPr
   onChangeConfig,
   interactiveControls = true,
 }) => {
+  const { lang } = useTranslation()
   const [activeScene, setActiveScene] = useState<SceneId>('dust2')
 
   // Current crosshair parameters based on preset
@@ -168,7 +170,7 @@ export const InteractiveCrosshairPreview: React.FC<InteractiveCrosshairPreviewPr
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '14px' }}>🎯</span>
           <span style={{ fontSize: '13px', fontWeight: 700, color: '#f1f5f9' }}>
-            Интерактивный симулятор прицела & Viewport CS2
+            {lang === 'ru' ? 'Интерактивный симулятор прицела & Viewport CS2' : 'Interactive CS2 Crosshair & Viewport Simulator'}
           </span>
           <span
             style={{
@@ -186,7 +188,7 @@ export const InteractiveCrosshairPreview: React.FC<InteractiveCrosshairPreviewPr
 
         {/* Scene Toggles */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span style={{ fontSize: '11px', color: '#64748b', marginRight: '4px' }}>Фон:</span>
+          <span style={{ fontSize: '11px', color: '#64748b', marginRight: '4px' }}>{lang === 'ru' ? 'Фон:' : 'Background:'}</span>
           {SCENES.map((s) => (
             <button
               key={s.id}
@@ -242,7 +244,7 @@ export const InteractiveCrosshairPreview: React.FC<InteractiveCrosshairPreviewPr
               borderRadius: '6px',
               border: '1px solid rgba(255, 255, 255, 0.12)',
             }}
-            title="Водяной знак dem.Toshka (слева сверху)"
+            title={lang === "ru" ? "Водяной знак dem.Toshka (слева сверху)" : "dem.Toshka watermark (top left)"}
           >
             <img
               src="/logo_video.png"
@@ -435,7 +437,7 @@ export const InteractiveCrosshairPreview: React.FC<InteractiveCrosshairPreviewPr
               borderRadius: '4px',
             }}
           >
-            🚫 Прицел скрыт (Cinematic / No-Crosshair)
+            {lang === 'ru' ? '🚫 Прицел скрыт (Cinematic / No-Crosshair)' : '🚫 Crosshair hidden (Cinematic / No-Crosshair)'}
           </div>
         )}
       </div>
@@ -456,7 +458,7 @@ export const InteractiveCrosshairPreview: React.FC<InteractiveCrosshairPreviewPr
         >
           {/* Quick Color Picker */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>Цвет:</span>
+            <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: 600 }}>{lang === 'ru' ? 'Цвет:' : 'Color:'}</span>
             {Object.entries(COLOR_MAP).map(([name, hex]) => (
               <button
                 key={name}

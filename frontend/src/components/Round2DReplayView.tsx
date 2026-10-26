@@ -3,6 +3,7 @@ import { api } from '../api'
 import type { DemoSummary, HighlightItem, RoundDTO, RoundReplayData } from '../types'
 import { PlayIcon, PauseIcon, CrosshairIcon } from './Icons'
 import { TacticalReplayRadar } from './TacticalReplayRadar'
+import { useTranslation } from '../i18n'
 
 interface Round2DReplayViewProps {
   demo: DemoSummary | null
@@ -16,6 +17,7 @@ export function Round2DReplayView({
   rounds,
   highlights,
 }: Round2DReplayViewProps) {
+  const { lang } = useTranslation()
   const [selectedRoundNum, setSelectedRoundNum] = useState<number>(rounds[0]?.round_num || 1)
   const [replayData, setReplayData] = useState<RoundReplayData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -55,7 +57,7 @@ export function Round2DReplayView({
       })
       .catch((err) => {
         console.error('Failed to load replay data:', err)
-        setError(err?.message || 'Не удалось загрузить данные тактического повтора раунда')
+        setError(err?.message || (lang === 'ru' ? 'Не удалось загрузить данные тактического повтора раунда' : 'Failed to load tactical round replay data'))
         setIsLoading(false)
       })
   }, [demo, selectedRoundNum])
@@ -178,13 +180,15 @@ export function Round2DReplayView({
             </span>
           </div>
           <p style={{ fontSize: '13px', color: '#94a3b8', margin: '4px 0 0 0' }}>
-            Реальные мировые координаты игроков из CS2 Source 2 (Awpy), траектории перемещений и выстрелы.
+            {lang === 'ru'
+              ? 'Реальные мировые координаты игроков из CS2 Source 2 (Awpy), траектории перемещений и выстрелы.'
+              : 'Real-world player coordinates from CS2 Source 2 (Awpy), movement trails, and weapon fire.'}
           </p>
         </div>
 
         {/* Round switcher pills */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflowX: 'auto', maxWidth: '600px' }}>
-          <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Раунд:</span>
+          <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>{lang === 'ru' ? 'Раунд:' : 'Round:'}</span>
           {rounds.map((r) => {
             const isWinnerCT = r.winner === 'ct'
             return (
@@ -231,7 +235,7 @@ export function Round2DReplayView({
             <circle cx="12" cy="12" r="10" strokeOpacity="0.25" />
             <path d="M12 2a10 10 0 0 1 10 10" />
           </svg>
-          Загрузка тиковых траекторий раунда из демки...
+          {lang === 'ru' ? 'Загрузка тиковых траекторий раунда из демки...' : 'Loading tick movement trajectories from demo...'}
         </div>
       )}
 
@@ -260,7 +264,7 @@ export function Round2DReplayView({
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 {hasMultipleLevels ? (
                   <>
-                    <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>Ярус карты:</span>
+                    <span style={{ fontSize: '12px', color: '#64748b', fontWeight: 600 }}>{lang === 'ru' ? 'Ярус карты:' : 'Map Level:'}</span>
                     <button
                       type="button"
                       onClick={() => setCurrentLevel('upper')}
@@ -276,7 +280,7 @@ export function Round2DReplayView({
                         transition: 'all 0.15s ease',
                       }}
                     >
-                      Верхний (Upper / A)
+                      {lang === 'ru' ? 'Верхний (Upper / A)' : 'Upper Level (A)'}
                     </button>
                     <button
                       type="button"
@@ -293,7 +297,7 @@ export function Round2DReplayView({
                         transition: 'all 0.15s ease',
                       }}
                     >
-                      Нижний (Lower / B)
+                      {lang === 'ru' ? 'Нижний (Lower / B)' : 'Lower Level (B)'}
                     </button>
                   </>
                 ) : (
@@ -311,10 +315,10 @@ export function Round2DReplayView({
                         letterSpacing: '0.05em',
                       }}
                     >
-                      {demo?.map_name || 'Радар'}
+                      {demo?.map_name || (lang === 'ru' ? 'Радар' : 'Radar')}
                     </span>
                     <span style={{ fontSize: '12px', color: '#64748b' }}>
-                      Официальный радар Source 2 • Координаты 1:1
+                      {lang === 'ru' ? 'Официальный радар Source 2 • Координаты 1:1' : 'Official Source 2 Radar • 1:1 Coordinates'}
                     </span>
                   </div>
                 )}
@@ -329,7 +333,7 @@ export function Round2DReplayView({
                     onChange={(e) => setShowTrails(e.target.checked)}
                     style={{ accentColor: '#38bdf8', cursor: 'pointer' }}
                   />
-                  <span>Траектории</span>
+                  <span>{lang === 'ru' ? 'Траектории' : 'Trails'}</span>
                 </label>
 
                 <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: '#cbd5e1' }}>
@@ -339,7 +343,7 @@ export function Round2DReplayView({
                     onChange={(e) => setShowShots(e.target.checked)}
                     style={{ accentColor: '#fbbf24', cursor: 'pointer' }}
                   />
-                  <span>Выстрелы</span>
+                  <span>{lang === 'ru' ? 'Выстрелы' : 'Shots'}</span>
                 </label>
 
                 <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: '#cbd5e1' }}>
@@ -349,7 +353,7 @@ export function Round2DReplayView({
                     onChange={(e) => setShowGrenades(e.target.checked)}
                     style={{ accentColor: '#10b981', cursor: 'pointer' }}
                   />
-                  <span>Гранаты (Дымы/Огонь)</span>
+                  <span>{lang === 'ru' ? 'Гранаты (Дымы/Огонь)' : 'Grenades (Smokes/Fire)'}</span>
                 </label>
 
                 <div style={{ width: '1px', height: '14px', backgroundColor: '#232733' }} />
@@ -415,7 +419,7 @@ export function Round2DReplayView({
                   style={{ flex: 1, accentColor: '#38bdf8', cursor: 'pointer' }}
                 />
                 <span style={{ fontSize: '11px', color: '#64748b', fontFamily: 'monospace' }}>
-                  Тик {currentFrame?.tick || 0}
+                  {lang === 'ru' ? 'Тик' : 'Tick'} {currentFrame?.tick || 0}
                 </span>
               </div>
 
@@ -443,12 +447,12 @@ export function Round2DReplayView({
                     {isPlaying ? (
                       <>
                         <PauseIcon size={12} color="#ef4444" />
-                        <span>Пауза</span>
+                        <span>{lang === 'ru' ? 'Пауза' : 'Pause'}</span>
                       </>
                     ) : (
                       <>
                         <PlayIcon size={12} color="#38bdf8" />
-                        <span>Воспроизведение</span>
+                        <span>{lang === 'ru' ? 'Воспроизведение' : 'Play'}</span>
                       </>
                     )}
                   </button>
@@ -471,13 +475,13 @@ export function Round2DReplayView({
                       cursor: 'pointer',
                     }}
                   >
-                    В начало
+                    {lang === 'ru' ? 'В начало' : 'Reset'}
                   </button>
                 </div>
 
                 {/* Speed Controls */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span style={{ fontSize: '11px', color: '#64748b', marginRight: '4px' }}>Скорость:</span>
+                  <span style={{ fontSize: '11px', color: '#64748b', marginRight: '4px' }}>{lang === 'ru' ? 'Скорость:' : 'Speed:'}</span>
                   {[0.5, 1, 2, 4].map((spd) => (
                     <button
                       key={spd}
@@ -514,11 +518,11 @@ export function Round2DReplayView({
               }}
             >
               <div style={{ fontSize: '13px', fontWeight: 700, color: '#f1f5f9', marginBottom: '12px' }}>
-                Хайлайты в этом раунде ({roundHighlights.length})
+                {lang === 'ru' ? `Хайлайты в этом раунде (${roundHighlights.length})` : `Round Highlights (${roundHighlights.length})`}
               </div>
 
               {roundHighlights.length === 0 ? (
-                <div style={{ fontSize: '12px', color: '#64748b' }}>В этом раунде нет хайлайтов</div>
+                <div style={{ fontSize: '12px', color: '#64748b' }}>{lang === 'ru' ? 'В этом раунде нет хайлайтов' : 'No highlights in this round'}</div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                   {roundHighlights.map((hl) => (
@@ -541,11 +545,11 @@ export function Round2DReplayView({
                           {hl.highlight_type.replace('multikill_', '').toUpperCase()}
                         </span>
                         <span style={{ fontSize: '11px', fontFamily: 'monospace', color: '#94a3b8' }}>
-                          Тик {hl.kill_start_tick}
+                          {lang === 'ru' ? 'Тик' : 'Tick'} {hl.kill_start_tick}
                         </span>
                       </div>
                       <div style={{ fontSize: '11px', color: '#cbd5e1', marginTop: '3px' }}>
-                        {hl.pov_name || 'Player'} ({hl.kill_count} киллов)
+                        {hl.pov_name || 'Player'} ({hl.kill_count} {lang === 'ru' ? 'киллов' : 'kills'})
                       </div>
                     </div>
                   ))}
@@ -565,7 +569,7 @@ export function Round2DReplayView({
               }}
             >
               <div style={{ fontSize: '13px', fontWeight: 700, color: '#f1f5f9', marginBottom: '12px' }}>
-                События убийств ({pastKills.length}/{replayData.kills.length})
+                {lang === 'ru' ? `События убийств (${pastKills.length}/${replayData.kills.length})` : `Kill Feed (${pastKills.length}/${replayData.kills.length})`}
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>

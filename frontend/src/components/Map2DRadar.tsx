@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react'
 import type { HighlightItem } from '../types'
+import { useTranslation } from '../i18n'
 
 interface Map2DRadarProps {
   mapName?: string | null
@@ -112,6 +113,7 @@ export const Map2DRadar: React.FC<Map2DRadarProps> = ({
   onSelectHighlight,
   activeRound,
 }) => {
+  const { lang } = useTranslation()
   const [activeLevel, setActiveLevel] = useState<'upper' | 'lower'>('upper')
   const [zoom, setZoom] = useState<number>(1)
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 })
@@ -276,7 +278,7 @@ export const Map2DRadar: React.FC<Map2DRadarProps> = ({
                 borderRadius: '4px',
               }}
             >
-              Раунд {activeRound}
+              {lang === 'ru' ? 'Раунд' : 'Round'} {activeRound}
             </span>
           )}
         </div>
@@ -320,7 +322,7 @@ export const Map2DRadar: React.FC<Map2DRadarProps> = ({
           </div>
         ) : (
           <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>
-            Калибровка 1:1
+            {lang === 'ru' ? 'Калибровка 1:1' : '1:1 Calibration'}
           </span>
         )}
       </div>
@@ -367,7 +369,7 @@ export const Map2DRadar: React.FC<Map2DRadarProps> = ({
             type="button"
             onClick={handleZoomOut}
             disabled={zoom <= 1}
-            title="Уменьшить масштаб (Колёсико мыши вниз)"
+            title={lang === 'ru' ? 'Уменьшить масштаб (Колёсико мыши вниз)' : 'Zoom Out (Scroll Down)'}
             style={{
               background: 'none',
               border: 'none',
@@ -385,7 +387,7 @@ export const Map2DRadar: React.FC<Map2DRadarProps> = ({
           <button
             type="button"
             onClick={handleResetZoom}
-            title="Сбросить масштаб (100%)"
+            title={lang === 'ru' ? 'Сбросить масштаб (100%)' : 'Reset Zoom (100%)'}
             style={{
               background: 'none',
               border: 'none',
@@ -403,7 +405,7 @@ export const Map2DRadar: React.FC<Map2DRadarProps> = ({
             type="button"
             onClick={handleZoomIn}
             disabled={zoom >= 3.5}
-            title="Увеличить масштаб (Колёсико мыши вверх)"
+            title={lang === 'ru' ? 'Увеличить масштаб (Колёсико мыши вверх)' : 'Zoom In (Scroll Up)'}
             style={{
               background: 'none',
               border: 'none',
@@ -644,9 +646,9 @@ export const Map2DRadar: React.FC<Map2DRadarProps> = ({
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontWeight: 600 }}>
-            <span>Всего: {highlights.length}</span>
+            <span>{lang === 'ru' ? 'Всего:' : 'Total:'} {highlights.length}</span>
             <span style={{ color: selectedIds.size > 0 ? '#38bdf8' : '#64748b' }}>
-              Выбрано: {selectedIds.size}
+              {lang === 'ru' ? 'Выбрано:' : 'Selected:'} {selectedIds.size}
             </span>
           </div>
         </div>

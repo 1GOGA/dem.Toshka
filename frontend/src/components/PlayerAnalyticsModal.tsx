@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import type { PlayerAnalyticsDTO } from '../types'
 import { api } from '../api'
 import { Agent3DViewer } from './Agent3DViewer'
+import { useTranslation } from '../i18n'
 
 
 interface PlayerAnalyticsModalProps {
@@ -21,6 +22,7 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
   onClose,
   onViewHighlights,
 }) => {
+  const { lang } = useTranslation()
   const [analytics, setAnalytics] = useState<PlayerAnalyticsDTO | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [error, setError] = useState<string | null>(null)
@@ -60,7 +62,7 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
       })
       .catch((err) => {
         if (!isCancelled) {
-          setError(err.message || 'Не удалось загрузить детальную аналитику игрока')
+          setError(err.message || (lang === 'ru' ? 'Не удалось загрузить детальную аналитику игрока' : 'Failed to load detailed player analytics'))
           setIsLoading(false)
         }
       })
@@ -156,7 +158,7 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#f1f5f9', margin: 0 }}>
-                  {analytics?.name || playerName || 'Игрок'}
+                  {analytics?.name || playerName || (lang === 'ru' ? 'Игрок' : 'Player')}
                 </h2>
                 <span
                   style={{
@@ -182,12 +184,12 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                       border: '1px solid rgba(245, 158, 11, 0.4)',
                     }}
                   >
-                    ⭐ МОЙ ПРОФИЛЬ
+                    {lang === 'ru' ? '⭐ МОЙ ПРОФИЛЬ' : '⭐ MY PROFILE'}
                   </span>
                 )}
               </div>
               <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
-                Steam ID: {analytics?.steam_id || playerIdentifier || 'N/A'} • {analytics?.total_rounds || 0} сыгранных раундов
+                Steam ID: {analytics?.steam_id || playerIdentifier || 'N/A'} • {analytics?.total_rounds || 0} {lang === 'ru' ? 'сыгранных раундов' : 'rounds played'}
               </div>
             </div>
           </div>
@@ -205,9 +207,9 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                 alignItems: 'center',
                 gap: '5px',
               }}
-              title="Карточка оперативника CS2"
+              title={lang === "ru" ? "Карточка оперативника CS2" : "CS2 Agent Card"}
             >
-              <span>{show3DAgent ? '👤 Карточка: Вкл' : '👤 Карточка: Выкл'}</span>
+              <span>{show3DAgent ? (lang === 'ru' ? '👤 Карточка: Вкл' : '👤 Agent Card: On') : (lang === 'ru' ? '👤 Карточка: Выкл' : '👤 Agent Card: Off')}</span>
             </button>
             <button
               type="button"
@@ -222,9 +224,9 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                 borderColor: isMyProfile ? '#fbbf24' : undefined,
                 color: isMyProfile ? '#fbbf24' : undefined,
               }}
-              title="Запомнить этого игрока как ваш личный профиль"
+              title={lang === "ru" ? "Запомнить этого игрока как ваш личный профиль" : "Set as your personal active profile"}
             >
-              <span>{isMyProfile ? '★ Профиль выбран' : '☆ Это я (Мой профиль)'}</span>
+              <span>{isMyProfile ? (lang === 'ru' ? '★ Профиль выбран' : '★ Profile Active') : (lang === 'ru' ? '☆ Это я (Мой профиль)' : '☆ Set as My Profile')}</span>
             </button>
             <button
               type="button"
@@ -247,7 +249,7 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
           {isLoading && (
             <div style={{ textAlign: 'center', padding: '60px 0', color: '#94a3b8' }}>
               <div style={{ fontSize: '28px', marginBottom: '12px', animation: 'spin 1.5s linear infinite' }}>⚙️</div>
-              <div>Вычисляем тактический рейтинг PR (pytoshka Rating), SWING и аудит ошибок...</div>
+              <div>{lang === 'ru' ? 'Вычисляем тактический рейтинг PR (pytoshka Rating), SWING и аудит ошибок...' : 'Computing tactical PR rating (pytoshka Rating), SWING and error audit...'}</div>
             </div>
           )}
 
@@ -324,7 +326,7 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                       justifyContent: 'center',
                       boxShadow: `0 0 20px ${prInfo.bg}`,
                     }}
-                    title={`Уровень PR: ${prInfo.level}/10 (pytoshka Rating)`}
+                    title={lang === 'ru' ? `Уровень PR: ${prInfo.level}/10 (pytoshka Rating)` : `PR Tier: ${prInfo.level}/10 (pytoshka Rating)`}
                   >
                     <span style={{ fontSize: '10px', fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase' }}>LVL</span>
                     <span style={{ fontSize: '28px', fontWeight: 900, color: prInfo.color, lineHeight: 1 }}>
@@ -411,10 +413,10 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '15px' }}>🏆</span>
                     <span style={{ fontSize: '13px', fontWeight: 800, color: '#f1f5f9', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
-                      Награды и Роли игрока в матче
+                      {lang === 'ru' ? 'Награды и Роли игрока в матче' : 'Player Match Awards & Roles'}
                     </span>
                     <span style={{ fontSize: '11px', color: '#64748b' }}>
-                      (Мат-анализ полезности карты и фановые ачивки)
+                      {lang === 'ru' ? '(Мат-анализ полезности карты и фановые ачивки)' : '(Map impact mathematical analysis & fun achievements)'}
                     </span>
                   </div>
 
@@ -452,7 +454,7 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
               {/* ADVANCED PARAMETERS: SWING, AIM & PRECISION, OPENING & TRADES */}
               <div>
                 <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
-                  🎯 Углублённая боевая статистика (SWING & Механика)
+                  🎯 {lang === 'ru' ? 'Углублённая боевая статистика (SWING & Механика)' : 'Advanced Combat Statistics (SWING & Mechanics)'}
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '14px' }}>
                   {/* SWING / Peek Winrate */}
@@ -475,7 +477,7 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                       />
                     </div>
                     <div style={{ fontSize: '11px', color: '#64748b', marginTop: '6px' }}>
-                      Винрейт первых агрессивных выходов и пиков
+                      {lang === 'ru' ? 'Винрейт первых агрессивных выходов и пиков' : 'Winrate of first aggressive entries and duels'}
                     </div>
                   </div>
 
@@ -498,7 +500,7 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                       />
                     </div>
                     <div style={{ fontSize: '11px', color: '#64748b', marginTop: '6px' }}>
-                      Точность удержания прицела на уровне головы
+                      {lang === 'ru' ? 'Точность удержания прицела на уровне головы' : 'Head-level crosshair placement accuracy'}
                     </div>
                   </div>
 
@@ -521,7 +523,7 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                       />
                     </div>
                     <div style={{ fontSize: '11px', color: '#64748b', marginTop: '6px' }}>
-                      Попадание первой пулей при контакте
+                      {lang === 'ru' ? 'Попадание первой пулей при контакте' : 'First bullet contact accuracy'}
                     </div>
                   </div>
 
@@ -544,7 +546,7 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                       />
                     </div>
                     <div style={{ fontSize: '11px', color: '#64748b', marginTop: '6px' }}>
-                      Контроль зажима и удержание отдачи
+                      {lang === 'ru' ? 'Контроль зажима и удержание отдачи' : 'Spray recoil control & transfer'}
                     </div>
                   </div>
                 </div>
@@ -555,7 +557,7 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                 {/* Opening Duels */}
                 <div style={{ backgroundColor: '#161922', border: '1px solid #232836', borderRadius: '12px', padding: '16px' }}>
                   <div style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8', marginBottom: '4px' }}>
-                    ⚔️ ПЕРВЫЕ ДУЭЛИ (OPENING DUELS)
+                    ⚔️ {lang === 'ru' ? 'ПЕРВЫЕ ДУЭЛИ (OPENING DUELS)' : 'OPENING DUELS'}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', margin: '8px 0' }}>
                     <span className="num" style={{ fontSize: '24px', fontWeight: 800, color: '#34d399' }}>
@@ -570,49 +572,49 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                     </span>
                   </div>
                   <div style={{ fontSize: '11px', color: '#64748b' }}>
-                    Первый килл или первая смерть в раунде
+                    {lang === 'ru' ? 'Первый килл или первая смерть в раунде' : 'First frag or first death in a round'}
                   </div>
                 </div>
 
                 {/* Trade Efficiency */}
                 <div style={{ backgroundColor: '#161922', border: '1px solid #232836', borderRadius: '12px', padding: '16px' }}>
                   <div style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8', marginBottom: '4px' }}>
-                    🤝 РАЗМЕН ТИММЕЙТОВ (TRADE EFFICIENCY)
+                    🤝 {lang === 'ru' ? 'РАЗМЕН ТИММЕЙТОВ (TRADE EFFICIENCY)' : 'TEAMMATE TRADE EFFICIENCY'}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', margin: '8px 0' }}>
                     <span className="num" style={{ fontSize: '24px', fontWeight: 800, color: '#38bdf8' }}>
                       {analytics.trade_kills}
                     </span>
                     <span style={{ fontSize: '12px', color: '#94a3b8' }}>
-                      киллов ({analytics.trade_kill_pct.toFixed(0)}%)
+                      {lang === 'ru' ? 'киллов' : 'kills'} ({analytics.trade_kill_pct.toFixed(0)}%)
                     </span>
                     <span style={{ marginLeft: 'auto', fontSize: '11px', color: '#94a3b8' }}>
-                      Разменяно: {analytics.traded_deaths} ({analytics.traded_death_pct.toFixed(0)}%)
+                      {lang === 'ru' ? 'Разменяно:' : 'Traded:'} {analytics.traded_deaths} ({analytics.traded_death_pct.toFixed(0)}%)
                     </span>
                   </div>
                   <div style={{ fontSize: '11px', color: '#64748b' }}>
-                    Ответный килл врага в течение 4 секунд
+                    {lang === 'ru' ? 'Ответный килл врага в течение 4 секунд' : 'Revenge trade kill within 4 seconds'}
                   </div>
                 </div>
 
                 {/* Clutches */}
                 <div style={{ backgroundColor: '#161922', border: '1px solid #232836', borderRadius: '12px', padding: '16px' }}>
                   <div style={{ fontSize: '12px', fontWeight: 600, color: '#94a3b8', marginBottom: '4px' }}>
-                    🏆 КЛАТЧИ (1vX SITUATIONS)
+                    🏆 {lang === 'ru' ? 'КЛАТЧИ (1vX SITUATIONS)' : 'CLUTCHES (1vX SITUATIONS)'}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', margin: '8px 0' }}>
                     <span className="num" style={{ fontSize: '24px', fontWeight: 800, color: '#fbbf24' }}>
                       {analytics.clutches_won}
                     </span>
                     <span style={{ fontSize: '12px', color: '#94a3b8' }}>
-                      выиграно из {analytics.clutches_attempted}
+                      {lang === 'ru' ? 'выиграно из' : 'won of'} {analytics.clutches_attempted}
                     </span>
                     <span style={{ marginLeft: 'auto', fontSize: '13px', fontWeight: 700, color: '#fbbf24' }}>
                       {analytics.clutch_winrate_pct.toFixed(0)}% WR
                     </span>
                   </div>
                   <div style={{ fontSize: '11px', color: '#64748b' }}>
-                    Победы один против одного или нескольких врагов
+                    {lang === 'ru' ? 'Победы один против одного или нескольких врагов' : 'Victories alone against one or multiple enemies'}
                   </div>
                 </div>
               </div>
@@ -629,10 +631,10 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
                   <div>
                     <h3 style={{ fontSize: '15px', fontWeight: 800, color: '#f1f5f9', margin: 0 }}>
-                      🚨 Аудит тактических ошибок в матче ({analytics.errors.length})
+                      🚨 {lang === 'ru' ? `Аудит тактических ошибок в матче (${analytics.errors.length})` : `Match Tactical Errors Audit (${analytics.errors.length})`}
                     </h3>
                     <div style={{ fontSize: '12px', color: '#64748b' }}>
-                      Автоматический разбор невынужденных смертей, оверпиков при большинстве и потерь позиций
+                      {lang === 'ru' ? 'Автоматический разбор невынужденных смертей, оверпиков при большинстве и потерь позиций' : 'Automated analysis of unforced deaths, overpeeking during advantages and positional lapses'}
                     </div>
                   </div>
 
@@ -654,7 +656,7 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                           }}
                           onClick={() => setErrorFilter(lvl)}
                         >
-                          {lvl === 'all' ? 'Все' : lvl === 'critical' ? 'Критические' : lvl === 'warning' ? 'Предупреждения' : 'Инфо'} ({count})
+                          {lvl === 'all' ? (lang === 'ru' ? 'Все' : 'All') : lvl === 'critical' ? (lang === 'ru' ? 'Критические' : 'Critical') : lvl === 'warning' ? (lang === 'ru' ? 'Предупреждения' : 'Warnings') : (lang === 'ru' ? 'Инфо' : 'Info')} ({count})
                         </button>
                       )
                     })}
@@ -664,7 +666,7 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                 {filteredErrors.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: '32px 0', color: '#34d399', fontSize: '13px' }}>
                     <div style={{ fontSize: '24px', marginBottom: '6px' }}>🛡️</div>
-                    <div>В выбранной категории ошибок не зафиксировано! Отличная игровая дисциплина.</div>
+                    <div>{lang === 'ru' ? 'В выбранной категории ошибок не зафиксировано! Отличная игровая дисциплина.' : 'No errors found in this category! Outstanding discipline.'}</div>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -715,10 +717,10 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
 
                           <div style={{ textAlign: 'right', minWidth: '100px' }}>
                             <div style={{ fontSize: '12px', fontWeight: 700, color: '#f1f5f9' }}>
-                              Раунд {err.round_num}
+                              {lang === 'ru' ? 'Раунд' : 'Round'} {err.round_num}
                             </div>
                             <div className="num" style={{ fontSize: '11px', color: '#64748b' }}>
-                              тик {err.tick}
+                              {lang === 'ru' ? 'тик' : 'tick'} {err.tick}
                             </div>
                           </div>
                         </div>
@@ -733,10 +735,10 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                 {/* Strengths */}
                 <div style={{ backgroundColor: '#161922', border: '1px solid #232836', borderRadius: '12px', padding: '18px' }}>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: '#34d399', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>✅</span> Сильные стороны игрока в матче
+                    <span>✅</span> {lang === 'ru' ? 'Сильные стороны игрока в матче' : 'Player Key Strengths in Match'}
                   </div>
                   {analytics.strengths.length === 0 ? (
-                    <div style={{ fontSize: '12px', color: '#64748b' }}>Стабильная базовая игра без выраженных пиковых метрик.</div>
+                    <div style={{ fontSize: '12px', color: '#64748b' }}>{lang === 'ru' ? 'Стабильная базовая игра без выраженных пиковых метрик.' : 'Solid fundamental gameplay without polarized extremes.'}</div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {analytics.strengths.map((str, i) => (
@@ -752,10 +754,10 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                 {/* Advice */}
                 <div style={{ backgroundColor: '#161922', border: '1px solid #232836', borderRadius: '12px', padding: '18px' }}>
                   <div style={{ fontSize: '13px', fontWeight: 700, color: '#fbbf24', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>💡</span> Советы тренера по улучшению
+                    <span>💡</span> {lang === 'ru' ? 'Советы тренера по улучшению' : 'Coach Recommendations & Improvement Tips'}
                   </div>
                   {analytics.advice.length === 0 ? (
-                    <div style={{ fontSize: '12px', color: '#64748b' }}>Продолжайте придерживаться текущего темпа и позиционки.</div>
+                    <div style={{ fontSize: '12px', color: '#64748b' }}>{lang === 'ru' ? 'Продолжайте придерживаться текущего темпа и позиционки.' : 'Continue maintaining this tactical pace and positioning.'}</div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                       {analytics.advice.map((adv, i) => (
@@ -784,7 +786,7 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
           }}
         >
           <div style={{ fontSize: '12px', color: '#64748b' }}>
-            Метрики рассчитываются на основе фактических событий демки CS2
+            {lang === 'ru' ? 'Метрики рассчитываются на основе фактических событий демки CS2' : 'Metrics calculated from factual CS2 demo tick events'}
           </div>
           <div style={{ display: 'flex', gap: '10px' }}>
             {onViewHighlights && (
@@ -797,7 +799,7 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
                 }}
                 style={{ fontSize: '12px', padding: '8px 16px' }}
               >
-                🎬 Посмотреть хайлайты игрока →
+                🎬 {lang === 'ru' ? 'Посмотреть хайлайты игрока →' : 'Watch Player Highlights →'}
               </button>
             )}
             <button
@@ -806,7 +808,7 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
               onClick={onClose}
               style={{ fontSize: '12px', padding: '8px 16px' }}
             >
-              Закрыть
+              {lang === 'ru' ? 'Закрыть' : 'Close'}
             </button>
           </div>
         </div>

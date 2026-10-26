@@ -1,11 +1,11 @@
 import { createContext } from 'react'
-import type { Language, TranslationKey } from './types'
+import type { Language } from './types'
 
 export interface LanguageContextType {
   lang: Language
   setLang: (lang: Language) => void
   toggleLang: () => void
-  t: (key: TranslationKey, params?: Record<string, string | number>) => string
+  t: (key: string, params?: Record<string, string | number>) => string
   isAutoDetected: boolean
 }
 

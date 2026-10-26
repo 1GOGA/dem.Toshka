@@ -38,6 +38,7 @@ body {
   color: var(--text-main);
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  font-size: 14.5px;
 }
 
 /* Scrollbars */
@@ -263,9 +264,9 @@ body {
 
 /* Container */
 .container {
-  max-width: 1400px;
+  max-width: 1480px;
   margin: 0 auto;
-  padding: 24px;
+  padding: 24px 28px;
 }
 
 /* Tag Badges */
@@ -626,13 +627,11 @@ body {
 
 /* Optimized scene/tab transitions */
 .scene-transition {
-  animation: sceneEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  will-change: opacity, transform;
+  animation: sceneEnter 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .step-transition {
-  animation: stepFadeSlide 0.24s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  will-change: opacity, transform;
+  animation: stepFadeSlide 0.24s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* Interactive Card & Chip animations */
