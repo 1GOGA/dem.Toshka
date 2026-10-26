@@ -10,6 +10,17 @@ export const TournamentHudModal: React.FC<TournamentHudModalProps> = ({ isOpen, 
   const { lang } = useTranslation()
   const [copied, setCopied] = useState(false)
 
+  React.useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
   if (!isOpen) return null
 
   const gsiConfigSample = `"Tournament Broadcast HUD v1.0"

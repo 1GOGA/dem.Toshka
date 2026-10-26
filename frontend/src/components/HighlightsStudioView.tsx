@@ -715,7 +715,16 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
               </tr>
             </thead>
             <tbody>
-              {demos.map((d) => {
+              {demos.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ padding: '36px 20px', textAlign: 'center', color: '#94a3b8' }}>
+                    <div style={{ fontSize: '13px', fontWeight: 600 }}>
+                      {lang === 'ru' ? 'Нет загруженных матчей. Перетащите файл .dem выше, чтобы начать.' : 'No matches parsed yet. Drag & drop a .dem file above to start.'}
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                demos.map((d) => {
                 const isSelected = activeDemo?.id === d.id
                 const cleanMap = (d.map_name || 'Nuke').replace('de_', '').toUpperCase()
                 return (
@@ -799,7 +808,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     </td>
                   </tr>
                 )
-              })}
+              }))}
             </tbody>
           </table>
         </div>

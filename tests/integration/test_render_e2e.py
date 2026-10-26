@@ -18,6 +18,7 @@ Verifications:
 from __future__ import annotations
 
 import asyncio
+import os
 import pathlib
 import pytest
 
@@ -39,6 +40,8 @@ FIXTURE_DEMO = pathlib.Path("tests/integration/fixtures/test.dem")
 
 
 def check_prerequisites():
+    if os.getenv("RUN_REAL_CS2_TESTS") != "1":
+        pytest.skip("Skipping real CS2 render test; set RUN_REAL_CS2_TESTS=1 to run.")
     if not FIXTURE_DEMO.exists():
         pytest.skip(f"Test fixture not found: {FIXTURE_DEMO}")
     if not DEFAULT_CS2_EXE.exists():

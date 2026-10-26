@@ -49,6 +49,16 @@ export const PlayerAnalyticsModal: React.FC<PlayerAnalyticsModalProps> = ({
   }
 
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [onClose])
+
+  useEffect(() => {
     let isCancelled = false
     setIsLoading(true)
     setError(null)

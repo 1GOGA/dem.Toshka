@@ -43,7 +43,8 @@ def detect_highlights(
     Skips kills with round_num=None.
     """
     if settings is None:
-        settings = DetectorSettings()
+        tr = getattr(parsed_demo, "tickrate", None) or 128
+        settings = DetectorSettings.from_tickrate(tr)
 
     # Build fast lookup: round_num → RoundInfo
     round_map: dict[int, RoundInfo] = {r.round_num: r for r in parsed_demo.rounds}

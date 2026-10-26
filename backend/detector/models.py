@@ -53,6 +53,18 @@ class DetectorSettings:
     # Expected team size per side (used for clutch alive-count bootstrap)
     round_team_size: int = 5
 
+    @classmethod
+    def from_tickrate(cls, tickrate: int = 128, **kwargs) -> DetectorSettings:
+        """Create detector settings calibrated to the actual demo tickrate."""
+        tr = max(16, int(tickrate) if (tickrate and int(tickrate) > 0) else 64)
+        return cls(
+            multikill_window_ticks=int(tr * 15),
+            max_kill_gap_ticks=int(tr * 4),
+            pre_roll_ticks=int(tr * 7),
+            post_roll_ticks=int(tr * 4),
+            **kwargs,
+        )
+
 
 @dataclass
 class HighlightCandidate:

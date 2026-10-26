@@ -4,7 +4,7 @@
 
 ### Автономная киберспортивная студия анализа демок Counter-Strike 2, 2D-тактического реплея и автоматического монтажа хайлайтов в 120 FPS
 
-[![Release v1.0 Installer](https://img.shields.io/badge/Installer-Setup--v1.0.exe%20(224MB)-38bdf8?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/1GOGA/dem.Toshka/releases)
+[![Release v0.1.0-beta Installer](https://img.shields.io/badge/Installer-Setup--v0.1.0--beta.exe-38bdf8?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/1GOGA/dem.Toshka/releases)
 [![Platform Windows](https://img.shields.io/badge/Platform-Windows_10_%2F_11-0078d4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/1GOGA/dem.Toshka)
 [![CS2 Engine](https://img.shields.io/badge/CS2-Source_2_%2B_HLAE-f59e0b?style=for-the-badge&logo=counter-strike&logoColor=white)](https://github.com/1GOGA/dem.Toshka)
 [![FPS Mode](https://img.shields.io/badge/Render-30_%2F_60_%2F_120_FPS_⚡-8b5cf6?style=for-the-badge)](https://github.com/1GOGA/dem.Toshka)
@@ -13,7 +13,7 @@
 
 <br/>
 
-[![Скачать инсталлятор](https://img.shields.io/badge/📥%20Скачать%20Setup--dem.Toshka--v1.0.exe-0284c7?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/1GOGA/dem.Toshka/releases)
+[![Скачать инсталлятор](https://img.shields.io/badge/📥%20Скачать%20Setup--dem.Toshka--v0.1.0--beta.exe-0284c7?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/1GOGA/dem.Toshka/releases)
 [![Все Релизы](https://img.shields.io/badge/🚀%20Все%20Релизы%20GitHub-10b981?style=for-the-badge&logo=github)](https://github.com/1GOGA/dem.Toshka/releases)
 [![Telegram Канал](https://img.shields.io/badge/💬%20Telegram%20Канал%20Разработчика-229ed9?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/thepytoshka)
 
@@ -84,10 +84,10 @@
 ### Вариант 1. Установщик Windows (Рекомендуется для всех)
 > **Не требует установки Python, Node.js или дополнительных библиотек!**
 
-1. Скачайте файл **[`Setup-dem.Toshka-v1.0.exe`](https://github.com/1GOGA/dem.Toshka/releases)** (224 МБ).
+1. Скачайте файл **[`Setup-dem.Toshka-v0.1.0-beta.exe`](https://github.com/1GOGA/dem.Toshka/releases)**.
 2. Запустите инсталлятор и следуйте подсказкам мастера установки.
 3. Программа создаст ярлыки на рабочем столе и в меню «Пуск».
-4. **Чистая деинсталляция:** при удалении через «Параметры Windows» программа автоматически закрывает фоновые процессы и начисто стирает все рабочие базы, логи и каталоги без оставления мусора на диске.
+4. **Безопасная деинсталляция:** при удалении через «Параметры Windows» программа корректно очищает системные библиотеки и кэш, бережно сохраняя ваши отрендеренные клипы (`renders/`) и загруженные демки (`demos/`).
 
 ---
 

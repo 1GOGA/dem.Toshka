@@ -91,14 +91,43 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Enable CORS for local desktop UI (Vite dev server)
+# Enable CORS strictly for local desktop UI (Vite dev server and production)
+ALLOWED_ORIGINS = [
+    "http://127.0.0.1:5173",
+    "http://localhost:5173",
+    "http://127.0.0.1:8000",
+    "http://localhost:8000",
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+    "http://127.0.0.1:4173",
+    "http://localhost:4173",
+    "null",
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_origin_regex=r"^http://(127\.0\.0\.1|localhost):[0-9]+$",
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allow_headers=["*"],
 )
+
+
+def _is_path_inside_allowed_renders(path: pathlib.Path) -> bool:
+    resolved_target = path.resolve()
+    allowed_dirs = [
+        pathlib.Path("renders").resolve(),
+        RENDER_OUTPUT_DIR.resolve(),
+        get_configured_output_dir().resolve(),
+    ]
+    for ad in allowed_dirs:
+        try:
+            resolved_target.relative_to(ad)
+            return True
+        except ValueError:
+            continue
+    return False
 
 # Serve rendered video clips and HTML reports statically
 RENDER_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -647,18 +676,15 @@ def get_job_video(job_id: str, db: Session = Depends(get_db)):
             detail=f"Video file not found for render job '{job_id}'",
         )
     video_path = pathlib.Path(job.output_path).resolve()
-    renders_dir = pathlib.Path("renders").resolve()
     if not video_path.is_file() or video_path.suffix.lower() != ".mp4":
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Rendered video file does not exist on disk: {job.output_path}",
         )
-    try:
-        video_path.relative_to(renders_dir)
-    except ValueError:
+    if not _is_path_inside_allowed_renders(video_path):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied: file is outside the renders directory",
+            detail="Access denied: file is outside the configured renders directory",
         )
     return FileResponse(
         path=str(video_path),
@@ -740,16 +766,16 @@ def get_montage_video(filename: str):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid filename: path traversal is prohibited",
         )
-    renders_dir = pathlib.Path("renders").resolve()
-    file_path = (renders_dir / filename).resolve()
+    active_dir = get_configured_output_dir().resolve()
+    file_path = (active_dir / filename).resolve()
+    if not file_path.is_file():
+        file_path = (pathlib.Path("renders").resolve() / filename).resolve()
     if not file_path.is_file() or file_path.suffix.lower() != ".mp4":
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Montage video '{filename}' not found",
         )
-    try:
-        file_path.relative_to(renders_dir)
-    except ValueError:
+    if not _is_path_inside_allowed_renders(file_path):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied",
@@ -955,16 +981,16 @@ def get_render_by_filename(filename: str):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid filename: path traversal is prohibited",
         )
-    renders_dir = pathlib.Path("renders").resolve()
-    file_path = (renders_dir / filename).resolve()
+    active_dir = get_configured_output_dir().resolve()
+    file_path = (active_dir / filename).resolve()
+    if not file_path.is_file():
+        file_path = (pathlib.Path("renders").resolve() / filename).resolve()
     if not file_path.is_file() or file_path.suffix.lower() != ".mp4":
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Video '{filename}' not found",
         )
-    try:
-        file_path.relative_to(renders_dir)
-    except ValueError:
+    if not _is_path_inside_allowed_renders(file_path):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied",

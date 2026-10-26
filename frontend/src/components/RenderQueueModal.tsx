@@ -50,6 +50,18 @@ export const RenderQueueModal: React.FC<RenderQueueModalProps> = ({
   })
   const pollTimerRef = useRef<number | null>(null)
 
+  // Listen for Escape key
+  useEffect(() => {
+    if (!isOpen) return
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isOpen, onClose])
+
   // Fetch history whenever modal opens
   useEffect(() => {
     if (!isOpen || !demoId) return

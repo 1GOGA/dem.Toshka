@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import pathlib
+import re
 from typing import Optional
 
 from backend.render.profiles import RenderProfileType, get_profile
@@ -128,7 +129,8 @@ def _build_spec_commands(account_id: Optional[int], pov_name: Optional[str] = No
     if account_id:
         cmds.append(f"spec_lock_to_accountid {account_id}")
     if pov_name:
-        safe_name = pov_name.replace('"', "").replace(";", "").strip()
+        # Strip control characters, quotes, semicolons, and newlines to prevent console injection
+        safe_name = re.sub(r'[\r\n";\x00-\x1f\x7f]+', "", pov_name).strip()
         if safe_name:
             cmds.append(f"spec_player {safe_name}")
     return cmds

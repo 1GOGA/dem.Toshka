@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import logging
 import pathlib
+from collections import OrderedDict
 from typing import Any, Optional
 
 logger = logging.getLogger("demtoshka.replay")
@@ -120,9 +121,30 @@ DEFAULT_CALIBRATION = {
     "radar_file": None,
 }
 
-# In-memory high performance caches
-_DEMO_OBJ_CACHE: dict[str, Any] = {}
-_REPLAY_DATA_CACHE: dict[tuple[str, int, int], dict[str, Any]] = {}
+# In-memory high performance bounded caches (prevents RAM leaks)
+MAX_CACHED_DEMOS = 2
+MAX_CACHED_ROUNDS = 20
+_DEMO_OBJ_CACHE: OrderedDict[str, Any] = OrderedDict()
+_REPLAY_DATA_CACHE: OrderedDict[tuple[str, int, int], dict[str, Any]] = OrderedDict()
+
+
+def _get_cached_demo(demo_key: str) -> Optional[Any]:
+    if demo_key in _DEMO_OBJ_CACHE:
+        _DEMO_OBJ_CACHE.move_to_end(demo_key)
+        return _DEMO_OBJ_CACHE[demo_key]
+    return None
+
+
+def _store_cached_demo(demo_key: str, dem: Any) -> None:
+    _DEMO_OBJ_CACHE[demo_key] = dem
+    while len(_DEMO_OBJ_CACHE) > MAX_CACHED_DEMOS:
+        _DEMO_OBJ_CACHE.popitem(last=False)
+
+
+def _store_cached_replay_data(cache_key: tuple[str, int, int], data: dict[str, Any]) -> None:
+    _REPLAY_DATA_CACHE[cache_key] = data
+    while len(_REPLAY_DATA_CACHE) > MAX_CACHED_ROUNDS:
+        _REPLAY_DATA_CACHE.popitem(last=False)
 
 
 def normalize_map_name(map_name: str) -> str:
@@ -184,12 +206,11 @@ def extract_round_replay_data(
         raise FileNotFoundError(f"Demo file not found at {demo_path}")
 
     demo_key = str(demo_path.resolve())
-    if demo_key not in _DEMO_OBJ_CACHE:
+    dem = _get_cached_demo(demo_key)
+    if dem is None:
         dem = Demo(demo_key)
         dem.parse()
-        _DEMO_OBJ_CACHE[demo_key] = dem
-    else:
-        dem = _DEMO_OBJ_CACHE[demo_key]
+        _store_cached_demo(demo_key, dem)
 
     map_name = (dem.header.get("map_name") or "de_nuke").lower()
     tickrate = dem.tickrate or 128
@@ -427,7 +448,7 @@ def extract_round_replay_data(
         "grenades": grenades_list,
         "bomb": bomb_data,
     }
-    _REPLAY_DATA_CACHE[cache_key] = res
+    _store_cached_replay_data(cache_key, res)
     return res
 
 
@@ -441,18 +462,17 @@ def get_highlights_radar_coords(
         return {}
 
     demo_key = str(demo_path.resolve())
-    if demo_key not in _DEMO_OBJ_CACHE:
+    dem = _get_cached_demo(demo_key)
+    if dem is None:
         try:
             from awpy.demo import Demo
 
             dem = Demo(demo_key)
             dem.parse()
-            _DEMO_OBJ_CACHE[demo_key] = dem
+            _store_cached_demo(demo_key, dem)
         except Exception as e:
             logger.warning("Could not parse demo for radar coordinates: %s", e)
             return {}
-    else:
-        dem = _DEMO_OBJ_CACHE[demo_key]
 
     cal = get_map_calibration(map_name)
     split_z = cal.get("split_z")

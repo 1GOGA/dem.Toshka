@@ -12,7 +12,7 @@ export const LanguageSwitcher: React.FC = () => {
         position: 'fixed',
         bottom: '20px',
         right: '20px',
-        zIndex: 999,
+        zIndex: 100,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'flex-end',

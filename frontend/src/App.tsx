@@ -274,7 +274,7 @@ export function App() {
             onSetTypeFilter={setActiveTypeFilter}
             activeRoundFilter={activeRoundFilter}
             onSetRoundFilter={setActiveRoundFilter}
-            tickrate={activeDemo?.tickrate || 128}
+            tickrate={activeDemo?.tickrate || 64}
             onRenderSingle={handleRenderSingle}
             onOpenQueue={() => setIsQueueOpen(true)}
             demos={demos}
