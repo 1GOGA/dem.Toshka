@@ -16,9 +16,45 @@ from typing import Optional
 
 logger = logging.getLogger("demtoshka.storage_manager")
 
-from backend.render.config import RENDER_OUTPUT_DIR
+from backend.render.config import FFMPEG_BIN, RENDER_OUTPUT_DIR
 
 SETTINGS_FILE = pathlib.Path("storage_settings.json")
+
+
+def ensure_thumbnail_for_video(video_path: pathlib.Path, base_dir: Optional[pathlib.Path] = None) -> Optional[str]:
+    """Ensure a JPG thumbnail preview exists for an MP4 video, generating it via FFmpeg if absent."""
+    try:
+        active_dir = (base_dir or get_configured_output_dir()).resolve()
+        thumb_dir = active_dir / ".thumbnails"
+        thumb_dir.mkdir(parents=True, exist_ok=True)
+        thumb_path = thumb_dir / f"{video_path.stem}.jpg"
+
+        if not thumb_path.exists() or thumb_path.stat().st_size == 0:
+            if not video_path.exists() or video_path.stat().st_size == 0:
+                return None
+            cmd = [
+                FFMPEG_BIN,
+                "-y",
+                "-ss",
+                "00:00:00.500",
+                "-i",
+                str(video_path),
+                "-frames:v",
+                "1",
+                "-update",
+                "1",
+                "-q:v",
+                "3",
+                str(thumb_path),
+            ]
+            res = subprocess.run(cmd, capture_output=True, timeout=10)
+            if res.returncode != 0 or not thumb_path.exists():
+                return None
+
+        return f"/api/renders/thumbnail/{thumb_path.name}"
+    except Exception as e:
+        logger.debug("Failed to create thumbnail for %s: %s", video_path.name, e)
+        return None
 
 
 def get_configured_output_dir() -> pathlib.Path:
@@ -170,6 +206,10 @@ def cleanup_all_clips(base_dir: Optional[pathlib.Path] = None) -> list[str]:
                 deleted.append(f.name)
             except Exception as e:
                 logger.warning("Could not delete clip %s: %s", f.name, e)
+        # Also clean thumbnails
+        thumb_dir = target_dir / ".thumbnails"
+        if thumb_dir.exists():
+            shutil.rmtree(thumb_dir, ignore_errors=True)
     return deleted
 
 
@@ -263,10 +303,14 @@ def get_clips_with_metadata(
     # Pre-index jobs by output filename and id
     all_jobs = db_session.query(RenderJobModel).all()
     job_by_filename: dict[str, RenderJobModel] = {}
+    job_by_short_id: dict[str, RenderJobModel] = {}
     for j in all_jobs:
         if j.output_path:
             fn = pathlib.Path(j.output_path).name
             job_by_filename[fn] = j
+        if j.id:
+            short_hex = j.id.replace("-", "")[:6].lower()
+            job_by_short_id[short_hex] = j
 
     demos_cache = {d.id: d for d in db_session.query(DemoModel).all()}
     highlights_cache = {h.id: h for h in db_session.query(HighlightModel).all()}
@@ -278,6 +322,13 @@ def get_clips_with_metadata(
 
         st = f.stat()
         job = job_by_filename.get(f.name)
+        if not job:
+            # Try to match by 6-char hex suffix before extension, e.g. mirage_..._a5005c.mp4
+            parts = f.stem.split("_")
+            if parts:
+                possible_hex = parts[-1].lower()
+                job = job_by_short_id.get(possible_hex)
+
         clip_demo_id = job.demo_id if job else None
         
         # If filtered by demo_id and not matching, skip
@@ -299,6 +350,12 @@ def get_clips_with_metadata(
                     map_name = f"de_{known}"
                     break
 
+        # Infer demo file name if demo object exists
+        demo_filename = pathlib.Path(demo_obj.file_path).name if (demo_obj and demo_obj.file_path) else None
+
+        # Auto-ensure video preview thumbnail (.jpg)
+        thumb_url = ensure_thumbnail_for_video(f, base_dir=target_dir)
+
         results.append({
             "filename": f.name,
             "path": str(f.resolve()),
@@ -306,7 +363,9 @@ def get_clips_with_metadata(
             "modified_at": st.st_mtime,
             "is_montage": f.name.startswith("montage_"),
             "url": f"/api/montage/{f.name}",
+            "thumbnail_url": thumb_url,
             "demo_id": clip_demo_id,
+            "demo_filename": demo_filename,
             "map_name": map_name,
             "highlight_type": hl_obj.highlight_type if hl_obj else None,
             "player_name": hl_obj.pov_name if hl_obj else None,

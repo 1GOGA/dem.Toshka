@@ -18,6 +18,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
   const [error, setError] = useState<string | null>(null)
   const [cleanMessage, setCleanMessage] = useState<string | null>(null)
   const [filterMap, setFilterMap] = useState<string>('all')
+  const [filterDemo, setFilterDemo] = useState<string>('all')
 
   // Montage compile state
   const [isCompiling, setIsCompiling] = useState(false)
@@ -301,47 +302,101 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
                 {lang === 'ru' ? 'Готовые клипы' : 'Rendered Clips'} ({clips.length})
               </span>
 
-              {/* Map Filter Tabs */}
-              <div style={{ display: 'flex', gap: '6px', background: '#0e1118', padding: '3px', borderRadius: '6px', border: '1px solid #232734' }}>
-                <button
-                  type="button"
-                  onClick={() => setFilterMap('all')}
-                  style={{
-                    border: 'none',
-                    padding: '3px 10px',
-                    borderRadius: '4px',
-                    fontSize: '11px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    background: filterMap === 'all' ? '#38bdf8' : 'transparent',
-                    color: filterMap === 'all' ? '#090d16' : '#94a3b8',
-                  }}
-                >
-                  {lang === 'ru' ? 'Все' : 'All'} ({clips.length})
-                </button>
-                {Array.from(new Set(clips.map((c) => c.map_name).filter(Boolean))).map((m) => {
-                  const count = clips.filter((c) => c.map_name === m).length
-                  const isCur = filterMap === m
-                  return (
-                    <button
-                      key={m as string}
-                      type="button"
-                      onClick={() => setFilterMap(m as string)}
+              {/* Map & Demo Filter Controls */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                {/* Map Filter Tabs */}
+                <div style={{ display: 'flex', gap: '6px', background: '#0e1118', padding: '3px', borderRadius: '6px', border: '1px solid #232734' }}>
+                  <button
+                    type="button"
+                    onClick={() => setFilterMap('all')}
+                    style={{
+                      border: 'none',
+                      padding: '3px 10px',
+                      borderRadius: '4px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      cursor: 'pointer',
+                      background: filterMap === 'all' ? '#38bdf8' : 'transparent',
+                      color: filterMap === 'all' ? '#090d16' : '#94a3b8',
+                    }}
+                  >
+                    {lang === 'ru' ? 'Все карты' : 'All Maps'} ({clips.length})
+                  </button>
+                  {Array.from(new Set(clips.map((c) => c.map_name).filter(Boolean))).map((m) => {
+                    const count = clips.filter((c) => c.map_name === m).length
+                    const isCur = filterMap === m
+                    return (
+                      <button
+                        key={m as string}
+                        type="button"
+                        onClick={() => setFilterMap(m as string)}
+                        style={{
+                          border: 'none',
+                          padding: '3px 10px',
+                          borderRadius: '4px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          cursor: 'pointer',
+                          background: isCur ? '#38bdf8' : 'transparent',
+                          color: isCur ? '#090d16' : '#94a3b8',
+                        }}
+                      >
+                        {(m as string).replace('de_', '').toUpperCase()} ({count})
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Demo/Game Dropdown Filter */}
+                {Array.from(new Set(clips.map((c) => c.demo_id).filter((id): id is number => id !== null && id !== undefined))).length > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ fontSize: '11px', color: '#64748b', fontWeight: 600 }}>
+                      🎮 {lang === 'ru' ? 'Матч:' : 'Demo:'}
+                    </span>
+                    <select
+                      value={filterDemo}
+                      onChange={(e) => setFilterDemo(e.target.value)}
                       style={{
-                        border: 'none',
-                        padding: '3px 10px',
-                        borderRadius: '4px',
+                        backgroundColor: '#0e1118',
+                        color: filterDemo === 'all' ? '#94a3b8' : '#38bdf8',
+                        border: '1px solid #232734',
+                        borderRadius: '6px',
+                        padding: '4px 10px',
                         fontSize: '11px',
                         fontWeight: 600,
                         cursor: 'pointer',
-                        background: isCur ? '#38bdf8' : 'transparent',
-                        color: isCur ? '#090d16' : '#94a3b8',
+                        outline: 'none',
                       }}
                     >
-                      {(m as string).replace('de_', '').toUpperCase()} ({count})
-                    </button>
-                  )
-                })}
+                      <option value="all">
+                        {lang === 'ru' ? 'Все матчи / демки' : 'All Demos / Matches'}
+                      </option>
+                      {Array.from(
+                        new Map(
+                          clips
+                            .filter((c) => c.demo_id !== null && c.demo_id !== undefined)
+                            .map((c) => [
+                              c.demo_id as number,
+                              {
+                                id: c.demo_id as number,
+                                label: c.demo_filename
+                                  ? c.demo_filename
+                                  : `${c.map_name ? c.map_name.replace('de_', '').toUpperCase() : 'Match'} #${c.demo_id}`,
+                                count: clips.filter((item) => item.demo_id === c.demo_id).length,
+                              },
+                            ])
+                        ).values()
+                      ).map((d) => (
+                        <option key={d.id} value={String(d.id)}>
+                          {d.label} ({d.count})
+                        </option>
+                      ))}
+                      <option value="montages">
+                        🎬 {lang === 'ru' ? 'Только сборные монтажи' : 'Only Montages'} ({clips.filter((c) => c.is_montage).length})
+                      </option>
+                    </select>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -399,7 +454,12 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '18px' }}>
             {clips
-              .filter((c) => filterMap === 'all' || c.map_name === filterMap)
+              .filter((c) => {
+                if (filterMap !== 'all' && c.map_name !== filterMap) return false
+                if (filterDemo === 'all') return true
+                if (filterDemo === 'montages') return c.is_montage
+                return String(c.demo_id) === filterDemo
+              })
               .map((c) => {
                 const isSelected = selectedFilenames.includes(c.filename)
                 return (
@@ -441,6 +501,7 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
                         <video
                           preload="auto"
                           src={`${c.url}#t=0.5`}
+                          poster={c.thumbnail_url || undefined}
                           autoPlay
                           loop
                           muted
@@ -450,6 +511,19 @@ export function ClipsMontageView({ onOpenFolder, currentDemoId, currentMapName }
                             height: '100%',
                             objectFit: 'cover',
                             transform: 'scale(1.03)',
+                            transition: 'transform 0.3s ease',
+                          }}
+                        />
+                      ) : c.thumbnail_url ? (
+                        <img
+                          src={c.thumbnail_url}
+                          alt={c.filename}
+                          loading="lazy"
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            display: 'block',
                             transition: 'transform 0.3s ease',
                           }}
                         />

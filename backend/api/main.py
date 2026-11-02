@@ -974,6 +974,38 @@ def list_completed_clips(demo_id: Optional[int] = None, db: Session = Depends(ge
     return get_clips_with_metadata(db, demo_id=demo_id)
 
 
+@app.api_route("/api/renders/thumbnail/{filename}", methods=["GET", "HEAD"], tags=["rendering"])
+def get_render_thumbnail(filename: str):
+    """Serve generated video thumbnail (.jpg) directly from .thumbnails directory."""
+    if ".." in filename or "/" in filename or "\\" in filename:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid filename: path traversal is prohibited",
+        )
+    active_dir = get_configured_output_dir().resolve()
+    file_path = (active_dir / ".thumbnails" / filename).resolve()
+    if not file_path.is_file():
+        file_path = (pathlib.Path("renders").resolve() / ".thumbnails" / filename).resolve()
+    if not file_path.is_file() or file_path.suffix.lower() not in [".jpg", ".jpeg", ".png"]:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Thumbnail '{filename}' not found",
+        )
+    if not _is_path_inside_allowed_renders(file_path):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied",
+        )
+    return FileResponse(
+        path=str(file_path),
+        media_type="image/jpeg",
+        filename=file_path.name,
+        headers={
+            "Cache-Control": "public, max-age=86400",
+        },
+    )
+
+
 @app.api_route("/api/renders/{filename}", methods=["GET", "HEAD"], tags=["rendering"])
 def get_render_by_filename(filename: str):
     """Serve rendered clip by filename directly from renders directory."""

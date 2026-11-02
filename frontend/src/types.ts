@@ -238,7 +238,9 @@ export interface CompletedClipDTO {
   modified_at: number
   is_montage: boolean
   url: string
+  thumbnail_url?: string | null
   demo_id?: number | null
+  demo_filename?: string | null
   map_name?: string | null
   highlight_type?: string | null
   player_name?: string | null
