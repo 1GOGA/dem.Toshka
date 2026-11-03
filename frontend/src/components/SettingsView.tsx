@@ -307,6 +307,67 @@ export function SettingsView() {
           </button>
         </div>
       </div>
+
+      {/* Section 4: Community, Feedback & Bug Reports */}
+      <div
+        style={{
+          backgroundColor: '#12141a',
+          border: '1px solid #232734',
+          borderRadius: '10px',
+          padding: '24px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px',
+        }}
+      >
+        <div>
+          <div style={{ fontSize: '15px', fontWeight: 700, color: '#f1f5f9' }}>
+            {lang === 'ru' ? '💬 Обратная связь, баги и пожелания' : '💬 Feedback, Bug Reports & Feature Wishlist'}
+          </div>
+          <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+            {lang === 'ru'
+              ? 'Нашли баг, ошибку рендера или есть идея, что добавить в dem.Toshka? Напишите напрямую разработчику!'
+              : 'Found a bug, render glitch or have ideas for dem.Toshka? Share your feedback with the developer!'}
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
+          <a
+            href="https://docs.google.com/forms/d/e/1FAIpQLSdFwI3sCE0Kpwu6bz26PFfCj3xeLLk5Zax1WEqebT-WUjUhUQ/viewform"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-primary"
+            style={{
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '13px',
+              fontWeight: 700,
+            }}
+          >
+            <span>📝</span>
+            <span>{lang === 'ru' ? 'Заполнить форму (Баги и Идеи)' : 'Open Feedback Form (Bugs & Ideas)'}</span>
+          </a>
+
+          <a
+            href="https://t.me/thepytoshka"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-secondary"
+            style={{
+              textDecoration: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              fontSize: '13px',
+            }}
+          >
+            <span>📢</span>
+            <span>Telegram: @thepytoshka</span>
+          </a>
+        </div>
+      </div>
     </div>
   )
 }

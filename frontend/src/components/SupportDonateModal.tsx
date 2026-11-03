@@ -349,7 +349,18 @@ export const SupportDonateModal: React.FC<SupportDonateModalProps> = ({ isOpen, 
             color: '#64748b',
           }}
         >
-          <span>{lang === 'ru' ? 'Спасибо за любую поддержку! ❤️' : 'Thanks for every bit of support! ❤️'}</span>
+          <div>
+            <span>{lang === 'ru' ? 'Спасибо за любую поддержку! ❤️' : 'Thanks for every bit of support! ❤️'}</span>
+            <span style={{ margin: '0 8px' }}>•</span>
+            <a
+              href="https://docs.google.com/forms/d/e/1FAIpQLSdFwI3sCE0Kpwu6bz26PFfCj3xeLLk5Zax1WEqebT-WUjUhUQ/viewform"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: '#fbbf24', textDecoration: 'none', fontWeight: 600 }}
+            >
+              💡 {lang === 'ru' ? 'Идеи / Баги' : 'Ideas & Bugs'}
+            </a>
+          </div>
           <button
             type="button"
             onClick={onClose}

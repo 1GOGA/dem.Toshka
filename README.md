@@ -10,7 +10,7 @@
 [![DonationAlerts](https://img.shields.io/badge/Donate-DonationAlerts-f97316?style=for-the-badge&logo=heart&logoColor=white)](https://www.donationalerts.com/r/pytoshka_)
 [![Steam Trade](https://img.shields.io/badge/Steam-Trade_Offer-0284c7?style=for-the-badge&logo=steam&logoColor=white)](https://steamcommunity.com/tradeoffer/new/?partner=1076140204&token=-A3e3Vab)
 [![Telegram](https://img.shields.io/badge/Telegram-@thepytoshka-229ed9?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/thepytoshka)
-[![License MIT](https://img.shields.io/badge/License-MIT-10b981?style=for-the-badge)](LICENSE)
+[![Обратная связь и Баги](https://img.shields.io/badge/💡%20Баги%20и%20Идеи-Google%20Form-f59e0b?style=for-the-badge)](https://docs.google.com/forms/d/e/1FAIpQLSdFwI3sCE0Kpwu6bz26PFfCj3xeLLk5Zax1WEqebT-WUjUhUQ/viewform)
 
 <br/>
 
@@ -19,6 +19,7 @@
 [![Смотреть Стрим](https://img.shields.io/badge/🟣%20Twitch%20Стрим-9146ff?style=for-the-badge&logo=twitch&logoColor=white)](https://www.twitch.tv/pytoshka_)
 [![Все Релизы](https://img.shields.io/badge/🚀%20Все%20Релизы%20GitHub-10b981?style=for-the-badge&logo=github)](https://github.com/1GOGA/dem.Toshka/releases)
 [![Telegram Канал](https://img.shields.io/badge/💬%20Telegram%20Канал%20Разработчика-229ed9?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/thepytoshka)
+[![Сообщить о баге / Предложить идею](https://img.shields.io/badge/📝%20Что%20хотите%20видеть%20в%20проекте%20(Google%20Form)-f59e0b?style=for-the-badge)](https://docs.google.com/forms/d/e/1FAIpQLSdFwI3sCE0Kpwu6bz26PFfCj3xeLLk5Zax1WEqebT-WUjUhUQ/viewform)
 
 <br/>
 
@@ -133,8 +134,8 @@ cmd.exe /c "npm --prefix frontend run build"
 ## 💬 Сообщество и обратная связь
 
 * 📢 **Telegram-канал разработчика:** [@thepytoshka](https://t.me/thepytoshka) — новости, обновления и релизы.
-* 🐛 **Баги и предложения:** создавайте [Issue в репозитории GitHub](https://github.com/1GOGA/dem.Toshka/issues).
-* 📜 **Лицензия:** [MIT License](LICENSE)
+* 📝 **Форма предложений и баг-репортов:** [Заполнить Google Форму](https://docs.google.com/forms/d/e/1FAIpQLSdFwI3sCE0Kpwu6bz26PFfCj3xeLLk5Zax1WEqebT-WUjUhUQ/viewform) — напишите, какие функции хотите видеть или о найденных багах!
+* 🐛 **GitHub Issues:** создавайте [Issue в репозитории GitHub](https://github.com/1GOGA/dem.Toshka/issues).
 
 <br/>
 

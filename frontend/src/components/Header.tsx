@@ -221,6 +221,18 @@ export const Header: React.FC<HeaderProps> = ({
           </button>
         )}
 
+        {/* Bug Report & Feature Wishlist */}
+        <a
+          href="https://docs.google.com/forms/d/e/1FAIpQLSdFwI3sCE0Kpwu6bz26PFfCj3xeLLk5Zax1WEqebT-WUjUhUQ/viewform"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="header-feedback-btn"
+          title={lang === 'ru' ? 'Сообщить о баге или предложить что хотите видеть в проекте (Google Форма)' : 'Report a bug or suggest a feature (Google Form)'}
+        >
+          <span className="header-feedback-icon">💡</span>
+          <span>{lang === 'ru' ? 'Идеи / Баги' : 'Feedback'}</span>
+        </a>
+
         {/* Parameters Modal Trigger */}
         {onOpenSettings && (
           <button className="btn btn-secondary" onClick={onOpenSettings} title={t('header.parametersTooltip')}>
