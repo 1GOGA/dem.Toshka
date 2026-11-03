@@ -19,6 +19,7 @@ interface HeaderProps {
   selectedCount: number
   onOpenQueue: () => void
   onOpenSettings?: () => void
+  onOpenDonate?: () => void
   currentDemo: DemoSummary | null
 }
 
@@ -28,6 +29,7 @@ export const Header: React.FC<HeaderProps> = ({
   selectedCount,
   onOpenQueue,
   onOpenSettings,
+  onOpenDonate,
   currentDemo,
 }) => {
   const { t, lang } = useTranslation()
@@ -181,6 +183,52 @@ export const Header: React.FC<HeaderProps> = ({
               <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
             </svg>
           </a>
+          <a
+            href="https://www.twitch.tv/pytoshka_"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Twitch: pytoshka_"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '32px',
+              height: '32px',
+              borderRadius: '7px',
+              background: 'rgba(168, 85, 247, 0.08)',
+              border: '1px solid rgba(168, 85, 247, 0.25)',
+              color: '#a855f7',
+              textDecoration: 'none',
+              transition: 'all 0.2s',
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z" />
+            </svg>
+          </a>
+          <a
+            href="https://github.com/1GOGA/dem.Toshka"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="GitHub: 1GOGA/dem.Toshka"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '32px',
+              height: '32px',
+              borderRadius: '7px',
+              background: 'rgba(255, 255, 255, 0.06)',
+              border: '1px solid rgba(255, 255, 255, 0.2)',
+              color: '#e2e8f0',
+              textDecoration: 'none',
+              transition: 'all 0.2s',
+            }}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+            </svg>
+          </a>
         </div>
 
         {/* Active Demo Badge / Quick Ingestion Switcher */}
@@ -205,6 +253,33 @@ export const Header: React.FC<HeaderProps> = ({
           >
             <FolderIcon size={12} color="#38bdf8" />
             <span>{lang === 'ru' ? 'Выбрать демку' : 'Select Demo'}</span>
+          </button>
+        )}
+
+        {/* Support & Donate Button */}
+        {onOpenDonate && (
+          <button
+            type="button"
+            className="btn card-interactive"
+            onClick={onOpenDonate}
+            title={lang === 'ru' ? 'Поддержать создателя (DonationAlerts, Steam скинчики, Twitch)' : 'Support creator (DonationAlerts, Steam skins, Twitch)'}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: 'rgba(236, 72, 153, 0.12)',
+              color: '#f472b6',
+              border: '1px solid rgba(236, 72, 153, 0.35)',
+              fontWeight: 700,
+              padding: '6px 12px',
+              borderRadius: '8px',
+              fontSize: '12px',
+              cursor: 'pointer',
+              boxShadow: '0 0 12px rgba(236, 72, 153, 0.2)',
+            }}
+          >
+            <span style={{ fontSize: '13px' }}>💖</span>
+            <span>{lang === 'ru' ? 'Донат' : 'Donate'}</span>
           </button>
         )}
 

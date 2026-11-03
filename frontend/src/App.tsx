@@ -6,6 +6,8 @@ import { ClipsMontageView } from './components/ClipsMontageView'
 import { Header, type TabType } from './components/Header'
 import { HighlightsStudioView } from './components/HighlightsStudioView'
 import { LanguageSwitcher } from './components/LanguageSwitcher'
+import { SupportDonateModal } from './components/SupportDonateModal'
+import { TwitchLiveWidget } from './components/TwitchLiveWidget'
 import { LibraryView } from './components/LibraryView'
 import { MatchOverviewView } from './components/MatchOverviewView'
 import { RenderQueueModal } from './components/RenderQueueModal'
@@ -48,6 +50,7 @@ export function App() {
   // Modal states
   const [isQueueOpen, setIsQueueOpen] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isDonateOpen, setIsDonateOpen] = useState(false)
 
   // Settings
   const [clipSettings, setClipSettings] = useState<ClipSettings>({
@@ -249,6 +252,7 @@ export function App() {
         selectedCount={selectedHighlightIds.size}
         onOpenQueue={() => setIsQueueOpen(true)}
         onOpenSettings={() => setIsSettingsOpen(true)}
+        onOpenDonate={() => setIsDonateOpen(true)}
         currentDemo={activeDemo}
       />
 
@@ -408,6 +412,15 @@ export function App() {
         onSubmitRender={handleSubmitRenderJobs}
         tickrate={activeDemo?.tickrate ?? 128}
       />
+
+      {/* Creator Support & Donate Modal */}
+      <SupportDonateModal
+        isOpen={isDonateOpen}
+        onClose={() => setIsDonateOpen(false)}
+      />
+
+      {/* Twitch Live Stream Overlay Widget */}
+      <TwitchLiveWidget channelName="pytoshka_" />
 
       {/* Floating Bottom-Right Language Switcher */}
       <LanguageSwitcher />

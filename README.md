@@ -6,14 +6,17 @@
 
 [![Release v0.1.0-beta Installer](https://img.shields.io/badge/Installer-Setup--v0.1.0--beta.exe-38bdf8?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/1GOGA/dem.Toshka/releases)
 [![Platform Windows](https://img.shields.io/badge/Platform-Windows_10_%2F_11-0078d4?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/1GOGA/dem.Toshka)
-[![CS2 Engine](https://img.shields.io/badge/CS2-Source_2_%2B_HLAE-f59e0b?style=for-the-badge&logo=counter-strike&logoColor=white)](https://github.com/1GOGA/dem.Toshka)
-[![FPS Mode](https://img.shields.io/badge/Render-30_%2F_60_%2F_120_FPS_⚡-8b5cf6?style=for-the-badge)](https://github.com/1GOGA/dem.Toshka)
+[![Twitch Live](https://img.shields.io/badge/Twitch-pytoshka__-9146ff?style=for-the-badge&logo=twitch&logoColor=white)](https://www.twitch.tv/pytoshka_)
+[![DonationAlerts](https://img.shields.io/badge/Donate-DonationAlerts-f97316?style=for-the-badge&logo=heart&logoColor=white)](https://www.donationalerts.com/r/pytoshka_)
+[![Steam Trade](https://img.shields.io/badge/Steam-Trade_Offer-0284c7?style=for-the-badge&logo=steam&logoColor=white)](https://steamcommunity.com/tradeoffer/new/?partner=1076140204&token=-A3e3Vab)
 [![Telegram](https://img.shields.io/badge/Telegram-@thepytoshka-229ed9?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/thepytoshka)
 [![License MIT](https://img.shields.io/badge/License-MIT-10b981?style=for-the-badge)](LICENSE)
 
 <br/>
 
 [![Скачать инсталлятор](https://img.shields.io/badge/📥%20Скачать%20Setup--dem.Toshka--v0.1.0--beta.exe-0284c7?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/1GOGA/dem.Toshka/releases)
+[![Поддержать автора](https://img.shields.io/badge/💖%20Поддержать%20Автора%20(Донат)-ec4899?style=for-the-badge&logo=heart&logoColor=white)](https://www.donationalerts.com/r/pytoshka_)
+[![Смотреть Стрим](https://img.shields.io/badge/🟣%20Twitch%20Стрим-9146ff?style=for-the-badge&logo=twitch&logoColor=white)](https://www.twitch.tv/pytoshka_)
 [![Все Релизы](https://img.shields.io/badge/🚀%20Все%20Релизы%20GitHub-10b981?style=for-the-badge&logo=github)](https://github.com/1GOGA/dem.Toshka/releases)
 [![Telegram Канал](https://img.shields.io/badge/💬%20Telegram%20Канал%20Разработчика-229ed9?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/thepytoshka)
 
