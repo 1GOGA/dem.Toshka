@@ -1,0 +1,112 @@
+{
+  "ref_ssstik.io_1794490531192_4a191a5d": {
+    "reference_id": "ref_ssstik.io_1794490531192_4a191a5d",
+    "filename": "ssstik.io_1794490531192.mp4",
+    "duration_seconds": 20.598,
+    "resolution": "1280x720",
+    "fps": 60.0,
+    "cuts_count": 5,
+    "bpm": 187.5,
+    "patterns_count": 4,
+    "categories": [
+      "Dynamic Montage",
+      "Gritty Contrast Grade",
+      "High BPM Trap / Phonk Flow",
+      "Impact & Flash Accents",
+      "Smooth 60 FPS High-Motion",
+      "Speed Ramping & Retiming",
+      "Spin & Whip-Pan Flow",
+      "Widescreen 16:9"
+    ],
+    "user_feedback": null,
+    "contact_sheet": "C:\\Users\\pyPypy\\Documents\\MySCOPE\\demToshka\\reference_library\\contact_sheets\\ref_ssstik.io_1794490531192_4a191a5d_contact_sheet.png",
+    "analyzed_at": "2026-11-12T13:55:08Z"
+  },
+  "ref_ssstik.io_1794490695954_32ad4a6e": {
+    "reference_id": "ref_ssstik.io_1794490695954_32ad4a6e",
+    "filename": "ssstik.io_1794490695954.mp4",
+    "duration_seconds": 29.467,
+    "resolution": "1024x576",
+    "fps": 30.0,
+    "cuts_count": 0,
+    "bpm": 105.3,
+    "patterns_count": 4,
+    "categories": [
+      "Continuous POV Flow",
+      "Mid-Tempo Groove",
+      "Speed Ramping & Retiming",
+      "Vibrant Saturated Grade",
+      "Widescreen 16:9"
+    ],
+    "user_feedback": null,
+    "contact_sheet": "C:\\Users\\pyPypy\\Documents\\MySCOPE\\demToshka\\reference_library\\contact_sheets\\ref_ssstik.io_1794490695954_32ad4a6e_contact_sheet.png",
+    "analyzed_at": "2026-11-12T13:55:16Z"
+  },
+  "ref_ssstik.io_1794490752764_d1588444": {
+    "reference_id": "ref_ssstik.io_1794490752764_d1588444",
+    "filename": "ssstik.io_1794490752764.mp4",
+    "duration_seconds": 15.7,
+    "resolution": "1024x576",
+    "fps": 30.0,
+    "cuts_count": 6,
+    "bpm": 98.4,
+    "patterns_count": 4,
+    "categories": [
+      "Dynamic Montage",
+      "Mid-Tempo Groove",
+      "Speed Ramping & Retiming",
+      "Spin & Whip-Pan Flow",
+      "Vibrant Saturated Grade",
+      "Widescreen 16:9"
+    ],
+    "user_feedback": null,
+    "contact_sheet": "C:\\Users\\pyPypy\\Documents\\MySCOPE\\demToshka\\reference_library\\contact_sheets\\ref_ssstik.io_1794490752764_d1588444_contact_sheet.png",
+    "analyzed_at": "2026-11-12T13:55:21Z"
+  },
+  "ref_Друзей не меняют на бабл_89731028": {
+    "reference_id": "ref_Друзей не меняют на бабл_89731028",
+    "filename": "Друзей не меняют на бабло [get-save.com].mp4",
+    "duration_seconds": 60.116,
+    "resolution": "640x360",
+    "fps": 30.0,
+    "cuts_count": 39,
+    "bpm": 89.6,
+    "patterns_count": 4,
+    "categories": [
+      "Fast Beat-Sync Edit",
+      "Gritty Contrast Grade",
+      "Impact & Flash Accents",
+      "Mid-Tempo Groove",
+      "Speed Ramping & Retiming",
+      "Spin & Whip-Pan Flow",
+      "Viral Russian Rap Edit",
+      "Widescreen 16:9"
+    ],
+    "user_feedback": null,
+    "contact_sheet": "C:\\Users\\pyPypy\\Documents\\MySCOPE\\demToshka\\reference_library\\contact_sheets\\ref_Друзей не меняют на бабл_89731028_contact_sheet.png",
+    "analyzed_at": "2026-11-12T13:55:27Z"
+  },
+  "ref_Моя голова винтом ❤️_518a4460": {
+    "reference_id": "ref_Моя голова винтом ❤️_518a4460",
+    "filename": "Моя голова винтом ❤️.mp4",
+    "duration_seconds": 60.116,
+    "resolution": "640x360",
+    "fps": 30.0,
+    "cuts_count": 33,
+    "bpm": 120.0,
+    "patterns_count": 4,
+    "categories": [
+      "Fast Beat-Sync Edit",
+      "Gritty Contrast Grade",
+      "Impact & Flash Accents",
+      "Mid-Tempo Groove",
+      "Speed Ramping & Retiming",
+      "Spin & Whip-Pan Flow",
+      "Viral Russian Rap Edit",
+      "Widescreen 16:9"
+    ],
+    "user_feedback": null,
+    "contact_sheet": "C:\\Users\\pyPypy\\Documents\\MySCOPE\\demToshka\\reference_library\\contact_sheets\\ref_Моя голова винтом ❤️_518a4460_contact_sheet.png",
+    "analyzed_at": "2026-11-12T13:55:33Z"
+  }
+}

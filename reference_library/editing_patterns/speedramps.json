@@ -1,0 +1,193 @@
+{
+  "PAT_RAMP_ref_ref_": {
+    "pattern_id": "PAT_RAMP_ref_ref_",
+    "name": "Inter-Frag Speed Ramp with Directional Blur",
+    "category": "SPEED_RAMP",
+    "description": "Fast-forward retime (2.5x to 4.0x) covering player rotation or corridor traversal between separate kills.",
+    "scene_type": "SPRAY_TRANSFER",
+    "visual_prerequisites": [
+      "Post-kill repositioning",
+      "No active weapon fire",
+      "Clear path movement"
+    ],
+    "editing_technique": "Optical Flow speed ramp accelerating to 3.5x for 0.8s, returning to 1.0x on enemy appearance.",
+    "suggested_effects": [
+      "Retime curve speed ramp",
+      "Directional blur along movement vector",
+      "Subtle FOV widen (+4 deg)"
+    ],
+    "suggested_transitions": [
+      "Speed ramp cut",
+      "Whip pan"
+    ],
+    "suggested_audio_treatment": "Pitch-shifted audio whoosh + low-pass filter sweep on gameplay audio.",
+    "suggested_timing_range": "0.6s to 1.2s",
+    "davinci_resolve_recipe": {
+      "page": "Edit",
+      "node_tree": "Speed Point at T1 (100%), Speed Point at T2 (350%), Speed Point at T3 (100%), Retime Process: Optical Flow",
+      "curve_type": "Bezier Smooth In/Out"
+    },
+    "confidence": "OBSERVED",
+    "source_reference_id": "ref_ref_cs2_montage_reel_93751afd",
+    "source_timestamps": [
+      0.5,
+      1.0
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "HYPE"
+    ]
+  },
+  "RAMP_HEADSHOT_FREEZE_POP": {
+    "pattern_id": "RAMP_HEADSHOT_FREEZE_POP",
+    "name": "Micro Impact Freeze / 0.2x Slow-Mo Hold",
+    "category": "SPEED_RAMP",
+    "description": "2-frame hold frame or dramatic 0.2x slow-motion deceleration on fatal bullet impact before springing back to 1.0x.",
+    "scene_type": "CLUTCH",
+    "visual_prerequisites": [
+      "High-resolution 60+ FPS capture",
+      "Lethal shot connecting"
+    ],
+    "editing_technique": "Retime curve drop to 20% speed for 4 frames, instantly recovering with punch-in zoom.",
+    "suggested_effects": [
+      "Optical Flow frame blending",
+      "Directional blur spike"
+    ],
+    "suggested_transitions": [
+      "Match cut"
+    ],
+    "suggested_audio_treatment": "High-cut filter sweep on music bed creating brief silence before punch-in drop.",
+    "suggested_timing_range": "0.08s to 0.15s duration",
+    "davinci_resolve_recipe": {
+      "page": "Edit",
+      "node_tree": "Retime Curve: 100% -> 20% (over 3f) -> 100% (instant snap), Retime Process: Optical Flow Enhanced Better",
+      "curve_type": "Steep Dip with Snap Recovery"
+    },
+    "confidence": "INFERRED",
+    "source_reference_id": "ref_cs2_montage_reel",
+    "source_timestamps": [
+      12.2
+    ],
+    "style_profile_affinity": [
+      "HYPE",
+      "HYBRID"
+    ]
+  },
+  "PAT_RAMP_ref_ssst": {
+    "pattern_id": "PAT_RAMP_ref_ssst",
+    "name": "Inter-Frag Speed Ramp with Directional Blur",
+    "category": "SPEED_RAMP",
+    "description": "Fast-forward retime (2.5x to 4.0x) covering player rotation or corridor traversal between separate kills.",
+    "scene_type": "SPRAY_TRANSFER",
+    "visual_prerequisites": [
+      "Post-kill repositioning",
+      "No active weapon fire",
+      "Clear path movement"
+    ],
+    "editing_technique": "Optical Flow speed ramp accelerating to 3.5x for 0.8s, returning to 1.0x on enemy appearance.",
+    "suggested_effects": [
+      "Retime curve speed ramp",
+      "Directional blur along movement vector",
+      "Subtle FOV widen (+4 deg)"
+    ],
+    "suggested_transitions": [
+      "Speed ramp cut",
+      "Whip pan"
+    ],
+    "suggested_audio_treatment": "Pitch-shifted audio whoosh + low-pass filter sweep on gameplay audio.",
+    "suggested_timing_range": "0.6s to 1.2s",
+    "davinci_resolve_recipe": {
+      "page": "Edit",
+      "node_tree": "Speed Point at T1 (100%), Speed Point at T2 (350%), Speed Point at T3 (100%), Retime Process: Optical Flow",
+      "curve_type": "Bezier Smooth In/Out"
+    },
+    "confidence": "OBSERVED",
+    "source_reference_id": "ref_ssstik.io_1794490752764_d1588444",
+    "source_timestamps": [
+      0.5,
+      1.0
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "HYPE"
+    ]
+  },
+  "PAT_RAMP_ref_\u0414\u0440\u0443\u0437": {
+    "pattern_id": "PAT_RAMP_ref_\u0414\u0440\u0443\u0437",
+    "name": "Inter-Frag Speed Ramp with Directional Blur",
+    "category": "SPEED_RAMP",
+    "description": "Fast-forward retime (2.5x to 4.0x) covering player rotation or corridor traversal between separate kills.",
+    "scene_type": "SPRAY_TRANSFER",
+    "visual_prerequisites": [
+      "Post-kill repositioning",
+      "No active weapon fire",
+      "Clear path movement"
+    ],
+    "editing_technique": "Optical Flow speed ramp accelerating to 3.5x for 0.8s, returning to 1.0x on enemy appearance.",
+    "suggested_effects": [
+      "Retime curve speed ramp",
+      "Directional blur along movement vector",
+      "Subtle FOV widen (+4 deg)"
+    ],
+    "suggested_transitions": [
+      "Speed ramp cut",
+      "Whip pan"
+    ],
+    "suggested_audio_treatment": "Pitch-shifted audio whoosh + low-pass filter sweep on gameplay audio.",
+    "suggested_timing_range": "0.6s to 1.2s",
+    "davinci_resolve_recipe": {
+      "page": "Edit",
+      "node_tree": "Speed Point at T1 (100%), Speed Point at T2 (350%), Speed Point at T3 (100%), Retime Process: Optical Flow",
+      "curve_type": "Bezier Smooth In/Out"
+    },
+    "confidence": "OBSERVED",
+    "source_reference_id": "ref_\u0414\u0440\u0443\u0437\u0435\u0439 \u043d\u0435 \u043c\u0435\u043d\u044f\u044e\u0442 \u043d\u0430 \u0431\u0430\u0431\u043b_89731028",
+    "source_timestamps": [
+      1.5,
+      2.0
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "HYPE"
+    ]
+  },
+  "PAT_RAMP_ref_\u041c\u043e\u044f ": {
+    "pattern_id": "PAT_RAMP_ref_\u041c\u043e\u044f ",
+    "name": "Inter-Frag Speed Ramp with Directional Blur",
+    "category": "SPEED_RAMP",
+    "description": "Fast-forward retime (2.5x to 4.0x) covering player rotation or corridor traversal between separate kills.",
+    "scene_type": "SPRAY_TRANSFER",
+    "visual_prerequisites": [
+      "Post-kill repositioning",
+      "No active weapon fire",
+      "Clear path movement"
+    ],
+    "editing_technique": "Optical Flow speed ramp accelerating to 3.5x for 0.8s, returning to 1.0x on enemy appearance.",
+    "suggested_effects": [
+      "Retime curve speed ramp",
+      "Directional blur along movement vector",
+      "Subtle FOV widen (+4 deg)"
+    ],
+    "suggested_transitions": [
+      "Speed ramp cut",
+      "Whip pan"
+    ],
+    "suggested_audio_treatment": "Pitch-shifted audio whoosh + low-pass filter sweep on gameplay audio.",
+    "suggested_timing_range": "0.6s to 1.2s",
+    "davinci_resolve_recipe": {
+      "page": "Edit",
+      "node_tree": "Speed Point at T1 (100%), Speed Point at T2 (350%), Speed Point at T3 (100%), Retime Process: Optical Flow",
+      "curve_type": "Bezier Smooth In/Out"
+    },
+    "confidence": "OBSERVED",
+    "source_reference_id": "ref_\u041c\u043e\u044f \u0433\u043e\u043b\u043e\u0432\u0430 \u0432\u0438\u043d\u0442\u043e\u043c \u2764\ufe0f_518a4460",
+    "source_timestamps": [
+      2.5,
+      3.0
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "HYPE"
+    ]
+  }
+}

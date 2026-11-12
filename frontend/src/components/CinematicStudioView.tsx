@@ -72,9 +72,9 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
   // Primary View Mode: 'fragmovie' (Master Studio & Live Showcase) vs 'planner' (3D Camera Choreography Wizard)
   const [viewMode, setViewMode] = useState<'fragmovie' | 'planner'>('fragmovie')
 
-  // Fragmovie Master Studio Workbench Tabs (Phase 3.3)
+  // Fragmovie Master Studio Workbench Tabs (Phase 3.3 & Phase 3.4)
   const [workbenchTab, setWorkbenchTab] = useState<
-    'storyboard' | 'sound_library' | 'edit_plan' | 'hud_mixer' | 'cameras' | 'render_qc'
+    'storyboard' | 'sound_library' | 'edit_plan' | 'hud_mixer' | 'cameras' | 'render_qc' | 'reference_lab'
   >('storyboard')
 
   // Fragmovie Master Studio States
@@ -112,6 +112,19 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
   // Timeline Lock State (Phase B)
   const [timelineLockState, setTimelineLockState] = useState<string>('LOCKED')
 
+  // Reference Lab States (Phase 3.4)
+  const [referenceInbox, setReferenceInbox] = useState<any[]>([])
+  const [analyzedReferences, setAnalyzedReferences] = useState<any[]>([])
+  const [editingPatterns, setEditingPatterns] = useState<any[]>([])
+  const [selectedProfile, setSelectedProfile] = useState<string>('HYBRID')
+  const [selectedPatternCategory, setSelectedPatternCategory] = useState<string>('all')
+  const [activeContactSheet, setActiveContactSheet] = useState<string | null>(null)
+  const [styleGuideText, setStyleGuideText] = useState<string | null>(null)
+  const [showStyleGuideModal, setShowStyleGuideModal] = useState<boolean>(false)
+  const [activeReferenceCard, setActiveReferenceCard] = useState<{ refId: string; content: string } | null>(null)
+  const [isScanningInbox, setIsScanningInbox] = useState<boolean>(false)
+  const [analyzingFile, setAnalyzingFile] = useState<string | null>(null)
+
   // 3D Planner States (Steps 1-5)
   const [currentStep, setCurrentStep] = useState<number>(2) // 1=Demo, 2=Highlights, 3=ShotPlan, 4=Capture, 5=Resolve
   const [highlights, setHighlights] = useState<RankedHighlight[]>([])
@@ -122,11 +135,12 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
-  // Load initial production overview, workflow state and sound library on mount
+  // Load initial production overview, workflow state, sound library and reference lab on mount
   useEffect(() => {
     loadProductionOverview()
     loadWorkflowState()
     loadSoundLibrary()
+    loadReferenceLab()
   }, [])
 
   // Load highlights when current demo changes
@@ -190,6 +204,108 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
         audioAuditionRef.current.src = sound.audition_url
         audioAuditionRef.current.play().catch(e => console.warn('Audio play failed:', e))
       }
+    }
+  }
+
+  // Phase 3.4 Reference Lab Handlers
+  const loadReferenceLab = async (profile?: string, category?: string) => {
+    try {
+      const inboxRes = await api.getReferenceInbox()
+      setReferenceInbox(inboxRes.items || [])
+
+      const refRes = await api.getAnalyzedReferences()
+      setAnalyzedReferences(refRes.references || [])
+
+      const profParam = profile || selectedProfile
+      const catParam = category && category !== 'all' ? category : undefined
+      const patRes = await api.getEditingPatterns({ profile: profParam, category: catParam })
+      setEditingPatterns(patRes.patterns || [])
+    } catch (e) {
+      console.warn('Could not fetch Reference Lab data:', e)
+    }
+  }
+
+  const handleScanInbox = async () => {
+    setIsScanningInbox(true)
+    try {
+      await api.scanReferenceInbox()
+      await loadReferenceLab(selectedProfile, selectedPatternCategory)
+      setSuccessMsg(lang === 'ru' ? 'Inbox референсов успешно просканирован' : 'Reference inbox scanned successfully')
+      setTimeout(() => setSuccessMsg(null), 3000)
+    } catch (e: any) {
+      setErrorMsg(e.message || 'Scan failed')
+      setTimeout(() => setErrorMsg(null), 3000)
+    } finally {
+      setIsScanningInbox(false)
+    }
+  }
+
+  const handleAnalyzeReference = async (filename: string) => {
+    setAnalyzingFile(filename)
+    try {
+      await api.analyzeReferenceVideo(filename)
+      await loadReferenceLab(selectedProfile, selectedPatternCategory)
+      setSuccessMsg(lang === 'ru' ? `Анализ ${filename} успешно завершен` : `Analysis of ${filename} complete`)
+      setTimeout(() => setSuccessMsg(null), 4000)
+    } catch (e: any) {
+      setErrorMsg(e.message || 'Analysis failed')
+      setTimeout(() => setErrorMsg(null), 4000)
+    } finally {
+      setAnalyzingFile(null)
+    }
+  }
+
+  const handleProfileChange = (prof: string) => {
+    setSelectedProfile(prof)
+    loadReferenceLab(prof, selectedPatternCategory)
+  }
+
+  const handlePatternCategoryChange = (cat: string) => {
+    setSelectedPatternCategory(cat)
+    loadReferenceLab(selectedProfile, cat)
+  }
+
+  const handleOpenStyleGuide = async () => {
+    try {
+      const res = await api.getStyleGuide()
+      setStyleGuideText(res.content)
+      setShowStyleGuideModal(true)
+    } catch (e: any) {
+      setErrorMsg('Failed to load Style Guide')
+    }
+  }
+
+  const handleVoteReference = async (refId: string, currentVote: string | null, newVote: 'liked' | 'disliked') => {
+    const nextVote = currentVote === newVote ? null : newVote
+    try {
+      await api.voteReference(refId, nextVote)
+      setAnalyzedReferences(prev =>
+        prev.map(r => r.reference_id === refId ? { ...r, user_feedback: nextVote } : r)
+      )
+    } catch (e) {
+      console.warn('Failed to vote reference:', e)
+    }
+  }
+
+  const handleVotePattern = async (patternId: string, currentVote: string | null, newVote: 'liked' | 'disliked') => {
+    const nextVote = currentVote === newVote ? null : newVote
+    try {
+      await api.votePattern(patternId, nextVote)
+      setEditingPatterns(prev =>
+        prev.map(p => p.pattern_id === patternId ? { ...p, user_feedback: nextVote } : p)
+      )
+    } catch (e) {
+      console.warn('Failed to vote pattern:', e)
+    }
+  }
+
+  const handleOpenReferenceCard = async (refId: string) => {
+    try {
+      const card = await api.getReferenceCard(refId)
+      setActiveReferenceCard({ refId, content: card.content })
+    } catch (e) {
+      setErrorMsg('Failed to load Reference Card')
+      setTimeout(() => setErrorMsg(null), 3000)
     }
   }
 
@@ -294,10 +410,16 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
   }
 
   const getActiveVideoUrl = () => {
-    if (!productionData || !productionData.releases) {
-      return '/renders/ACE_FINAL_V3_AUDIO_KILLFEED/ACE_FINAL_V3_MASTER.mp4'
+    if (selectedReleaseId === 'broadcast_16x9') {
+      return '/renders/ACE_FINAL_V3_AUDIO_KILLFEED/ACE_FINAL_V3_BROADCAST_KILLFEED.mp4'
     }
-    const rel = productionData.releases.find((r: any) => r.id === selectedReleaseId)
+    if (selectedReleaseId === 'tiktok_9x16') {
+      return '/renders/ACE_FINAL_V3_AUDIO_KILLFEED/ACE_FINAL_V3_TIKTOK.mp4'
+    }
+    if (selectedReleaseId === 'preview_16x9') {
+      return '/renders/ACE_FINAL_V3_AUDIO_KILLFEED/ACE_FINAL_V3_PREVIEW.mp4'
+    }
+    const rel = productionData?.releases?.find((r: any) => r.id === selectedReleaseId)
     return rel ? rel.url : '/renders/ACE_FINAL_V3_AUDIO_KILLFEED/ACE_FINAL_V3_MASTER.mp4'
   }
 
@@ -307,9 +429,9 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
     { time: 7.830, label: 'Kill 1 (1K)', color: '#ff8c00', icon: '💀' },
     { time: 10.455, label: 'Kill 2 (2K)', color: '#ff5a00', icon: '💀' },
     { time: 12.198, label: 'Kill 3 (HS)', color: '#ef4444', icon: '🎯' },
-    { time: 12.998, label: 'Kill 4 (4K)', color: '#dc2626', icon: '💀' },
-    { time: 15.538, label: 'Kill 5 (ACE)', color: '#ffd700', icon: '🏆' },
-    { time: 15.800, label: '5K Domination', color: '#38bdf8', icon: '👑' },
+    { time: 13.500, label: 'Kill 4 (4K)', color: '#dc2626', icon: '💀' },
+    { time: 16.500, label: 'Kill 5 (ACE in Orbit)', color: '#ffd700', icon: '🏆' },
+    { time: 16.600, label: '5K Domination Card', color: '#38bdf8', icon: '👑' },
   ]
 
   const hudProfileDescriptions: Record<string, string> = {
@@ -409,7 +531,13 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
                   className={`release-tab ${selectedReleaseId === 'master_16x9' ? 'active' : ''}`}
                   onClick={() => setSelectedReleaseId('master_16x9')}
                 >
-                  🖥️ 16:9 Master (1080p60)
+                  🎬 16:9 Pure Cinematic (Без плашек)
+                </button>
+                <button
+                  className={`release-tab ${selectedReleaseId === 'broadcast_16x9' ? 'active' : ''}`}
+                  onClick={() => setSelectedReleaseId('broadcast_16x9')}
+                >
+                  🏆 Broadcast (С киллфидом)
                 </button>
                 <button
                   className={`release-tab ${selectedReleaseId === 'tiktok_9x16' ? 'active' : ''}`}
@@ -579,6 +707,12 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
                 onClick={() => setWorkbenchTab('render_qc')}
               >
                 🚀 {lang === 'ru' ? 'Рендер & Контроль' : 'Render & QC'}
+              </button>
+              <button
+                className={`workbench-tab-btn ${workbenchTab === 'reference_lab' ? 'active' : ''}`}
+                onClick={() => setWorkbenchTab('reference_lab')}
+              >
+                🔬 {lang === 'ru' ? 'Лаборатория Референсов' : 'Reference Lab & Patterns'}
               </button>
             </div>
 
@@ -1136,12 +1270,17 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
                     <ul className="releases-list">
                       <li>
                         <b>ACE_FINAL_V3_MASTER.mp4</b>
-                        <span>1920x1080 @ 60 FPS • 53.1 МБ • 24.1 Мбит/с • 0% Вотермарк</span>
+                        <span>1920x1080 @ 60 FPS • 53.2 МБ • Pure Cinematic (Чистый монтаж без плашек)</span>
                         <a href="/renders/ACE_FINAL_V3_AUDIO_KILLFEED/ACE_FINAL_V3_MASTER.mp4" download className="btn-dl">Download Master</a>
                       </li>
                       <li>
+                        <b>ACE_FINAL_V3_BROADCAST_KILLFEED.mp4</b>
+                        <span>1920x1080 @ 60 FPS • 53.2 МБ • Esports Broadcast (С точным киллфидом)</span>
+                        <a href="/renders/ACE_FINAL_V3_AUDIO_KILLFEED/ACE_FINAL_V3_BROADCAST_KILLFEED.mp4" download className="btn-dl">Download Broadcast</a>
+                      </li>
+                      <li>
                         <b>ACE_FINAL_V3_TIKTOK.mp4</b>
-                        <span>1080x1920 @ 60 FPS • 44.5 МБ • 20.2 Мбит/с • Smart Vertical</span>
+                        <span>1080x1920 @ 60 FPS • 44.4 МБ • 20.2 Мбит/с • Smart Vertical</span>
                         <a href="/renders/ACE_FINAL_V3_AUDIO_KILLFEED/ACE_FINAL_V3_TIKTOK.mp4" download className="btn-dl">Download TikTok</a>
                       </li>
                       <li>
@@ -1171,6 +1310,287 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
                     <button className="btn-show-qa-full" onClick={() => setShowQAModal(true)}>
                       🔍 View 4K Quality Control Contact Sheet
                     </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 7: AI FRAGMOVIE REFERENCE LAB (PHASE 3.4) */}
+            {workbenchTab === 'reference_lab' && (
+              <div className="workbench-panel reference-lab-panel">
+                <div className="panel-header-row">
+                  <div>
+                    <h3>
+                      {lang === 'ru'
+                        ? 'AI Fragmovie Reference Lab — Анализ Референсов & Библиотека Паттернов'
+                        : 'AI Fragmovie Reference Lab — Pattern Intelligence & Resolve Recipes'}
+                    </h3>
+                    <p className="panel-subtitle">
+                      {lang === 'ru'
+                        ? 'Локальный мультимодальный анализ профессиональных CS2 мувиков (FFprobe, OpenCV, SciPy, NumPy). Извлечение таймингов, переходов, цветовых схем и нодовых рецептов DaVinci Resolve 21.'
+                        : 'Local multimodal analysis of professional CS2 fragmovies (FFprobe, OpenCV, SciPy, NumPy). Extraction of pacing, transitions, color palettes, and DaVinci Resolve 21 node recipes.'}
+                    </p>
+                  </div>
+                  <div className="ref-lab-header-actions">
+                    <button
+                      className="btn-ref-action"
+                      onClick={handleScanInbox}
+                      disabled={isScanningInbox}
+                    >
+                      {isScanningInbox ? '⏳ Scanning...' : '📥 ' + (lang === 'ru' ? 'Сканировать Inbox' : 'Scan Inbox')}
+                    </button>
+                    <button
+                      className="btn-ref-action guide-btn"
+                      onClick={handleOpenStyleGuide}
+                    >
+                      📖 {lang === 'ru' ? 'Pytoshka Style Guide' : 'Pytoshka Style Guide'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sub-section 1: Inbox Status & Staged Videos */}
+                <div className="ref-section-block">
+                  <div className="ref-section-header">
+                    <h4>
+                      📥 {lang === 'ru' ? 'Входящие Референсы' : 'Inbox Staged Videos'} (<code>reference_library/inbox/</code>)
+                    </h4>
+                    <span className="ref-count-tag">{referenceInbox.length} staged</span>
+                  </div>
+                  <div className="ref-inbox-grid">
+                    {referenceInbox.map((item) => (
+                      <div key={item.filename} className="ref-inbox-card">
+                        <div className="ref-inbox-info">
+                          <span className="ref-inbox-icon">🎬</span>
+                          <div>
+                            <strong className="ref-inbox-title" title={item.filename}>{item.filename}</strong>
+                            <div className="ref-inbox-meta">{item.size_mb} MB • {item.analyzed ? '✅ Verified in Index' : '⚡ Ready to analyze'}</div>
+                          </div>
+                        </div>
+                        <div className="ref-inbox-actions">
+                          {item.analyzed ? (
+                            <span className="badge-analyzed">ANALYZED</span>
+                          ) : (
+                            <button
+                              className="btn-analyze-ref"
+                              onClick={() => handleAnalyzeReference(item.filename)}
+                              disabled={analyzingFile === item.filename}
+                            >
+                              {analyzingFile === item.filename ? '⏳ Processing...' : '▶ Analyze'}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                    {referenceInbox.length === 0 && (
+                      <div className="ref-empty-hint">
+                        {lang === 'ru'
+                          ? 'Поместите .mp4/.mov файлы в reference_library/inbox/ и нажмите "Сканировать Inbox".'
+                          : 'Place .mp4/.mov reference clips into reference_library/inbox/ and click "Scan Inbox".'}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Sub-section 2: Analyzed Reference Vault */}
+                <div className="ref-section-block">
+                  <div className="ref-section-header">
+                    <h4>
+                      🎞️ {lang === 'ru' ? 'Верифицированные Референсы & Раскадровки' : 'Analyzed Reference Vault & Contact Sheets'}
+                    </h4>
+                    <span className="ref-count-tag">{analyzedReferences.length} verified</span>
+                  </div>
+                  <div className="ref-analyzed-grid">
+                    {analyzedReferences.map((ref) => {
+                      const sheetFilename = ref.contact_sheet ? ref.contact_sheet.split(/[\\/]/).pop() : null
+                      return (
+                        <div key={ref.reference_id} className="ref-analyzed-card">
+                          <div className="ref-card-header">
+                            <span className="ref-id-pill">{ref.reference_id.substring(0, 22)}...</span>
+                            <div className="ref-card-header-right">
+                              <span className="ref-fps-badge">{ref.resolution} @ {ref.fps} FPS</span>
+                              <div className="vote-btn-group">
+                                <button
+                                  className={`btn-vote like ${ref.user_feedback === 'liked' ? 'voted' : ''}`}
+                                  onClick={() => handleVoteReference(ref.reference_id, ref.user_feedback, 'liked')}
+                                  title="Like this editing style"
+                                >
+                                  👍
+                                </button>
+                                <button
+                                  className={`btn-vote dislike ${ref.user_feedback === 'disliked' ? 'voted' : ''}`}
+                                  onClick={() => handleVoteReference(ref.reference_id, ref.user_feedback, 'disliked')}
+                                  title="Dislike this editing style"
+                                >
+                                  👎
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Categories tags */}
+                          {ref.categories && ref.categories.length > 0 && (
+                            <div className="ref-card-categories">
+                              {ref.categories.map((c: string) => (
+                                <span key={c} className="ref-tag-pill">{c}</span>
+                              ))}
+                            </div>
+                          )}
+
+                          <div className="ref-card-body">
+                            <div className="ref-metric-row">
+                              <span className="label">File:</span>
+                              <span className="val" title={ref.filename}>{ref.filename}</span>
+                            </div>
+                            <div className="ref-metric-row">
+                              <span className="label">Duration:</span>
+                              <span className="val">{ref.duration_seconds.toFixed(2)}s</span>
+                            </div>
+                            <div className="ref-metric-row">
+                              <span className="label">Detected Cuts:</span>
+                              <span className="val highlight-val">{ref.cuts_count} transitions</span>
+                            </div>
+                            <div className="ref-metric-row">
+                              <span className="label">Tempo / BPM:</span>
+                              <span className="val">{ref.bpm ? `${ref.bpm} BPM` : 'Ambient'}</span>
+                            </div>
+                            <div className="ref-metric-row">
+                              <span className="label">Patterns Found:</span>
+                              <span className="val highlight-gold">{ref.patterns_count} patterns</span>
+                            </div>
+                          </div>
+                          <div className="ref-card-footer">
+                            {sheetFilename && (
+                              <button
+                                className="btn-sheet-view"
+                                onClick={() => setActiveContactSheet(api.getContactSheetUrl(sheetFilename))}
+                              >
+                                🖼️ {lang === 'ru' ? 'Раскадровка' : 'Contact Sheet'}
+                              </button>
+                            )}
+                            <button
+                              className="btn-card-breakdown"
+                              onClick={() => handleOpenReferenceCard(ref.reference_id)}
+                            >
+                              📋 {lang === 'ru' ? 'Разбор (Card)' : 'Breakdown Card'}
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+
+                {/* Sub-section 3: Editing Patterns Explorer */}
+                <div className="ref-section-block">
+                  <div className="ref-section-header">
+                    <h4>
+                      🧩 {lang === 'ru' ? 'Монтажные Паттерны & Рецепты DaVinci Resolve' : 'Editing Patterns & DaVinci Resolve Recipes'}
+                    </h4>
+                    <span className="ref-count-tag">{editingPatterns.length} patterns</span>
+                  </div>
+
+                  {/* Profile & Category Selectors */}
+                  <div className="ref-filters-bar">
+                    <div className="ref-profile-tabs">
+                      <span className="ref-filter-label">{lang === 'ru' ? 'Профиль Стиля:' : 'Style Profile:'}</span>
+                      {[
+                        { id: 'HYBRID', label: '🎛️ HYBRID (Default)', desc: 'Balanced Narrative & Impact' },
+                        { id: 'HYPE', label: '🔥 HYPE (Fast)', desc: 'Micro-Zooms & 808 Drops' },
+                        { id: 'CINEMATIC', label: '🎬 CINEMATIC (Atmospheric)', desc: 'Campath Orbits & Pacing' },
+                      ].map((p) => (
+                        <button
+                          key={p.id}
+                          className={`ref-prof-btn ${selectedProfile === p.id ? 'active' : ''}`}
+                          onClick={() => handleProfileChange(p.id)}
+                          title={p.desc}
+                        >
+                          {p.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="ref-cat-pills">
+                      <span className="ref-filter-label">{lang === 'ru' ? 'Категория:' : 'Category:'}</span>
+                      {['all', 'TRANSITION', 'SPEED_RAMP', 'COLOR_GRADING', 'SOUND_DESIGN', 'CAMERA_WORK', 'TYPOGRAPHY'].map((cat) => (
+                        <button
+                          key={cat}
+                          className={`cat-pill ${selectedPatternCategory === cat ? 'active' : ''}`}
+                          onClick={() => handlePatternCategoryChange(cat)}
+                        >
+                          {cat}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Patterns Grid */}
+                  <div className="patterns-card-grid">
+                    {editingPatterns.map((pat) => (
+                      <div key={pat.pattern_id} className="pattern-detail-card">
+                        <div className="pat-card-header">
+                          <span className={`pat-cat-pill cat-${pat.category.toLowerCase()}`}>{pat.category}</span>
+                          <div className="pat-card-header-right">
+                            <span className={`pat-confidence-pill conf-${pat.confidence.toLowerCase()}`}>{pat.confidence}</span>
+                            <div className="vote-btn-group">
+                              <button
+                                className={`btn-vote like ${pat.user_feedback === 'liked' ? 'voted' : ''}`}
+                                onClick={() => handleVotePattern(pat.pattern_id, pat.user_feedback, 'liked')}
+                                title="Like this editing technique"
+                              >
+                                👍
+                              </button>
+                              <button
+                                className={`btn-vote dislike ${pat.user_feedback === 'disliked' ? 'voted' : ''}`}
+                                onClick={() => handleVotePattern(pat.pattern_id, pat.user_feedback, 'disliked')}
+                                title="Dislike this editing technique"
+                              >
+                                👎
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                        <h4 className="pat-title">{pat.name}</h4>
+                        <p className="pat-desc">{pat.description}</p>
+
+                        <div className="pat-meta-block">
+                          <div className="pat-meta-row">
+                            <span className="label">Scene Type:</span>
+                            <span className="val">{pat.scene_type}</span>
+                          </div>
+                          <div className="pat-meta-row">
+                            <span className="label">Timing Range:</span>
+                            <span className="val">{pat.suggested_timing_range}</span>
+                          </div>
+                          <div className="pat-meta-row">
+                            <span className="label">Technique:</span>
+                            <span className="val-tech">{pat.editing_technique}</span>
+                          </div>
+                          <div className="pat-meta-row">
+                            <span className="label">Audio:</span>
+                            <span className="val-audio">{pat.suggested_audio_treatment}</span>
+                          </div>
+                        </div>
+
+                        {pat.davinci_resolve_recipe && (
+                          <div className="resolve-recipe-box">
+                            <div className="recipe-header">
+                              <span className="recipe-page">DaVinci Resolve: <b>{pat.davinci_resolve_recipe.page} Page</b></span>
+                              <span className="recipe-curve">{pat.davinci_resolve_recipe.curve_type}</span>
+                            </div>
+                            <pre className="recipe-code">
+                              {pat.davinci_resolve_recipe.node_tree || JSON.stringify(pat.davinci_resolve_recipe, null, 2)}
+                            </pre>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {editingPatterns.length === 0 && (
+                      <div className="ref-empty-hint">
+                        {lang === 'ru'
+                          ? 'Нет паттернов под выбранные фильтры. Выберите другой профиль или категорию.'
+                          : 'No patterns found matching current filters.'}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1403,6 +1823,67 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
             <div className="modal-footer">
               <span>Verified: No Watermark • Frame-Locked Killfeed • Engagement Beat Sync • Full Sonniss SFX</span>
               <button className="btn-modal-close" onClick={() => setShowQAModal(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Reference Lab Contact Sheet Viewer */}
+      {activeContactSheet && (
+        <div className="modal-backdrop" onClick={() => setActiveContactSheet(null)}>
+          <div className="modal-content-qa modal-content-ref-sheet" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>🖼️ Reference Lab Contact Sheet — Multimodal Frame Breakdown</h3>
+              <button className="modal-close-btn" onClick={() => setActiveContactSheet(null)}>✕</button>
+            </div>
+            <div className="modal-body-qa">
+              <img
+                src={activeContactSheet}
+                alt="Reference Lab Contact Sheet"
+                className="qa-contact-sheet-img"
+              />
+            </div>
+            <div className="modal-footer">
+              <span>8-Frame Pacing Grid • Cut Detection • Transition Type Overlay</span>
+              <button className="btn-modal-close" onClick={() => setActiveContactSheet(null)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Pytoshka Style Guide Viewer */}
+      {showStyleGuideModal && styleGuideText && (
+        <div className="modal-backdrop" onClick={() => setShowStyleGuideModal(false)}>
+          <div className="modal-content-qa modal-content-styleguide" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>📖 Pytoshka Fragmovie Production Style Guide</h3>
+              <button className="modal-close-btn" onClick={() => setShowStyleGuideModal(false)}>✕</button>
+            </div>
+            <div className="modal-body-qa styleguide-body">
+              <pre className="styleguide-markdown-view">{styleGuideText}</pre>
+            </div>
+            <div className="modal-footer">
+              <span>Authoritative editing rules: Pacing, Camera Matrix, Speed Ramps, Fairlight Mix & Resolve Recipes</span>
+              <button className="btn-modal-close" onClick={() => setShowStyleGuideModal(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Reference Breakdown Card Viewer */}
+      {activeReferenceCard && (
+        <div className="modal-backdrop" onClick={() => setActiveReferenceCard(null)}>
+          <div className="modal-content-qa modal-content-styleguide" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>📋 Reference Breakdown Card — {activeReferenceCard.refId}</h3>
+              <button className="modal-close-btn" onClick={() => setActiveReferenceCard(null)}>✕</button>
+            </div>
+            <div className="modal-body-qa styleguide-body">
+              <pre className="styleguide-markdown-view">{activeReferenceCard.content}</pre>
+            </div>
+            <div className="modal-footer">
+              <span>Detailed Breakdown: OBSERVED vs INFERRED vs DaVinci Resolve 21 IMPLEMENTATION</span>
+              <button className="btn-modal-close" onClick={() => setActiveReferenceCard(null)}>Close</button>
             </div>
           </div>
         </div>

@@ -1,0 +1,2635 @@
+{
+  "reference_id": "ref_Моя голова винтом ❤️_518a4460",
+  "metadata": {
+    "video_id": "ref_Моя голова винтом ❤️_518a4460",
+    "filename": "Моя голова винтом ❤️.mp4",
+    "file_path": "C:\\Users\\pyPypy\\Documents\\MySCOPE\\demToshka\\reference_library\\inbox\\Моя голова винтом ❤️.mp4",
+    "format": "mov,mp4,m4a,3gp,3g2,mj2",
+    "duration_seconds": 60.116,
+    "width": 640,
+    "height": 360,
+    "fps": 30.0,
+    "bitrate_kbps": 683.2,
+    "audio_channels": 2,
+    "audio_sample_rate": 44100,
+    "has_audio": true,
+    "file_size_bytes": 5133775,
+    "sha256": "518a4460853d9ec764710a70a0721e9bf1c2f3bfc6c61e95b429056e586d798c"
+  },
+  "cuts": [
+    {
+      "cut_id": "cut_001",
+      "frame_index": 92,
+      "time_seconds": 3.067,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 38.2,
+      "confidence": 0.48
+    },
+    {
+      "cut_id": "cut_002",
+      "frame_index": 114,
+      "time_seconds": 3.8,
+      "transition_type": "HARD_CUT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 51.6,
+      "confidence": 0.64
+    },
+    {
+      "cut_id": "cut_003",
+      "frame_index": 130,
+      "time_seconds": 4.333,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 43.7,
+      "confidence": 0.55
+    },
+    {
+      "cut_id": "cut_004",
+      "frame_index": 152,
+      "time_seconds": 5.067,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 42.1,
+      "confidence": 0.53
+    },
+    {
+      "cut_id": "cut_005",
+      "frame_index": 186,
+      "time_seconds": 6.2,
+      "transition_type": "ZOOM_IN_OUT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 100.2,
+      "confidence": 1.0
+    },
+    {
+      "cut_id": "cut_006",
+      "frame_index": 210,
+      "time_seconds": 7.0,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 78.8,
+      "confidence": 0.98
+    },
+    {
+      "cut_id": "cut_007",
+      "frame_index": 252,
+      "time_seconds": 8.4,
+      "transition_type": "ZOOM_IN_OUT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 76.4,
+      "confidence": 0.95
+    },
+    {
+      "cut_id": "cut_008",
+      "frame_index": 270,
+      "time_seconds": 9.0,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 82.5,
+      "confidence": 1.0
+    },
+    {
+      "cut_id": "cut_009",
+      "frame_index": 314,
+      "time_seconds": 10.467,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 61.0,
+      "confidence": 0.76
+    },
+    {
+      "cut_id": "cut_010",
+      "frame_index": 368,
+      "time_seconds": 12.267,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 76.3,
+      "confidence": 0.95
+    },
+    {
+      "cut_id": "cut_011",
+      "frame_index": 400,
+      "time_seconds": 13.333,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 65.3,
+      "confidence": 0.82
+    },
+    {
+      "cut_id": "cut_012",
+      "frame_index": 478,
+      "time_seconds": 15.933,
+      "transition_type": "HARD_CUT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 43.9,
+      "confidence": 0.55
+    },
+    {
+      "cut_id": "cut_013",
+      "frame_index": 646,
+      "time_seconds": 21.533,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 57.6,
+      "confidence": 0.72
+    },
+    {
+      "cut_id": "cut_014",
+      "frame_index": 662,
+      "time_seconds": 22.067,
+      "transition_type": "HARD_CUT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 46.0,
+      "confidence": 0.58
+    },
+    {
+      "cut_id": "cut_015",
+      "frame_index": 678,
+      "time_seconds": 22.6,
+      "transition_type": "ZOOM_IN_OUT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 77.4,
+      "confidence": 0.97
+    },
+    {
+      "cut_id": "cut_016",
+      "frame_index": 706,
+      "time_seconds": 23.533,
+      "transition_type": "ZOOM_IN_OUT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 68.5,
+      "confidence": 0.86
+    },
+    {
+      "cut_id": "cut_017",
+      "frame_index": 724,
+      "time_seconds": 24.133,
+      "transition_type": "HARD_CUT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 39.7,
+      "confidence": 0.5
+    },
+    {
+      "cut_id": "cut_018",
+      "frame_index": 752,
+      "time_seconds": 25.067,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 85.7,
+      "confidence": 1.0
+    },
+    {
+      "cut_id": "cut_019",
+      "frame_index": 810,
+      "time_seconds": 27.0,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 72.8,
+      "confidence": 0.91
+    },
+    {
+      "cut_id": "cut_020",
+      "frame_index": 854,
+      "time_seconds": 28.467,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 70.8,
+      "confidence": 0.88
+    },
+    {
+      "cut_id": "cut_021",
+      "frame_index": 916,
+      "time_seconds": 30.533,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 69.6,
+      "confidence": 0.87
+    },
+    {
+      "cut_id": "cut_022",
+      "frame_index": 976,
+      "time_seconds": 32.533,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 66.3,
+      "confidence": 0.83
+    },
+    {
+      "cut_id": "cut_023",
+      "frame_index": 994,
+      "time_seconds": 33.133,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 44.1,
+      "confidence": 0.55
+    },
+    {
+      "cut_id": "cut_024",
+      "frame_index": 1036,
+      "time_seconds": 34.533,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 74.2,
+      "confidence": 0.93
+    },
+    {
+      "cut_id": "cut_025",
+      "frame_index": 1070,
+      "time_seconds": 35.667,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 39.6,
+      "confidence": 0.49
+    },
+    {
+      "cut_id": "cut_026",
+      "frame_index": 1110,
+      "time_seconds": 37.0,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 51.5,
+      "confidence": 0.64
+    },
+    {
+      "cut_id": "cut_027",
+      "frame_index": 1246,
+      "time_seconds": 41.533,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 63.6,
+      "confidence": 0.79
+    },
+    {
+      "cut_id": "cut_028",
+      "frame_index": 1320,
+      "time_seconds": 44.0,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 79.9,
+      "confidence": 1.0
+    },
+    {
+      "cut_id": "cut_029",
+      "frame_index": 1362,
+      "time_seconds": 45.4,
+      "transition_type": "ZOOM_IN_OUT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 75.3,
+      "confidence": 0.94
+    },
+    {
+      "cut_id": "cut_030",
+      "frame_index": 1410,
+      "time_seconds": 47.0,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 38.2,
+      "confidence": 0.48
+    },
+    {
+      "cut_id": "cut_031",
+      "frame_index": 1470,
+      "time_seconds": 49.0,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 77.9,
+      "confidence": 0.97
+    },
+    {
+      "cut_id": "cut_032",
+      "frame_index": 1594,
+      "time_seconds": 53.133,
+      "transition_type": "HARD_CUT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 41.4,
+      "confidence": 0.52
+    },
+    {
+      "cut_id": "cut_033",
+      "frame_index": 1646,
+      "time_seconds": 54.867,
+      "transition_type": "HARD_CUT",
+      "duration_frames": 2,
+      "transition_duration_seconds": 0.067,
+      "motion_intensity": 40.8,
+      "confidence": 0.51
+    }
+  ],
+  "audio_beats": {
+    "bpm": 120.0,
+    "beat_times": [
+      0.139,
+      0.639,
+      1.139,
+      1.639,
+      2.139,
+      2.639,
+      3.139,
+      3.639,
+      4.139,
+      4.639,
+      5.139,
+      5.639,
+      6.139,
+      6.639,
+      7.139,
+      7.639,
+      8.139,
+      8.639,
+      9.139,
+      9.639,
+      10.139,
+      10.639,
+      11.139,
+      11.639,
+      12.139,
+      12.639,
+      13.139,
+      13.639,
+      14.139,
+      14.639,
+      15.139,
+      15.639,
+      16.139,
+      16.639,
+      17.139,
+      17.639,
+      18.139,
+      18.639,
+      19.139,
+      19.639,
+      20.139,
+      20.639,
+      21.139,
+      21.639,
+      22.139,
+      22.639,
+      23.139,
+      23.639
+    ],
+    "drop_times": [
+      4.639,
+      5.146,
+      5.568,
+      5.889
+    ],
+    "energy_peaks": [
+      {
+        "time_seconds": 4.639,
+        "type": "SUB_BASS_DROP",
+        "relative_energy": 1.0
+      },
+      {
+        "time_seconds": 5.146,
+        "type": "HEAVY_BEAT",
+        "relative_energy": 1.0
+      },
+      {
+        "time_seconds": 5.568,
+        "type": "HEAVY_BEAT",
+        "relative_energy": 1.0
+      },
+      {
+        "time_seconds": 5.889,
+        "type": "HEAVY_BEAT",
+        "relative_energy": 1.0
+      },
+      {
+        "time_seconds": 6.263,
+        "type": "HEAVY_BEAT",
+        "relative_energy": 1.0
+      },
+      {
+        "time_seconds": 6.577,
+        "type": "HEAVY_BEAT",
+        "relative_energy": 1.0
+      }
+    ],
+    "sub_bass_events": [
+      4.639,
+      5.146,
+      5.568,
+      5.889,
+      6.263,
+      6.577,
+      7.139,
+      7.451
+    ]
+  },
+  "color_grading": {
+    "dominant_colors_hex": [
+      "#eab991",
+      "#020100",
+      "#533728",
+      "#886650",
+      "#92b1cc"
+    ],
+    "shadow_tint_hex": "#0a0604",
+    "highlight_tint_hex": "#e3be9f",
+    "average_saturation": 0.25,
+    "contrast_ratio": 0.22,
+    "halation_detected": false
+  },
+  "motion_segments": [
+    {
+      "start_time": 1.0,
+      "end_time": 1.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 45
+    },
+    {
+      "start_time": 1.5,
+      "end_time": 2.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 60
+    },
+    {
+      "start_time": 2.5,
+      "end_time": 3.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 90
+    },
+    {
+      "start_time": 3.0,
+      "end_time": 3.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 105
+    },
+    {
+      "start_time": 3.5,
+      "end_time": 4.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 120
+    },
+    {
+      "start_time": 4.0,
+      "end_time": 4.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 135
+    },
+    {
+      "start_time": 4.5,
+      "end_time": 5.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 150
+    },
+    {
+      "start_time": 5.0,
+      "end_time": 5.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 165
+    },
+    {
+      "start_time": 6.0,
+      "end_time": 6.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 195
+    },
+    {
+      "start_time": 6.5,
+      "end_time": 7.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 210
+    },
+    {
+      "start_time": 7.0,
+      "end_time": 7.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 225
+    },
+    {
+      "start_time": 7.5,
+      "end_time": 8.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 240
+    },
+    {
+      "start_time": 8.0,
+      "end_time": 8.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 255
+    },
+    {
+      "start_time": 8.5,
+      "end_time": 9.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 270
+    },
+    {
+      "start_time": 9.0,
+      "end_time": 9.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 285
+    },
+    {
+      "start_time": 10.0,
+      "end_time": 10.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 315
+    },
+    {
+      "start_time": 10.5,
+      "end_time": 11.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 330
+    },
+    {
+      "start_time": 11.0,
+      "end_time": 11.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 345
+    },
+    {
+      "start_time": 12.0,
+      "end_time": 12.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 375
+    },
+    {
+      "start_time": 12.5,
+      "end_time": 13.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 390
+    },
+    {
+      "start_time": 13.0,
+      "end_time": 13.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 405
+    },
+    {
+      "start_time": 14.5,
+      "end_time": 15.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 450
+    },
+    {
+      "start_time": 15.5,
+      "end_time": 16.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 480
+    },
+    {
+      "start_time": 16.0,
+      "end_time": 16.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 495
+    },
+    {
+      "start_time": 16.5,
+      "end_time": 17.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 510
+    },
+    {
+      "start_time": 17.5,
+      "end_time": 18.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 540
+    },
+    {
+      "start_time": 18.5,
+      "end_time": 19.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 570
+    },
+    {
+      "start_time": 19.0,
+      "end_time": 19.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 585
+    },
+    {
+      "start_time": 19.5,
+      "end_time": 20.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 600
+    },
+    {
+      "start_time": 21.0,
+      "end_time": 21.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 645
+    },
+    {
+      "start_time": 21.5,
+      "end_time": 22.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 660
+    },
+    {
+      "start_time": 22.0,
+      "end_time": 22.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 675
+    },
+    {
+      "start_time": 22.5,
+      "end_time": 23.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 690
+    },
+    {
+      "start_time": 23.0,
+      "end_time": 23.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 705
+    },
+    {
+      "start_time": 23.5,
+      "end_time": 24.0,
+      "motion_type": "FREEZE_FRAME",
+      "speed_factor": 0.0,
+      "peak_motion_frame": 720
+    },
+    {
+      "start_time": 24.0,
+      "end_time": 24.5,
+      "motion_type": "FREEZE_FRAME",
+      "speed_factor": 0.0,
+      "peak_motion_frame": 735
+    },
+    {
+      "start_time": 24.5,
+      "end_time": 25.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 750
+    },
+    {
+      "start_time": 25.0,
+      "end_time": 25.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 765
+    },
+    {
+      "start_time": 25.5,
+      "end_time": 26.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 780
+    },
+    {
+      "start_time": 26.0,
+      "end_time": 26.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 795
+    },
+    {
+      "start_time": 26.5,
+      "end_time": 27.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 810
+    },
+    {
+      "start_time": 27.0,
+      "end_time": 27.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 825
+    },
+    {
+      "start_time": 27.5,
+      "end_time": 28.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 840
+    },
+    {
+      "start_time": 28.0,
+      "end_time": 28.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 855
+    },
+    {
+      "start_time": 28.5,
+      "end_time": 29.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 870
+    },
+    {
+      "start_time": 29.0,
+      "end_time": 29.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 885
+    },
+    {
+      "start_time": 30.0,
+      "end_time": 30.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 915
+    },
+    {
+      "start_time": 30.5,
+      "end_time": 31.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 930
+    },
+    {
+      "start_time": 31.0,
+      "end_time": 31.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 945
+    },
+    {
+      "start_time": 32.5,
+      "end_time": 33.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 990
+    },
+    {
+      "start_time": 33.0,
+      "end_time": 33.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1005
+    },
+    {
+      "start_time": 33.5,
+      "end_time": 34.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 1020
+    },
+    {
+      "start_time": 34.0,
+      "end_time": 34.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 1035
+    },
+    {
+      "start_time": 34.5,
+      "end_time": 35.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1050
+    },
+    {
+      "start_time": 35.0,
+      "end_time": 35.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 1065
+    },
+    {
+      "start_time": 35.5,
+      "end_time": 36.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 1080
+    },
+    {
+      "start_time": 36.0,
+      "end_time": 36.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1095
+    },
+    {
+      "start_time": 36.5,
+      "end_time": 37.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1110
+    },
+    {
+      "start_time": 37.0,
+      "end_time": 37.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1125
+    },
+    {
+      "start_time": 37.5,
+      "end_time": 38.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1140
+    },
+    {
+      "start_time": 38.0,
+      "end_time": 38.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1155
+    },
+    {
+      "start_time": 38.5,
+      "end_time": 39.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1170
+    },
+    {
+      "start_time": 39.0,
+      "end_time": 39.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1185
+    },
+    {
+      "start_time": 39.5,
+      "end_time": 40.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 1200
+    },
+    {
+      "start_time": 40.0,
+      "end_time": 40.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 1215
+    },
+    {
+      "start_time": 40.5,
+      "end_time": 41.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 1230
+    },
+    {
+      "start_time": 41.0,
+      "end_time": 41.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 1245
+    },
+    {
+      "start_time": 41.5,
+      "end_time": 42.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1260
+    },
+    {
+      "start_time": 42.5,
+      "end_time": 43.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1290
+    },
+    {
+      "start_time": 43.5,
+      "end_time": 44.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1320
+    },
+    {
+      "start_time": 44.0,
+      "end_time": 44.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1335
+    },
+    {
+      "start_time": 45.0,
+      "end_time": 45.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1365
+    },
+    {
+      "start_time": 46.5,
+      "end_time": 47.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 1410
+    },
+    {
+      "start_time": 47.0,
+      "end_time": 47.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1425
+    },
+    {
+      "start_time": 47.5,
+      "end_time": 48.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 1440
+    },
+    {
+      "start_time": 48.0,
+      "end_time": 48.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 1455
+    },
+    {
+      "start_time": 48.5,
+      "end_time": 49.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1470
+    },
+    {
+      "start_time": 49.0,
+      "end_time": 49.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1485
+    },
+    {
+      "start_time": 49.5,
+      "end_time": 50.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 1500
+    },
+    {
+      "start_time": 50.0,
+      "end_time": 50.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 1515
+    },
+    {
+      "start_time": 50.5,
+      "end_time": 51.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1530
+    },
+    {
+      "start_time": 51.0,
+      "end_time": 51.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 1545
+    },
+    {
+      "start_time": 53.0,
+      "end_time": 53.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1605
+    },
+    {
+      "start_time": 53.5,
+      "end_time": 54.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 1620
+    },
+    {
+      "start_time": 54.0,
+      "end_time": 54.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "peak_motion_frame": 1635
+    },
+    {
+      "start_time": 54.5,
+      "end_time": 55.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1650
+    },
+    {
+      "start_time": 56.0,
+      "end_time": 56.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1695
+    },
+    {
+      "start_time": 56.5,
+      "end_time": 57.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "peak_motion_frame": 1710
+    },
+    {
+      "start_time": 57.0,
+      "end_time": 57.5,
+      "motion_type": "FREEZE_FRAME",
+      "speed_factor": 0.0,
+      "peak_motion_frame": 1725
+    },
+    {
+      "start_time": 57.5,
+      "end_time": 58.0,
+      "motion_type": "FREEZE_FRAME",
+      "speed_factor": 0.0,
+      "peak_motion_frame": 1740
+    },
+    {
+      "start_time": 58.0,
+      "end_time": 58.5,
+      "motion_type": "FREEZE_FRAME",
+      "speed_factor": 0.0,
+      "peak_motion_frame": 1755
+    },
+    {
+      "start_time": 58.5,
+      "end_time": 59.0,
+      "motion_type": "FREEZE_FRAME",
+      "speed_factor": 0.0,
+      "peak_motion_frame": 1770
+    },
+    {
+      "start_time": 59.0,
+      "end_time": 59.5,
+      "motion_type": "FREEZE_FRAME",
+      "speed_factor": 0.0,
+      "peak_motion_frame": 1785
+    }
+  ],
+  "patterns_found": [
+    {
+      "pattern_id": "PAT_HS_PUNCH_ref_Моя ",
+      "name": "Headshot Micro Punch-In with Impact Flash",
+      "category": "DIRECTING",
+      "description": "Sudden 1.05x-1.08x camera crop zoom with a 3-frame luma flash accentuating a lethal headshot or sniper frag.",
+      "scene_type": "ENGAGEMENT",
+      "visual_prerequisites": [
+        "First person POV",
+        "Target in reticle crosshair",
+        "Muzzle flash / fatal hit confirmed"
+      ],
+      "editing_technique": "Micro zoom-in (scale 1.06x) for 0.12s duration, snapping back to 1.0x with cubic ease-out.",
+      "suggested_effects": [
+        "Transform node dynamic zoom",
+        "Brightness boost (+0.30)",
+        "Chromatic aberration RGB split (2px)"
+      ],
+      "suggested_transitions": [
+        "Match cut",
+        "Radial blur pop"
+      ],
+      "suggested_audio_treatment": "Real sub downer (< 80 Hz) paired with high-frequency metal snap dink.",
+      "suggested_timing_range": "0.10s to 0.15s (6 to 9 frames at 60 fps)",
+      "davinci_resolve_recipe": {
+        "page": "Fusion",
+        "node_tree": "MediaIn1 -> Transform1 (Size=1.06, Keyframe in 2f, out 7f) -> ColorCorrector1 (Gain=1.35) -> MediaOut1",
+        "curve_type": "Ease Out Cubic"
+      },
+      "confidence": "OBSERVED",
+      "source_reference_id": "ref_Моя голова винтом ❤️_518a4460",
+      "source_timestamps": [
+        6.2
+      ],
+      "style_profile_affinity": [
+        "HYBRID",
+        "HYPE"
+      ]
+    },
+    {
+      "pattern_id": "PAT_RAMP_ref_Моя ",
+      "name": "Inter-Frag Speed Ramp with Directional Blur",
+      "category": "SPEED_RAMP",
+      "description": "Fast-forward retime (2.5x to 4.0x) covering player rotation or corridor traversal between separate kills.",
+      "scene_type": "SPRAY_TRANSFER",
+      "visual_prerequisites": [
+        "Post-kill repositioning",
+        "No active weapon fire",
+        "Clear path movement"
+      ],
+      "editing_technique": "Optical Flow speed ramp accelerating to 3.5x for 0.8s, returning to 1.0x on enemy appearance.",
+      "suggested_effects": [
+        "Retime curve speed ramp",
+        "Directional blur along movement vector",
+        "Subtle FOV widen (+4 deg)"
+      ],
+      "suggested_transitions": [
+        "Speed ramp cut",
+        "Whip pan"
+      ],
+      "suggested_audio_treatment": "Pitch-shifted audio whoosh + low-pass filter sweep on gameplay audio.",
+      "suggested_timing_range": "0.6s to 1.2s",
+      "davinci_resolve_recipe": {
+        "page": "Edit",
+        "node_tree": "Speed Point at T1 (100%), Speed Point at T2 (350%), Speed Point at T3 (100%), Retime Process: Optical Flow",
+        "curve_type": "Bezier Smooth In/Out"
+      },
+      "confidence": "OBSERVED",
+      "source_reference_id": "ref_Моя голова винтом ❤️_518a4460",
+      "source_timestamps": [
+        2.5,
+        3.0
+      ],
+      "style_profile_affinity": [
+        "HYBRID",
+        "HYPE"
+      ]
+    },
+    {
+      "pattern_id": "PAT_DROP_ref_Моя ",
+      "name": "808 Beat Drop / Fatal Gunshot Synchronization",
+      "category": "SOUND_DESIGN",
+      "description": "Locking the primary musical drop (808 kick / trap snare) frame-accurately to the first lethal trigger pull.",
+      "scene_type": "ENGAGEMENT",
+      "visual_prerequisites": [
+        "Tension build-up camera movement",
+        "Corner peek or sightline alignment",
+        "Initial weapon muzzle flash"
+      ],
+      "editing_technique": "Timeline audio grid alignment ensuring music drop transient matches the exact weapon fire frame.",
+      "suggested_effects": [
+        "Sub-bass downer impact",
+        "Muzzle flash boost",
+        "Screen punch-in"
+      ],
+      "suggested_transitions": [
+        "Slide-in whip",
+        "Smooth cut"
+      ],
+      "suggested_audio_treatment": "Sidechain gameplay audio so 808 transient dominates, weapon crack layered on top at +2.5 dB.",
+      "suggested_timing_range": "0.00s offset (0-frame tolerance)",
+      "davinci_resolve_recipe": {
+        "page": "Fairlight",
+        "node_tree": "Audio Track 1 (CS2) Sidechained to Track 2 (Music), Ducking: -3.5dB on drop hit.",
+        "curve_type": "Instant attack (1ms), 250ms release"
+      },
+      "confidence": "VERIFIED_IN_RESOLVE",
+      "source_reference_id": "ref_Моя голова винтом ❤️_518a4460",
+      "source_timestamps": [
+        4.639
+      ],
+      "style_profile_affinity": [
+        "HYBRID",
+        "HYPE",
+        "CINEMATIC"
+      ]
+    },
+    {
+      "pattern_id": "PAT_ORBIT_ref_Моя ",
+      "name": "Smooth Hero Orbit Climax",
+      "category": "CAMERA_WORK",
+      "description": "3rd-person circular camera path revolving 120-180 degrees around the hero to celebrate a round-winning Ace.",
+      "scene_type": "ACE_CLIMAX",
+      "visual_prerequisites": [
+        "Hero has eliminated last enemy",
+        "Open bomb site or victory angle",
+        "Campath enabled in HLAE"
+      ],
+      "editing_technique": "Slow orbital camera glide with smooth ease-in/out, keeping hero in golden ratio third.",
+      "suggested_effects": [
+        "Cinematic LUT grade",
+        "Subtle vignette",
+        "Slow-motion 0.7x timescale"
+      ],
+      "suggested_transitions": [
+        "Smooth cross dissolve",
+        "Luma fade to black"
+      ],
+      "suggested_audio_treatment": "Extended cinematic sub decay (2.5s) with fading gunshot echoes into soundtrack hook.",
+      "suggested_timing_range": "2.5s to 3.5s",
+      "davinci_resolve_recipe": {
+        "page": "Color",
+        "node_tree": "Node 1 (Balance) -> Node 2 (LUT) -> Node 3 (Circular Power Window on Hero + Vignette)",
+        "curve_type": "Log curve with soft rolloff"
+      },
+      "confidence": "INFERRED",
+      "source_reference_id": "ref_Моя голова винтом ❤️_518a4460",
+      "source_timestamps": [
+        57.116
+      ],
+      "style_profile_affinity": [
+        "HYBRID",
+        "CINEMATIC"
+      ]
+    }
+  ],
+  "contact_sheet_path": "C:\\Users\\pyPypy\\Documents\\MySCOPE\\demToshka\\reference_library\\contact_sheets\\ref_Моя голова винтом ❤️_518a4460_contact_sheet.png",
+  "analyzed_at": "2026-11-12T13:55:33Z",
+  "summary": "Reference analysis for Моя голова винтом ❤️.mp4: 33 cuts, BPM 120.0, 4 repeatable editing patterns extracted. Categories: Fast Beat-Sync Edit, Gritty Contrast Grade, Impact & Flash Accents, Mid-Tempo Groove, Speed Ramping & Retiming, Spin & Whip-Pan Flow, Viral Russian Rap Edit, Widescreen 16:9.",
+  "categories": [
+    "Fast Beat-Sync Edit",
+    "Gritty Contrast Grade",
+    "Impact & Flash Accents",
+    "Mid-Tempo Groove",
+    "Speed Ramping & Retiming",
+    "Spin & Whip-Pan Flow",
+    "Viral Russian Rap Edit",
+    "Widescreen 16:9"
+  ],
+  "timestamped_observations": [
+    {
+      "time_seconds": 1.0,
+      "event_type": "MOTION_PUNCH_IN_SHAKE",
+      "confidence": "OBSERVED",
+      "observed": "Speed factor 1.05x (PUNCH_IN_SHAKE) from 1.00s to 1.50s.",
+      "inferred": "Fast-forward repositioning between separate engagements or slow-mo bullet impact accent.",
+      "implementation": "DaVinci Edit: Retime Curve -> Speed Points with Optical Flow processing."
+    },
+    {
+      "time_seconds": 1.5,
+      "event_type": "MOTION_PUNCH_IN_SHAKE",
+      "confidence": "OBSERVED",
+      "observed": "Speed factor 1.05x (PUNCH_IN_SHAKE) from 1.50s to 2.00s.",
+      "inferred": "Fast-forward repositioning between separate engagements or slow-mo bullet impact accent.",
+      "implementation": "DaVinci Edit: Retime Curve -> Speed Points with Optical Flow processing."
+    },
+    {
+      "time_seconds": 2.5,
+      "event_type": "MOTION_SPEED_RAMP_ACCEL",
+      "confidence": "OBSERVED",
+      "observed": "Speed factor 2.5x (SPEED_RAMP_ACCEL) from 2.50s to 3.00s.",
+      "inferred": "Fast-forward repositioning between separate engagements or slow-mo bullet impact accent.",
+      "implementation": "DaVinci Edit: Retime Curve -> Speed Points with Optical Flow processing."
+    },
+    {
+      "time_seconds": 3.0,
+      "event_type": "MOTION_PUNCH_IN_SHAKE",
+      "confidence": "OBSERVED",
+      "observed": "Speed factor 1.05x (PUNCH_IN_SHAKE) from 3.00s to 3.50s.",
+      "inferred": "Fast-forward repositioning between separate engagements or slow-mo bullet impact accent.",
+      "implementation": "DaVinci Edit: Retime Curve -> Speed Points with Optical Flow processing."
+    },
+    {
+      "time_seconds": 3.067,
+      "event_type": "TRANSITION_WHIP_PAN",
+      "confidence": "OBSERVED",
+      "observed": "Cut at 3.07s (WHIP_PAN) with frame intensity diff 38.2.",
+      "inferred": "Whip-pan rotation matched with camera velocity vector",
+      "implementation": "DaVinci Fusion: DirectionalBlur (Angle=0, Length=0.08) with 270° shutter angle."
+    },
+    {
+      "time_seconds": 3.5,
+      "event_type": "MOTION_SPEED_RAMP_ACCEL",
+      "confidence": "OBSERVED",
+      "observed": "Speed factor 2.5x (SPEED_RAMP_ACCEL) from 3.50s to 4.00s.",
+      "inferred": "Fast-forward repositioning between separate engagements or slow-mo bullet impact accent.",
+      "implementation": "DaVinci Edit: Retime Curve -> Speed Points with Optical Flow processing."
+    },
+    {
+      "time_seconds": 3.8,
+      "event_type": "TRANSITION_HARD_CUT",
+      "confidence": "OBSERVED",
+      "observed": "Cut at 3.80s (HARD_CUT) with frame intensity diff 51.6.",
+      "inferred": "Instant angle cut precisely on musical drum transient or weapon discharge",
+      "implementation": "DaVinci Edit: Hard Razor cut aligned to frame; no dissolve."
+    },
+    {
+      "time_seconds": 4.0,
+      "event_type": "MOTION_SPEED_RAMP_ACCEL",
+      "confidence": "OBSERVED",
+      "observed": "Speed factor 2.5x (SPEED_RAMP_ACCEL) from 4.00s to 4.50s.",
+      "inferred": "Fast-forward repositioning between separate engagements or slow-mo bullet impact accent.",
+      "implementation": "DaVinci Edit: Retime Curve -> Speed Points with Optical Flow processing."
+    },
+    {
+      "time_seconds": 4.333,
+      "event_type": "TRANSITION_WHIP_PAN",
+      "confidence": "OBSERVED",
+      "observed": "Cut at 4.33s (WHIP_PAN) with frame intensity diff 43.7.",
+      "inferred": "Whip-pan rotation matched with camera velocity vector",
+      "implementation": "DaVinci Fusion: DirectionalBlur (Angle=0, Length=0.08) with 270° shutter angle."
+    },
+    {
+      "time_seconds": 4.639,
+      "event_type": "AUDIO_SUB_BASS_DROP",
+      "confidence": "OBSERVED",
+      "observed": "Sub-bass 808 drop / heavy kick transient at 4.64s (estimated 120.0 BPM).",
+      "inferred": "Fatal gunshot / kill confirmation intentionally timed to hit the musical downbeat.",
+      "implementation": "DaVinci Fairlight: Timeline audio grid set to BPM, snap gunshot audio transient to sub-bass transient."
+    },
+    {
+      "time_seconds": 5.067,
+      "event_type": "TRANSITION_WHIP_PAN",
+      "confidence": "OBSERVED",
+      "observed": "Cut at 5.07s (WHIP_PAN) with frame intensity diff 42.1.",
+      "inferred": "Whip-pan rotation matched with camera velocity vector",
+      "implementation": "DaVinci Fusion: DirectionalBlur (Angle=0, Length=0.08) with 270° shutter angle."
+    },
+    {
+      "time_seconds": 5.146,
+      "event_type": "AUDIO_SUB_BASS_DROP",
+      "confidence": "OBSERVED",
+      "observed": "Sub-bass 808 drop / heavy kick transient at 5.15s (estimated 120.0 BPM).",
+      "inferred": "Fatal gunshot / kill confirmation intentionally timed to hit the musical downbeat.",
+      "implementation": "DaVinci Fairlight: Timeline audio grid set to BPM, snap gunshot audio transient to sub-bass transient."
+    },
+    {
+      "time_seconds": 5.568,
+      "event_type": "AUDIO_SUB_BASS_DROP",
+      "confidence": "OBSERVED",
+      "observed": "Sub-bass 808 drop / heavy kick transient at 5.57s (estimated 120.0 BPM).",
+      "inferred": "Fatal gunshot / kill confirmation intentionally timed to hit the musical downbeat.",
+      "implementation": "DaVinci Fairlight: Timeline audio grid set to BPM, snap gunshot audio transient to sub-bass transient."
+    },
+    {
+      "time_seconds": 5.889,
+      "event_type": "AUDIO_SUB_BASS_DROP",
+      "confidence": "OBSERVED",
+      "observed": "Sub-bass 808 drop / heavy kick transient at 5.89s (estimated 120.0 BPM).",
+      "inferred": "Fatal gunshot / kill confirmation intentionally timed to hit the musical downbeat.",
+      "implementation": "DaVinci Fairlight: Timeline audio grid set to BPM, snap gunshot audio transient to sub-bass transient."
+    },
+    {
+      "time_seconds": 6.2,
+      "event_type": "TRANSITION_ZOOM_IN_OUT",
+      "confidence": "OBSERVED",
+      "observed": "Cut at 6.20s (ZOOM_IN_OUT) with frame intensity diff 100.2.",
+      "inferred": "Instant angle cut precisely on musical drum transient or weapon discharge",
+      "implementation": "DaVinci Edit: Hard Razor cut aligned to frame; no dissolve."
+    },
+    {
+      "time_seconds": 7.0,
+      "event_type": "TRANSITION_FLASH_IMPACT",
+      "confidence": "OBSERVED",
+      "observed": "Cut at 7.00s (FLASH_IMPACT) with frame intensity diff 78.8.",
+      "inferred": "Instant angle cut precisely on musical drum transient or weapon discharge",
+      "implementation": "DaVinci Edit: Hard Razor cut aligned to frame; no dissolve."
+    },
+    {
+      "time_seconds": 8.4,
+      "event_type": "TRANSITION_ZOOM_IN_OUT",
+      "confidence": "OBSERVED",
+      "observed": "Cut at 8.40s (ZOOM_IN_OUT) with frame intensity diff 76.4.",
+      "inferred": "Instant angle cut precisely on musical drum transient or weapon discharge",
+      "implementation": "DaVinci Edit: Hard Razor cut aligned to frame; no dissolve."
+    },
+    {
+      "time_seconds": 9.0,
+      "event_type": "TRANSITION_FLASH_IMPACT",
+      "confidence": "OBSERVED",
+      "observed": "Cut at 9.00s (FLASH_IMPACT) with frame intensity diff 82.5.",
+      "inferred": "Instant angle cut precisely on musical drum transient or weapon discharge",
+      "implementation": "DaVinci Edit: Hard Razor cut aligned to frame; no dissolve."
+    },
+    {
+      "time_seconds": 10.467,
+      "event_type": "TRANSITION_WHIP_PAN",
+      "confidence": "OBSERVED",
+      "observed": "Cut at 10.47s (WHIP_PAN) with frame intensity diff 61.0.",
+      "inferred": "Whip-pan rotation matched with camera velocity vector",
+      "implementation": "DaVinci Fusion: DirectionalBlur (Angle=0, Length=0.08) with 270° shutter angle."
+    },
+    {
+      "time_seconds": 12.267,
+      "event_type": "TRANSITION_FLASH_IMPACT",
+      "confidence": "OBSERVED",
+      "observed": "Cut at 12.27s (FLASH_IMPACT) with frame intensity diff 76.3.",
+      "inferred": "Instant angle cut precisely on musical drum transient or weapon discharge",
+      "implementation": "DaVinci Edit: Hard Razor cut aligned to frame; no dissolve."
+    },
+    {
+      "time_seconds": 13.333,
+      "event_type": "TRANSITION_WHIP_PAN",
+      "confidence": "OBSERVED",
+      "observed": "Cut at 13.33s (WHIP_PAN) with frame intensity diff 65.3.",
+      "inferred": "Whip-pan rotation matched with camera velocity vector",
+      "implementation": "DaVinci Fusion: DirectionalBlur (Angle=0, Length=0.08) with 270° shutter angle."
+    },
+    {
+      "time_seconds": 15.933,
+      "event_type": "TRANSITION_HARD_CUT",
+      "confidence": "OBSERVED",
+      "observed": "Cut at 15.93s (HARD_CUT) with frame intensity diff 43.9.",
+      "inferred": "Instant angle cut precisely on musical drum transient or weapon discharge",
+      "implementation": "DaVinci Edit: Hard Razor cut aligned to frame; no dissolve."
+    }
+  ],
+  "transition_breakdown": [
+    {
+      "cut_id": "cut_001",
+      "time_seconds": 3.067,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "observed": "Observed WHIP_PAN at 3.07s (intensity 38.2).",
+      "inferred": "Camera rotation whip with directional motion blur",
+      "implementation": "Fusion Page: DirectionalBlur (Length 0.10) + Transform (X pan)"
+    },
+    {
+      "cut_id": "cut_002",
+      "time_seconds": 3.8,
+      "transition_type": "HARD_CUT",
+      "duration_frames": 2,
+      "observed": "Observed HARD_CUT at 3.80s (intensity 51.6).",
+      "inferred": "Direct hard cut without temporal blending",
+      "implementation": "Edit Page: Clean cut between adjacent clips on V1"
+    },
+    {
+      "cut_id": "cut_003",
+      "time_seconds": 4.333,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "observed": "Observed WHIP_PAN at 4.33s (intensity 43.7).",
+      "inferred": "Camera rotation whip with directional motion blur",
+      "implementation": "Fusion Page: DirectionalBlur (Length 0.10) + Transform (X pan)"
+    },
+    {
+      "cut_id": "cut_004",
+      "time_seconds": 5.067,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "observed": "Observed WHIP_PAN at 5.07s (intensity 42.1).",
+      "inferred": "Camera rotation whip with directional motion blur",
+      "implementation": "Fusion Page: DirectionalBlur (Length 0.10) + Transform (X pan)"
+    },
+    {
+      "cut_id": "cut_005",
+      "time_seconds": 6.2,
+      "transition_type": "ZOOM_IN_OUT",
+      "duration_frames": 2,
+      "observed": "Observed ZOOM_IN_OUT at 6.20s (intensity 100.2).",
+      "inferred": "Direct hard cut without temporal blending",
+      "implementation": "Edit Page: Clean cut between adjacent clips on V1"
+    },
+    {
+      "cut_id": "cut_006",
+      "time_seconds": 7.0,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "observed": "Observed FLASH_IMPACT at 7.00s (intensity 78.8).",
+      "inferred": "Luma spike impact flash over 2-3 frames",
+      "implementation": "Fusion Page: BrightnessContrast (Gain=1.5, Lift=0.1) keyframed over 3 frames"
+    },
+    {
+      "cut_id": "cut_007",
+      "time_seconds": 8.4,
+      "transition_type": "ZOOM_IN_OUT",
+      "duration_frames": 2,
+      "observed": "Observed ZOOM_IN_OUT at 8.40s (intensity 76.4).",
+      "inferred": "Direct hard cut without temporal blending",
+      "implementation": "Edit Page: Clean cut between adjacent clips on V1"
+    },
+    {
+      "cut_id": "cut_008",
+      "time_seconds": 9.0,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "observed": "Observed FLASH_IMPACT at 9.00s (intensity 82.5).",
+      "inferred": "Luma spike impact flash over 2-3 frames",
+      "implementation": "Fusion Page: BrightnessContrast (Gain=1.5, Lift=0.1) keyframed over 3 frames"
+    },
+    {
+      "cut_id": "cut_009",
+      "time_seconds": 10.467,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "observed": "Observed WHIP_PAN at 10.47s (intensity 61.0).",
+      "inferred": "Camera rotation whip with directional motion blur",
+      "implementation": "Fusion Page: DirectionalBlur (Length 0.10) + Transform (X pan)"
+    },
+    {
+      "cut_id": "cut_010",
+      "time_seconds": 12.267,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "observed": "Observed FLASH_IMPACT at 12.27s (intensity 76.3).",
+      "inferred": "Luma spike impact flash over 2-3 frames",
+      "implementation": "Fusion Page: BrightnessContrast (Gain=1.5, Lift=0.1) keyframed over 3 frames"
+    },
+    {
+      "cut_id": "cut_011",
+      "time_seconds": 13.333,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "observed": "Observed WHIP_PAN at 13.33s (intensity 65.3).",
+      "inferred": "Camera rotation whip with directional motion blur",
+      "implementation": "Fusion Page: DirectionalBlur (Length 0.10) + Transform (X pan)"
+    },
+    {
+      "cut_id": "cut_012",
+      "time_seconds": 15.933,
+      "transition_type": "HARD_CUT",
+      "duration_frames": 2,
+      "observed": "Observed HARD_CUT at 15.93s (intensity 43.9).",
+      "inferred": "Direct hard cut without temporal blending",
+      "implementation": "Edit Page: Clean cut between adjacent clips on V1"
+    },
+    {
+      "cut_id": "cut_013",
+      "time_seconds": 21.533,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "observed": "Observed WHIP_PAN at 21.53s (intensity 57.6).",
+      "inferred": "Camera rotation whip with directional motion blur",
+      "implementation": "Fusion Page: DirectionalBlur (Length 0.10) + Transform (X pan)"
+    },
+    {
+      "cut_id": "cut_014",
+      "time_seconds": 22.067,
+      "transition_type": "HARD_CUT",
+      "duration_frames": 2,
+      "observed": "Observed HARD_CUT at 22.07s (intensity 46.0).",
+      "inferred": "Direct hard cut without temporal blending",
+      "implementation": "Edit Page: Clean cut between adjacent clips on V1"
+    },
+    {
+      "cut_id": "cut_015",
+      "time_seconds": 22.6,
+      "transition_type": "ZOOM_IN_OUT",
+      "duration_frames": 2,
+      "observed": "Observed ZOOM_IN_OUT at 22.60s (intensity 77.4).",
+      "inferred": "Direct hard cut without temporal blending",
+      "implementation": "Edit Page: Clean cut between adjacent clips on V1"
+    },
+    {
+      "cut_id": "cut_016",
+      "time_seconds": 23.533,
+      "transition_type": "ZOOM_IN_OUT",
+      "duration_frames": 2,
+      "observed": "Observed ZOOM_IN_OUT at 23.53s (intensity 68.5).",
+      "inferred": "Direct hard cut without temporal blending",
+      "implementation": "Edit Page: Clean cut between adjacent clips on V1"
+    },
+    {
+      "cut_id": "cut_017",
+      "time_seconds": 24.133,
+      "transition_type": "HARD_CUT",
+      "duration_frames": 2,
+      "observed": "Observed HARD_CUT at 24.13s (intensity 39.7).",
+      "inferred": "Direct hard cut without temporal blending",
+      "implementation": "Edit Page: Clean cut between adjacent clips on V1"
+    },
+    {
+      "cut_id": "cut_018",
+      "time_seconds": 25.067,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "observed": "Observed FLASH_IMPACT at 25.07s (intensity 85.7).",
+      "inferred": "Luma spike impact flash over 2-3 frames",
+      "implementation": "Fusion Page: BrightnessContrast (Gain=1.5, Lift=0.1) keyframed over 3 frames"
+    },
+    {
+      "cut_id": "cut_019",
+      "time_seconds": 27.0,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "observed": "Observed FLASH_IMPACT at 27.00s (intensity 72.8).",
+      "inferred": "Luma spike impact flash over 2-3 frames",
+      "implementation": "Fusion Page: BrightnessContrast (Gain=1.5, Lift=0.1) keyframed over 3 frames"
+    },
+    {
+      "cut_id": "cut_020",
+      "time_seconds": 28.467,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "observed": "Observed FLASH_IMPACT at 28.47s (intensity 70.8).",
+      "inferred": "Luma spike impact flash over 2-3 frames",
+      "implementation": "Fusion Page: BrightnessContrast (Gain=1.5, Lift=0.1) keyframed over 3 frames"
+    },
+    {
+      "cut_id": "cut_021",
+      "time_seconds": 30.533,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "observed": "Observed FLASH_IMPACT at 30.53s (intensity 69.6).",
+      "inferred": "Luma spike impact flash over 2-3 frames",
+      "implementation": "Fusion Page: BrightnessContrast (Gain=1.5, Lift=0.1) keyframed over 3 frames"
+    },
+    {
+      "cut_id": "cut_022",
+      "time_seconds": 32.533,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "observed": "Observed FLASH_IMPACT at 32.53s (intensity 66.3).",
+      "inferred": "Luma spike impact flash over 2-3 frames",
+      "implementation": "Fusion Page: BrightnessContrast (Gain=1.5, Lift=0.1) keyframed over 3 frames"
+    },
+    {
+      "cut_id": "cut_023",
+      "time_seconds": 33.133,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "observed": "Observed WHIP_PAN at 33.13s (intensity 44.1).",
+      "inferred": "Camera rotation whip with directional motion blur",
+      "implementation": "Fusion Page: DirectionalBlur (Length 0.10) + Transform (X pan)"
+    },
+    {
+      "cut_id": "cut_024",
+      "time_seconds": 34.533,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "observed": "Observed FLASH_IMPACT at 34.53s (intensity 74.2).",
+      "inferred": "Luma spike impact flash over 2-3 frames",
+      "implementation": "Fusion Page: BrightnessContrast (Gain=1.5, Lift=0.1) keyframed over 3 frames"
+    },
+    {
+      "cut_id": "cut_025",
+      "time_seconds": 35.667,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "observed": "Observed WHIP_PAN at 35.67s (intensity 39.6).",
+      "inferred": "Camera rotation whip with directional motion blur",
+      "implementation": "Fusion Page: DirectionalBlur (Length 0.10) + Transform (X pan)"
+    },
+    {
+      "cut_id": "cut_026",
+      "time_seconds": 37.0,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "observed": "Observed WHIP_PAN at 37.00s (intensity 51.5).",
+      "inferred": "Camera rotation whip with directional motion blur",
+      "implementation": "Fusion Page: DirectionalBlur (Length 0.10) + Transform (X pan)"
+    },
+    {
+      "cut_id": "cut_027",
+      "time_seconds": 41.533,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "observed": "Observed FLASH_IMPACT at 41.53s (intensity 63.6).",
+      "inferred": "Luma spike impact flash over 2-3 frames",
+      "implementation": "Fusion Page: BrightnessContrast (Gain=1.5, Lift=0.1) keyframed over 3 frames"
+    },
+    {
+      "cut_id": "cut_028",
+      "time_seconds": 44.0,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "observed": "Observed FLASH_IMPACT at 44.00s (intensity 79.9).",
+      "inferred": "Luma spike impact flash over 2-3 frames",
+      "implementation": "Fusion Page: BrightnessContrast (Gain=1.5, Lift=0.1) keyframed over 3 frames"
+    },
+    {
+      "cut_id": "cut_029",
+      "time_seconds": 45.4,
+      "transition_type": "ZOOM_IN_OUT",
+      "duration_frames": 2,
+      "observed": "Observed ZOOM_IN_OUT at 45.40s (intensity 75.3).",
+      "inferred": "Direct hard cut without temporal blending",
+      "implementation": "Edit Page: Clean cut between adjacent clips on V1"
+    },
+    {
+      "cut_id": "cut_030",
+      "time_seconds": 47.0,
+      "transition_type": "WHIP_PAN",
+      "duration_frames": 2,
+      "observed": "Observed WHIP_PAN at 47.00s (intensity 38.2).",
+      "inferred": "Camera rotation whip with directional motion blur",
+      "implementation": "Fusion Page: DirectionalBlur (Length 0.10) + Transform (X pan)"
+    },
+    {
+      "cut_id": "cut_031",
+      "time_seconds": 49.0,
+      "transition_type": "FLASH_IMPACT",
+      "duration_frames": 2,
+      "observed": "Observed FLASH_IMPACT at 49.00s (intensity 77.9).",
+      "inferred": "Luma spike impact flash over 2-3 frames",
+      "implementation": "Fusion Page: BrightnessContrast (Gain=1.5, Lift=0.1) keyframed over 3 frames"
+    },
+    {
+      "cut_id": "cut_032",
+      "time_seconds": 53.133,
+      "transition_type": "HARD_CUT",
+      "duration_frames": 2,
+      "observed": "Observed HARD_CUT at 53.13s (intensity 41.4).",
+      "inferred": "Direct hard cut without temporal blending",
+      "implementation": "Edit Page: Clean cut between adjacent clips on V1"
+    },
+    {
+      "cut_id": "cut_033",
+      "time_seconds": 54.867,
+      "transition_type": "HARD_CUT",
+      "duration_frames": 2,
+      "observed": "Observed HARD_CUT at 54.87s (intensity 40.8).",
+      "inferred": "Direct hard cut without temporal blending",
+      "implementation": "Edit Page: Clean cut between adjacent clips on V1"
+    }
+  ],
+  "color_grading_breakdown": {
+    "dominant_colors": [
+      "#eab991",
+      "#020100",
+      "#533728",
+      "#886650",
+      "#92b1cc"
+    ],
+    "shadow_tint": "#0a0604",
+    "highlight_tint": "#e3be9f",
+    "average_saturation": 0.25,
+    "contrast_ratio": 0.22,
+    "halation_detected": false,
+    "observed": "Palette centered on ['#eab991', '#020100', '#533728'], shadows tinted #0a0604, highlights at #e3be9f, avg sat 0.25.",
+    "inferred": "Desaturated high-contrast esports grade accentuating player silhouettes.",
+    "implementation": "DaVinci Color Page: Node 1 Primaries Lift -0.015, Gain 1.04; Node 2 Custom Curves S-curve; Node 3 Tint shadows slightly toward #1a1e28 and highlights toward #f6edd8."
+  },
+  "speed_ramp_breakdown": [
+    {
+      "start_time": 1.0,
+      "end_time": 1.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 1.00s and 1.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 1.5,
+      "end_time": 2.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 1.50s and 2.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 2.5,
+      "end_time": 3.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 2.50s and 3.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 3.0,
+      "end_time": 3.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 3.00s and 3.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 3.5,
+      "end_time": 4.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 3.50s and 4.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 4.0,
+      "end_time": 4.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 4.00s and 4.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 4.5,
+      "end_time": 5.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 4.50s and 5.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 5.0,
+      "end_time": 5.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 5.00s and 5.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 6.0,
+      "end_time": 6.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 6.00s and 6.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 6.5,
+      "end_time": 7.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 6.50s and 7.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 7.0,
+      "end_time": 7.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 7.00s and 7.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 7.5,
+      "end_time": 8.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 7.50s and 8.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 8.0,
+      "end_time": 8.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 8.00s and 8.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 8.5,
+      "end_time": 9.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 8.50s and 9.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 9.0,
+      "end_time": 9.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 9.00s and 9.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 10.0,
+      "end_time": 10.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 10.00s and 10.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 10.5,
+      "end_time": 11.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 10.50s and 11.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 11.0,
+      "end_time": 11.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 11.00s and 11.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 12.0,
+      "end_time": 12.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 12.00s and 12.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 12.5,
+      "end_time": 13.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 12.50s and 13.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 13.0,
+      "end_time": 13.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 13.00s and 13.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 14.5,
+      "end_time": 15.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 14.50s and 15.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 15.5,
+      "end_time": 16.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 15.50s and 16.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 16.0,
+      "end_time": 16.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 16.00s and 16.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 16.5,
+      "end_time": 17.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 16.50s and 17.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 17.5,
+      "end_time": 18.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 17.50s and 18.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 18.5,
+      "end_time": 19.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 18.50s and 19.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 19.0,
+      "end_time": 19.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 19.00s and 19.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 19.5,
+      "end_time": 20.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 19.50s and 20.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 21.0,
+      "end_time": 21.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 21.00s and 21.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 21.5,
+      "end_time": 22.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 21.50s and 22.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 22.0,
+      "end_time": 22.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 22.00s and 22.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 22.5,
+      "end_time": 23.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 22.50s and 23.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 23.0,
+      "end_time": 23.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 23.00s and 23.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 23.5,
+      "end_time": 24.0,
+      "motion_type": "FREEZE_FRAME",
+      "speed_factor": 0.0,
+      "observed": "Motion FREEZE_FRAME at 0.0x speed between 23.50s and 24.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 24.0,
+      "end_time": 24.5,
+      "motion_type": "FREEZE_FRAME",
+      "speed_factor": 0.0,
+      "observed": "Motion FREEZE_FRAME at 0.0x speed between 24.00s and 24.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 24.5,
+      "end_time": 25.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 24.50s and 25.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 25.0,
+      "end_time": 25.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 25.00s and 25.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 25.5,
+      "end_time": 26.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 25.50s and 26.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 26.0,
+      "end_time": 26.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 26.00s and 26.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 26.5,
+      "end_time": 27.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 26.50s and 27.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 27.0,
+      "end_time": 27.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 27.00s and 27.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 27.5,
+      "end_time": 28.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 27.50s and 28.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 28.0,
+      "end_time": 28.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 28.00s and 28.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 28.5,
+      "end_time": 29.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 28.50s and 29.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 29.0,
+      "end_time": 29.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 29.00s and 29.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 30.0,
+      "end_time": 30.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 30.00s and 30.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 30.5,
+      "end_time": 31.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 30.50s and 31.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 31.0,
+      "end_time": 31.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 31.00s and 31.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 32.5,
+      "end_time": 33.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 32.50s and 33.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 33.0,
+      "end_time": 33.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 33.00s and 33.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 33.5,
+      "end_time": 34.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 33.50s and 34.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 34.0,
+      "end_time": 34.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 34.00s and 34.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 34.5,
+      "end_time": 35.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 34.50s and 35.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 35.0,
+      "end_time": 35.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 35.00s and 35.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 35.5,
+      "end_time": 36.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 35.50s and 36.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 36.0,
+      "end_time": 36.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 36.00s and 36.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 36.5,
+      "end_time": 37.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 36.50s and 37.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 37.0,
+      "end_time": 37.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 37.00s and 37.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 37.5,
+      "end_time": 38.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 37.50s and 38.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 38.0,
+      "end_time": 38.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 38.00s and 38.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 38.5,
+      "end_time": 39.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 38.50s and 39.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 39.0,
+      "end_time": 39.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 39.00s and 39.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 39.5,
+      "end_time": 40.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 39.50s and 40.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 40.0,
+      "end_time": 40.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 40.00s and 40.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 40.5,
+      "end_time": 41.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 40.50s and 41.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 41.0,
+      "end_time": 41.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 41.00s and 41.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 41.5,
+      "end_time": 42.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 41.50s and 42.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 42.5,
+      "end_time": 43.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 42.50s and 43.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 43.5,
+      "end_time": 44.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 43.50s and 44.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 44.0,
+      "end_time": 44.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 44.00s and 44.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 45.0,
+      "end_time": 45.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 45.00s and 45.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 46.5,
+      "end_time": 47.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 46.50s and 47.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 47.0,
+      "end_time": 47.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 47.00s and 47.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 47.5,
+      "end_time": 48.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 47.50s and 48.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 48.0,
+      "end_time": 48.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 48.00s and 48.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 48.5,
+      "end_time": 49.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 48.50s and 49.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 49.0,
+      "end_time": 49.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 49.00s and 49.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 49.5,
+      "end_time": 50.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 49.50s and 50.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 50.0,
+      "end_time": 50.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 50.00s and 50.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 50.5,
+      "end_time": 51.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 50.50s and 51.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 51.0,
+      "end_time": 51.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 51.00s and 51.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 53.0,
+      "end_time": 53.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 53.00s and 53.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 53.5,
+      "end_time": 54.0,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 53.50s and 54.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 54.0,
+      "end_time": 54.5,
+      "motion_type": "PUNCH_IN_SHAKE",
+      "speed_factor": 1.05,
+      "observed": "Motion PUNCH_IN_SHAKE at 1.05x speed between 54.00s and 54.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 54.5,
+      "end_time": 55.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 54.50s and 55.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 56.0,
+      "end_time": 56.5,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 56.00s and 56.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 56.5,
+      "end_time": 57.0,
+      "motion_type": "SPEED_RAMP_ACCEL",
+      "speed_factor": 2.5,
+      "observed": "Motion SPEED_RAMP_ACCEL at 2.5x speed between 56.50s and 57.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 57.0,
+      "end_time": 57.5,
+      "motion_type": "FREEZE_FRAME",
+      "speed_factor": 0.0,
+      "observed": "Motion FREEZE_FRAME at 0.0x speed between 57.00s and 57.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 57.5,
+      "end_time": 58.0,
+      "motion_type": "FREEZE_FRAME",
+      "speed_factor": 0.0,
+      "observed": "Motion FREEZE_FRAME at 0.0x speed between 57.50s and 58.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 58.0,
+      "end_time": 58.5,
+      "motion_type": "FREEZE_FRAME",
+      "speed_factor": 0.0,
+      "observed": "Motion FREEZE_FRAME at 0.0x speed between 58.00s and 58.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 58.5,
+      "end_time": 59.0,
+      "motion_type": "FREEZE_FRAME",
+      "speed_factor": 0.0,
+      "observed": "Motion FREEZE_FRAME at 0.0x speed between 58.50s and 59.00s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    },
+    {
+      "start_time": 59.0,
+      "end_time": 59.5,
+      "motion_type": "FREEZE_FRAME",
+      "speed_factor": 0.0,
+      "observed": "Motion FREEZE_FRAME at 0.0x speed between 59.00s and 59.50s.",
+      "inferred": "Non-linear time warp accelerating passage through non-combat corridor traversal.",
+      "implementation": "DaVinci Edit Page: Retime Curve -> Speed Points. Retime Process: Optical Flow, Motion Estimation: Enhanced Better."
+    }
+  ],
+  "sound_design_breakdown": {
+    "bpm": 120.0,
+    "detected_drops_count": 4,
+    "sub_bass_events_count": 8,
+    "observed": "Estimated tempo: 120.0 BPM with 4 primary drops and 8 sub-bass hits.",
+    "inferred": "High-impact trap/hip-hop beat with gameplay gunshot cracks layered on downbeats and ducked music.",
+    "implementation": "DaVinci Fairlight Page: Track A1 (CS2 Gameplay) Sidechain Send to Track A2 (Music Track). Insert Dynamics Compressor on Track A2, enable Sidechain Listen, Threshold -18 dB, Ratio 3.5:1, Fast Attack 2ms."
+  },
+  "motion_graphics_breakdown": {
+    "observed": "Native CS2 HUD / deathnotices or external text graphics within 640x360 frame.",
+    "inferred": "Clean crop or suppression of default in-game HUD to prevent visual clutter, overlaid with custom tournament death notices.",
+    "implementation": "Fusion Page: Background -> Text+ (Player Name, Weapon Icon) -> Glow (Glow=0.4, Size=10) -> Merge onto footage at top-right corner. Keyframe Opacity in 3 frames on fatal hit."
+  },
+  "user_feedback": null
+}

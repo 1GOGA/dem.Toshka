@@ -1,0 +1,230 @@
+{
+  "PAT_DROP_ref_ref_": {
+    "pattern_id": "PAT_DROP_ref_ref_",
+    "name": "808 Beat Drop / Fatal Gunshot Synchronization",
+    "category": "SOUND_DESIGN",
+    "description": "Locking the primary musical drop (808 kick / trap snare) frame-accurately to the first lethal trigger pull.",
+    "scene_type": "ENGAGEMENT",
+    "visual_prerequisites": [
+      "Tension build-up camera movement",
+      "Corner peek or sightline alignment",
+      "Initial weapon muzzle flash"
+    ],
+    "editing_technique": "Timeline audio grid alignment ensuring music drop transient matches the exact weapon fire frame.",
+    "suggested_effects": [
+      "Sub-bass downer impact",
+      "Muzzle flash boost",
+      "Screen punch-in"
+    ],
+    "suggested_transitions": [
+      "Slide-in whip",
+      "Smooth cut"
+    ],
+    "suggested_audio_treatment": "Sidechain gameplay audio so 808 transient dominates, weapon crack layered on top at +2.5 dB.",
+    "suggested_timing_range": "0.00s offset (0-frame tolerance)",
+    "davinci_resolve_recipe": {
+      "page": "Fairlight",
+      "node_tree": "Audio Track 1 (CS2) Sidechained to Track 2 (Music), Ducking: -3.5dB on drop hit.",
+      "curve_type": "Instant attack (1ms), 250ms release"
+    },
+    "confidence": "VERIFIED_IN_RESOLVE",
+    "source_reference_id": "ref_ref_cs2_montage_reel_93751afd",
+    "source_timestamps": [
+      0.325
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "HYPE",
+      "CINEMATIC"
+    ]
+  },
+  "SOUND_SUB_DOWNER_HEADSHOT": {
+    "pattern_id": "SOUND_SUB_DOWNER_HEADSHOT",
+    "name": "Low-End Sub Downer & Metallic Headshot Dink",
+    "category": "SOUND_DESIGN",
+    "description": "Deep sub-bass impact (< 70 Hz) paired with a high-frequency metal snap on lethal headshot confirmations.",
+    "scene_type": "VICTIM_REACTION",
+    "visual_prerequisites": [
+      "Headshot kill confirmed in combat log",
+      "Ragdoll collapse on victim"
+    ],
+    "editing_technique": "Layering Sonniss GDC impact_sub_downer_fast16.wav (-4.0 dB) with accent_flicking_metal_snap.wav (-6.0 dB).",
+    "suggested_effects": [
+      "Sub harmonic synthesizer / low-pass filter @ 80 Hz",
+      "High shelf boost @ 6 kHz on dink"
+    ],
+    "suggested_transitions": [
+      "Radial zoom-in snap"
+    ],
+    "suggested_audio_treatment": "Duck music soundtrack by -3.5 dB for 150ms to allow sub transient to hit cleanly.",
+    "suggested_timing_range": "0.00s offset from hit frame, 1.2s decay",
+    "davinci_resolve_recipe": {
+      "page": "Fairlight",
+      "node_tree": "Fairlight Track A3 (Impacts): Level -4.0 dB, Bus 1 (Main Master)",
+      "curve_type": "Instant Attack, 850ms Exponential Decay"
+    },
+    "confidence": "VERIFIED_IN_RESOLVE",
+    "source_reference_id": "ref_anubis_ace_master",
+    "source_timestamps": [
+      12.2
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "HYPE",
+      "CINEMATIC"
+    ]
+  },
+  "SOUND_FAST_AIR_WHOOSH": {
+    "pattern_id": "SOUND_FAST_AIR_WHOOSH",
+    "name": "Pre-Cut Fast Air Blast Whoosh",
+    "category": "SOUND_DESIGN",
+    "description": "Aerodynamic designed whoosh preceding camera angle cuts or speed-ramps by 2-3 frames.",
+    "scene_type": "APPROACH",
+    "visual_prerequisites": [
+      "Camera angle transition or whip pan"
+    ],
+    "editing_technique": "Sonniss GDC whoosh_air_blast_clean.wav aligned so peak volume occurs on cut boundary frame.",
+    "suggested_effects": [
+      "Stereo widener 120%",
+      "High-pass filter @ 120 Hz"
+    ],
+    "suggested_transitions": [
+      "Whip pan",
+      "Slide left"
+    ],
+    "suggested_audio_treatment": "Level at -8.0 dB, panning from left to center.",
+    "suggested_timing_range": "0.50s duration (peaks at 0.35s)",
+    "davinci_resolve_recipe": {
+      "page": "Fairlight",
+      "node_tree": "Fairlight Track A4 (Whooshes): Level -8.0 dB, Pan L->C",
+      "curve_type": "Smooth Bell Curve"
+    },
+    "confidence": "VERIFIED_IN_RESOLVE",
+    "source_reference_id": "ref_anubis_ace_master",
+    "source_timestamps": [
+      2.15,
+      8.58
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "HYPE"
+    ]
+  },
+  "PAT_DROP_ref_ssst": {
+    "pattern_id": "PAT_DROP_ref_ssst",
+    "name": "808 Beat Drop / Fatal Gunshot Synchronization",
+    "category": "SOUND_DESIGN",
+    "description": "Locking the primary musical drop (808 kick / trap snare) frame-accurately to the first lethal trigger pull.",
+    "scene_type": "ENGAGEMENT",
+    "visual_prerequisites": [
+      "Tension build-up camera movement",
+      "Corner peek or sightline alignment",
+      "Initial weapon muzzle flash"
+    ],
+    "editing_technique": "Timeline audio grid alignment ensuring music drop transient matches the exact weapon fire frame.",
+    "suggested_effects": [
+      "Sub-bass downer impact",
+      "Muzzle flash boost",
+      "Screen punch-in"
+    ],
+    "suggested_transitions": [
+      "Slide-in whip",
+      "Smooth cut"
+    ],
+    "suggested_audio_treatment": "Sidechain gameplay audio so 808 transient dominates, weapon crack layered on top at +2.5 dB.",
+    "suggested_timing_range": "0.00s offset (0-frame tolerance)",
+    "davinci_resolve_recipe": {
+      "page": "Fairlight",
+      "node_tree": "Audio Track 1 (CS2) Sidechained to Track 2 (Music), Ducking: -3.5dB on drop hit.",
+      "curve_type": "Instant attack (1ms), 250ms release"
+    },
+    "confidence": "VERIFIED_IN_RESOLVE",
+    "source_reference_id": "ref_ssstik.io_1794490752764_d1588444",
+    "source_timestamps": [
+      0.093
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "HYPE",
+      "CINEMATIC"
+    ]
+  },
+  "PAT_DROP_ref_\u0414\u0440\u0443\u0437": {
+    "pattern_id": "PAT_DROP_ref_\u0414\u0440\u0443\u0437",
+    "name": "808 Beat Drop / Fatal Gunshot Synchronization",
+    "category": "SOUND_DESIGN",
+    "description": "Locking the primary musical drop (808 kick / trap snare) frame-accurately to the first lethal trigger pull.",
+    "scene_type": "ENGAGEMENT",
+    "visual_prerequisites": [
+      "Tension build-up camera movement",
+      "Corner peek or sightline alignment",
+      "Initial weapon muzzle flash"
+    ],
+    "editing_technique": "Timeline audio grid alignment ensuring music drop transient matches the exact weapon fire frame.",
+    "suggested_effects": [
+      "Sub-bass downer impact",
+      "Muzzle flash boost",
+      "Screen punch-in"
+    ],
+    "suggested_transitions": [
+      "Slide-in whip",
+      "Smooth cut"
+    ],
+    "suggested_audio_treatment": "Sidechain gameplay audio so 808 transient dominates, weapon crack layered on top at +2.5 dB.",
+    "suggested_timing_range": "0.00s offset (0-frame tolerance)",
+    "davinci_resolve_recipe": {
+      "page": "Fairlight",
+      "node_tree": "Audio Track 1 (CS2) Sidechained to Track 2 (Music), Ducking: -3.5dB on drop hit.",
+      "curve_type": "Instant attack (1ms), 250ms release"
+    },
+    "confidence": "VERIFIED_IN_RESOLVE",
+    "source_reference_id": "ref_\u0414\u0440\u0443\u0437\u0435\u0439 \u043d\u0435 \u043c\u0435\u043d\u044f\u044e\u0442 \u043d\u0430 \u0431\u0430\u0431\u043b_89731028",
+    "source_timestamps": [
+      1.786
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "HYPE",
+      "CINEMATIC"
+    ]
+  },
+  "PAT_DROP_ref_\u041c\u043e\u044f ": {
+    "pattern_id": "PAT_DROP_ref_\u041c\u043e\u044f ",
+    "name": "808 Beat Drop / Fatal Gunshot Synchronization",
+    "category": "SOUND_DESIGN",
+    "description": "Locking the primary musical drop (808 kick / trap snare) frame-accurately to the first lethal trigger pull.",
+    "scene_type": "ENGAGEMENT",
+    "visual_prerequisites": [
+      "Tension build-up camera movement",
+      "Corner peek or sightline alignment",
+      "Initial weapon muzzle flash"
+    ],
+    "editing_technique": "Timeline audio grid alignment ensuring music drop transient matches the exact weapon fire frame.",
+    "suggested_effects": [
+      "Sub-bass downer impact",
+      "Muzzle flash boost",
+      "Screen punch-in"
+    ],
+    "suggested_transitions": [
+      "Slide-in whip",
+      "Smooth cut"
+    ],
+    "suggested_audio_treatment": "Sidechain gameplay audio so 808 transient dominates, weapon crack layered on top at +2.5 dB.",
+    "suggested_timing_range": "0.00s offset (0-frame tolerance)",
+    "davinci_resolve_recipe": {
+      "page": "Fairlight",
+      "node_tree": "Audio Track 1 (CS2) Sidechained to Track 2 (Music), Ducking: -3.5dB on drop hit.",
+      "curve_type": "Instant attack (1ms), 250ms release"
+    },
+    "confidence": "VERIFIED_IN_RESOLVE",
+    "source_reference_id": "ref_\u041c\u043e\u044f \u0433\u043e\u043b\u043e\u0432\u0430 \u0432\u0438\u043d\u0442\u043e\u043c \u2764\ufe0f_518a4460",
+    "source_timestamps": [
+      4.639
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "HYPE",
+      "CINEMATIC"
+    ]
+  }
+}

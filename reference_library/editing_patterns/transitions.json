@@ -1,0 +1,109 @@
+{
+  "TRANS_WHIP_PAN_270": {
+    "pattern_id": "TRANS_WHIP_PAN_270",
+    "name": "Directional Whip Pan with 270\u00b0 Motion Blur",
+    "category": "TRANSITION",
+    "description": "Rapid horizontal camera whip simulating high-speed head turn, matching movement vector between distinct scenes.",
+    "scene_type": "APPROACH_TO_COMBAT",
+    "visual_prerequisites": [
+      "Continuous lateral movement in source take",
+      "High contrast edges in incoming take"
+    ],
+    "editing_technique": "0.20s duration transition with shutter angle set to 270\u00b0 for authentic cinematic streaking.",
+    "suggested_effects": [
+      "Directional Blur (angle=0, length=45)",
+      "RGB Aberration split (2px)"
+    ],
+    "suggested_transitions": [
+      "xfade transition=slideleft:duration=0.20"
+    ],
+    "suggested_audio_treatment": "Fast air blast whoosh (whoosh_air_blast_clean.wav) peaking 2 frames before cut point.",
+    "suggested_timing_range": "0.15s to 0.25s (9 to 15 frames at 60 fps)",
+    "davinci_resolve_recipe": {
+      "page": "Fusion",
+      "node_tree": "MediaIn1 -> DirectionalBlur (Length 0.08, Angle 180) -> Transform (CenterX anim 0.5 -> -0.5) -> Dissolve -> MediaIn2",
+      "curve_type": "Ease In-Out Cubic"
+    },
+    "confidence": "VERIFIED_IN_RESOLVE",
+    "source_reference_id": "ref_anubis_ace_master",
+    "source_timestamps": [
+      2.15
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "HYPE"
+    ]
+  },
+  "TRANS_ZOOM_SNAP": {
+    "pattern_id": "TRANS_ZOOM_SNAP",
+    "name": "Dynamic Radial Zoom-In Snap",
+    "category": "TRANSITION",
+    "description": "Fast push-in zoom into focal point (killer or victim head) before cutting to opposite perspective.",
+    "scene_type": "VICTIM_REACTION",
+    "visual_prerequisites": [
+      "Target centered in frame",
+      "Distinct depth separation"
+    ],
+    "editing_technique": "0.15s duration radial scale from 1.0x to 1.4x into cut point, incoming clip starts at 1.2x and snaps to 1.0x.",
+    "suggested_effects": [
+      "Radial Blur / Zoom Blur",
+      "Micro flash on cut"
+    ],
+    "suggested_transitions": [
+      "xfade transition=zoomin:duration=0.15"
+    ],
+    "suggested_audio_treatment": "Turbulent wind whip + sharp transient hit on impact frame.",
+    "suggested_timing_range": "0.10s to 0.18s",
+    "davinci_resolve_recipe": {
+      "page": "Fusion",
+      "node_tree": "Transform1 (Size 1.0 -> 1.35) -> RadialBlur (Blur 0.15) -> MediaOut",
+      "curve_type": "Exponential Accelerate"
+    },
+    "confidence": "VERIFIED_IN_RESOLVE",
+    "source_reference_id": "ref_anubis_ace_master",
+    "source_timestamps": [
+      11.3,
+      12.6
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "HYPE"
+    ]
+  },
+  "TRANS_FLASH_IMPACT": {
+    "pattern_id": "TRANS_FLASH_IMPACT",
+    "name": "Luma Contrast Impact Flash",
+    "category": "TRANSITION",
+    "description": "Overexposed 2-frame brightness burst accentuating catastrophic weapon impacts or sniper shots.",
+    "scene_type": "ENGAGEMENT",
+    "visual_prerequisites": [
+      "Lethal gunshot connecting",
+      "High energy music beat"
+    ],
+    "editing_technique": "Gamma / Gain boosted to +35% for 2 frames at hit point, decaying over 4 frames.",
+    "suggested_effects": [
+      "ColorCorrector Gain boost",
+      "Halation glow"
+    ],
+    "suggested_transitions": [
+      "Flash cut"
+    ],
+    "suggested_audio_treatment": "Sharp metallic slice cut or snap layered with sub downer.",
+    "suggested_timing_range": "0.05s to 0.10s (3 to 6 frames)",
+    "davinci_resolve_recipe": {
+      "page": "Color",
+      "node_tree": "Node 1 -> Node 2 (Gain Keyframe: f0=1.0, f2=1.45, f5=1.0) -> Output",
+      "curve_type": "Linear Spike with Smooth Decay"
+    },
+    "confidence": "VERIFIED_IN_RESOLVE",
+    "source_reference_id": "ref_anubis_ace_master",
+    "source_timestamps": [
+      7.71,
+      12.2
+    ],
+    "style_profile_affinity": [
+      "HYPE",
+      "HYBRID"
+    ]
+  }
+}

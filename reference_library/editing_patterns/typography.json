@@ -1,0 +1,77 @@
+{
+  "TYPO_MINIMAL_KILLFEED": {
+    "pattern_id": "TYPO_MINIMAL_KILLFEED",
+    "name": "Esports Clean Stacked Tournament Killfeed",
+    "category": "TYPOGRAPHY",
+    "description": "Tournament-standard badges positioned at top-right, appearing frame-locked to lethal bullet hits and auto-stacking.",
+    "scene_type": "COMBAT_OVERLAY",
+    "visual_prerequisites": [
+      "Kill confirmed on screen",
+      "cl_drawhud 0 in game capture"
+    ],
+    "editing_technique": "High-resolution alpha PNG/SVG badges rendered with soft drop shadow and team color accents.",
+    "suggested_effects": [
+      "Drop Shadow (offset 2px, opacity 0.6)",
+      "Glow threshold 0.8"
+    ],
+    "suggested_transitions": [
+      "Slide down 12px in 4 frames"
+    ],
+    "suggested_audio_treatment": "Synced with hit sound / headshot snap.",
+    "suggested_timing_range": "Appears exactly on kill frame, expires 2.5s later",
+    "davinci_resolve_recipe": {
+      "page": "Edit",
+      "node_tree": "Track V2: PNG Overlay with In-Out cut aligned to kill marker.",
+      "curve_type": "Instant On"
+    },
+    "confidence": "VERIFIED_IN_RESOLVE",
+    "source_reference_id": "ref_anubis_ace_master",
+    "source_timestamps": [
+      7.83,
+      10.45,
+      12.2,
+      13.5,
+      16.5
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "HYPE"
+    ]
+  },
+  "TYPO_ACE_DOMINATION": {
+    "pattern_id": "TYPO_ACE_DOMINATION",
+    "name": "Climax ACE Domination Victory Banner",
+    "category": "TYPOGRAPHY",
+    "description": "Prestigious gold/cyan glowing badge celebrating round-winning 5K Ace, presented during the victory orbit.",
+    "scene_type": "ACE_CLIMAX",
+    "visual_prerequisites": [
+      "5 kills confirmed in round",
+      "Climax camera orbit or victory slow-mo"
+    ],
+    "editing_technique": "Centered lower-third badge with subtle scale breathing (1.0x -> 1.03x) and golden outer bloom.",
+    "suggested_effects": [
+      "Fast Glow",
+      "Drop shadow blur 8px",
+      "Luma pulse"
+    ],
+    "suggested_transitions": [
+      "Fade in 0.25s, fade out with video"
+    ],
+    "suggested_audio_treatment": "Heavy sub downer with 2.5s decay into soundtrack vocal hook.",
+    "suggested_timing_range": "2.0s to 3.0s duration at sequence end",
+    "davinci_resolve_recipe": {
+      "page": "Fusion",
+      "node_tree": "MediaIn (Ace PNG) -> Transform (Size 1.0 -> 1.03) -> Glow (Glow 0.45) -> Merge -> MediaOut",
+      "curve_type": "Sine Breath"
+    },
+    "confidence": "VERIFIED_IN_RESOLVE",
+    "source_reference_id": "ref_anubis_ace_master",
+    "source_timestamps": [
+      16.6
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "CINEMATIC"
+    ]
+  }
+}

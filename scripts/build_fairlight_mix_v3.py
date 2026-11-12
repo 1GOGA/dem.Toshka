@@ -57,34 +57,59 @@ def extract_take_audio(take_file, start_s, dur_s):
 
 # Extract each take segment corresponding to the video montage:
 # Segment 1: Shoulder approach (0.00s - 2.15s)
-# Segment 2: Hero POV pt 1 (0.00s - 9.15s) -> plays from 2.15s to 11.30s
-# Segment 3: Victim reaction (0.00s - 1.30s) -> plays from 11.30s to 12.60s
-# Segment 4: Hero POV pt 2 (10.50s - 13.60s) -> plays from 12.60s to 15.70s
-# Segment 5: Climax Orbit (0.00s - 2.80s) -> plays from 15.70s to 18.50s
+# Segment 2A: Hero POV pt 1 (5.77s - 12.20s) -> plays from 2.15s to 8.58s (Kill 1 gunshot at 7.711s, death at 7.830s!)
+# Segment 2B: Fast-forward speed ramp (12.20s - 15.80s at 4x) -> plays from 8.58s to 9.48s
+# Segment 2C: Hero POV Kill 2 duel (15.80s - 17.70s) -> plays from 9.48s to 11.38s (Kill 2 gunshot & death at 10.45s!)
+# Segment 3: Victim reaction (0.00s - 1.30s) -> plays from 11.30s to 12.60s (Kill 3 headshot reaction)
+# Segment 4: Hero POV pt 2 (18.60s - 21.70s) -> plays from 12.60s to 15.70s (Kill 4 multikill duel)
+# Segment 5: Climax Orbit (0.70s - 3.50s) -> plays from 15.70s to 18.50s (Kill 5 ACE victory)
 s1 = extract_take_audio(takes_dir / "shot_anubis_ace_r19_02_shoulder_approach.mp4", 0.0, 2.15)
-s2 = extract_take_audio(takes_dir / "shot_anubis_ace_r19_01_hero_pov.mp4", 0.0, 9.15)
+s2a = extract_take_audio(takes_dir / "shot_anubis_ace_r19_01_hero_pov.mp4", 5.77, 6.43)
+s2b_raw = extract_take_audio(takes_dir / "shot_anubis_ace_r19_01_hero_pov.mp4", 12.20, 3.60)
+# Resample s2b to 0.90s (4x fast-forward speed ramp)
+n_target_2b = int(0.90 * RATE)
+s2b = np.column_stack([
+    signal.resample(s2b_raw[:, 0], n_target_2b),
+    signal.resample(s2b_raw[:, 1], n_target_2b)
+])
+s2c = extract_take_audio(takes_dir / "shot_anubis_ace_r19_01_hero_pov.mp4", 15.80, 1.90)
 s3 = extract_take_audio(takes_dir / "shot_anubis_ace_r19_03_victim_reaction.mp4", 0.0, 1.30)
-s4 = extract_take_audio(takes_dir / "shot_anubis_ace_r19_01_hero_pov.mp4", 10.50, 3.10)
-s5 = extract_take_audio(takes_dir / "shot_anubis_ace_r19_04_climax_orbit.mp4", 0.0, 2.80)
+s4 = extract_take_audio(takes_dir / "shot_anubis_ace_r19_01_hero_pov.mp4", 18.60, 3.10)
+s5 = extract_take_audio(takes_dir / "shot_anubis_ace_r19_04_climax_orbit.mp4", 0.70, 2.80)
 
 a1_raw = np.zeros((TOTAL_SAMPLES, 2), dtype=np.float32)
 
+# S1: 0.00s to 2.15s
 idx1 = 0
 l1 = min(len(s1), int(2.15 * RATE))
 a1_raw[:l1] = s1[:l1]
 
-idx2 = int(2.15 * RATE)
-l2 = min(len(s2), int(9.15 * RATE))
-a1_raw[idx2:idx2+l2] = s2[:l2]
+# S2A: 2.15s to 8.58s
+idx2a = int(2.15 * RATE)
+l2a = min(len(s2a), int(6.43 * RATE))
+a1_raw[idx2a:idx2a+l2a] = s2a[:l2a]
 
+# S2B: 8.58s to 9.48s (Speed ramp)
+idx2b = int(8.58 * RATE)
+l2b = min(len(s2b), int(0.90 * RATE))
+a1_raw[idx2b:idx2b+l2b] = s2b[:l2b]
+
+# S2C: 9.48s to 11.38s
+idx2c = int(9.48 * RATE)
+l2c = min(len(s2c), int(1.90 * RATE))
+a1_raw[idx2c:idx2c+l2c] = s2c[:l2c]
+
+# S3: 11.30s to 12.60s (with crossfade over 11.30-11.38)
 idx3 = int(11.30 * RATE)
 l3 = min(len(s3), int(1.30 * RATE))
 a1_raw[idx3:idx3+l3] = s3[:l3]
 
+# S4: 12.60s to 15.70s
 idx4 = int(12.60 * RATE)
 l4 = min(len(s4), int(3.10 * RATE))
 a1_raw[idx4:idx4+l4] = s4[:l4]
 
+# S5: 15.70s to 18.50s
 idx5 = int(15.70 * RATE)
 l5 = min(len(s5), TOTAL_SAMPLES - idx5)
 a1_raw[idx5:idx5+l5] = s5[:l5]
@@ -155,6 +180,11 @@ whoosh_air = load_resample(SFX_DIR / "2_whooshes/whoosh_air_blast_clean.wav")
 t1_idx = int(2.15 * RATE)
 n_w1 = min(len(whoosh_air), int(0.6 * RATE))
 stem_a4[t1_idx:t1_idx+n_w1] += whoosh_air[:n_w1] * 0.40
+
+# Trans 1B at 8.58s (Speed Ramp Fast-Forward Rush into Kill 2): Fast air whoosh
+t1b_idx = int(8.58 * RATE)
+n_w1b = min(len(whoosh_air), int(0.5 * RATE))
+stem_a4[t1b_idx:t1b_idx+n_w1b] += whoosh_air[:n_w1b] * 0.35
 
 # Trans 2 at 11.30s (Hero -> Victim POV Zoom): Turbulent wind whip
 whip_wav = load_resample(SFX_DIR / "3_transitions/transition_wind_whip_turbulent.wav")

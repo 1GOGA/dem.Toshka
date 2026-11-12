@@ -1357,6 +1357,172 @@ def get_transitions_catalog() -> dict[str, Any]:
     }
 
 
+# ---------------------------------------------------------------------------
+# dem.Toshka — Phase 3.4 AI Fragmovie Reference Lab Endpoints
+# ---------------------------------------------------------------------------
+from dataclasses import asdict as _dc_asdict
+from backend.cinematic.reference_analyzer import FragmovieReferenceAnalyzer
+
+_ref_analyzer = FragmovieReferenceAnalyzer()
+
+
+@app.get("/api/cinematic/reference-lab/inbox", tags=["cinematic"])
+def get_reference_inbox() -> dict[str, Any]:
+    """List all reference videos staged in the inbox with technical metadata and analysis status."""
+    files = _ref_analyzer.scan_inbox()
+    index = _ref_analyzer.load_index()
+    analyzed_filenames = {item["filename"] for item in index.values() if "filename" in item}
+
+    inbox_items = []
+    for f in files:
+        inbox_items.append({
+            "filename": f.name,
+            "path": str(f.resolve()),
+            "size_bytes": f.stat().st_size,
+            "size_mb": round(f.stat().st_size / (1024 * 1024), 2),
+            "analyzed": f.name in analyzed_filenames,
+        })
+    return {"count": len(inbox_items), "items": inbox_items}
+
+
+@app.post("/api/cinematic/reference-lab/scan", tags=["cinematic"])
+def scan_reference_inbox() -> dict[str, Any]:
+    """Scan inbox for new or unprocessed video references."""
+    files = _ref_analyzer.scan_inbox()
+    return {
+        "status": "success",
+        "scanned_count": len(files),
+        "files": [f.name for f in files],
+    }
+
+
+@app.post("/api/cinematic/reference-lab/analyze/{filename}", tags=["cinematic"])
+def analyze_reference_video(filename: str) -> dict[str, Any]:
+    """Execute complete multimodal analysis on a specific inbox reference video."""
+    target_path = _ref_analyzer.inbox_dir / filename
+    if not target_path.is_file():
+        raise HTTPException(status_code=404, detail=f"Reference video '{filename}' not found in inbox.")
+    try:
+        report = _ref_analyzer.analyze_reference(target_path)
+        return {
+            "status": "success",
+            "reference_id": report.reference_id,
+            "report": _dc_asdict(report),
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
+
+
+@app.get("/api/cinematic/reference-lab/references", tags=["cinematic"])
+def list_analyzed_references() -> dict[str, Any]:
+    """List all analyzed reference videos from the persistent index."""
+    index = _ref_analyzer.load_index()
+    return {
+        "count": len(index),
+        "references": list(index.values()),
+    }
+
+
+@app.get("/api/cinematic/reference-lab/references/{ref_id}", tags=["cinematic"])
+def get_reference_report(ref_id: str) -> dict[str, Any]:
+    """Retrieve full analysis report for a specific reference video."""
+    rep_file = _ref_analyzer.analyzed_dir / f"{ref_id}.json"
+    if not rep_file.is_file():
+        raise HTTPException(status_code=404, detail=f"Reference report '{ref_id}' not found.")
+    import json
+    with open(rep_file, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return data
+
+
+@app.get("/api/cinematic/reference-lab/patterns", tags=["cinematic"])
+def get_editing_patterns(
+    profile: Optional[str] = Query(None, description="Editorial profile filter (HYBRID, HYPE, CINEMATIC)"),
+    category: Optional[str] = Query(None, description="Pattern category filter (TRANSITION, SPEED_RAMP, COLOR_GRADING, SOUND_DESIGN, CAMERA_WORK, TYPOGRAPHY)"),
+) -> dict[str, Any]:
+    """Query persistent editing patterns extracted from references, filtered by profile or category."""
+    import json
+    if not _ref_analyzer.patterns_master.exists():
+        return {"count": 0, "patterns": []}
+
+    with open(_ref_analyzer.patterns_master, "r", encoding="utf-8") as f:
+        master = json.load(f)
+
+    results = []
+    for pat in master.values():
+        if profile:
+            affinities = pat.get("style_profile_affinity", [])
+            if profile not in affinities and "HYBRID" not in affinities:
+                continue
+        if category:
+            cat_upper = category.upper()
+            if pat.get("category", "").upper() != cat_upper:
+                continue
+        results.append(pat)
+
+    return {
+        "count": len(results),
+        "profile_filter": profile,
+        "category_filter": category,
+        "patterns": results,
+    }
+
+
+@app.get("/api/cinematic/reference-lab/style-guide", tags=["cinematic"])
+def get_style_guide() -> dict[str, Any]:
+    """Retrieve authoritative Markdown style guide for dem.Toshka fragmovies."""
+    guide_path = pathlib.Path("reference_library/PYTOSHKA_STYLE_GUIDE.md")
+    if not guide_path.is_file():
+        raise HTTPException(status_code=404, detail="Style guide not found.")
+    with open(guide_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    return {"content": content, "path": str(guide_path.resolve())}
+
+
+@app.get("/api/cinematic/reference-lab/contact-sheets/{filename}", tags=["cinematic"])
+def get_contact_sheet_image(filename: str):
+    """Retrieve contact sheet PNG image for visual inspection."""
+    img_path = _ref_analyzer.contact_sheets_dir / filename
+    if not img_path.is_file():
+        raise HTTPException(status_code=404, detail=f"Contact sheet '{filename}' not found.")
+    return FileResponse(str(img_path), media_type="image/png")
+
+
+@app.post("/api/cinematic/reference-lab/references/{ref_id}/vote", tags=["cinematic"])
+async def vote_reference(ref_id: str, request: Request) -> dict[str, Any]:
+    """Records user simple Like / Dislike / Clear preference for a reference."""
+    body = await request.json()
+    vote = body.get("vote")  # "liked", "disliked", None
+    success = _ref_analyzer.vote_reference(ref_id, vote)
+    if not success:
+        raise HTTPException(status_code=404, detail=f"Reference '{ref_id}' not found.")
+    return {"status": "success", "reference_id": ref_id, "vote": vote}
+
+
+@app.post("/api/cinematic/reference-lab/patterns/{pattern_id}/vote", tags=["cinematic"])
+async def vote_pattern(pattern_id: str, request: Request) -> dict[str, Any]:
+    """Records user simple Like / Dislike / Clear preference for an editing pattern."""
+    body = await request.json()
+    vote = body.get("vote")  # "liked", "disliked", None
+    success = _ref_analyzer.vote_pattern(pattern_id, vote)
+    if not success:
+        raise HTTPException(status_code=404, detail=f"Pattern '{pattern_id}' not found.")
+    return {"status": "success", "pattern_id": pattern_id, "vote": vote}
+
+
+@app.get("/api/cinematic/reference-lab/reference-cards/{ref_id}", tags=["cinematic"])
+def get_reference_card(ref_id: str) -> dict[str, Any]:
+    """Retrieve Markdown reference card with full OBSERVED vs INFERRED breakdown."""
+    card_path = _ref_analyzer.reference_cards_dir / f"CARD_{ref_id}.md"
+    if not card_path.is_file():
+        raise HTTPException(status_code=404, detail=f"Reference card for '{ref_id}' not found.")
+    with open(card_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    return {"reference_id": ref_id, "content": content, "path": str(card_path.resolve())}
+
+
+
+
 
 # ---------------------------------------------------------------------------
 # Mount Frontend Distribution for Standalone / Production Desktop Mode

@@ -1,0 +1,70 @@
+{
+  "COLOR_SANDSTONE_CINEMATIC": {
+    "pattern_id": "COLOR_SANDSTONE_CINEMATIC",
+    "name": "Egyptian Sandstone Cinematic Look",
+    "category": "COLOR_GRADING",
+    "description": "Warm organic sunlit stones (#f4ecd8 highlights) balanced against dark teal shadows (#1a1d24) and rich weapon textures.",
+    "scene_type": "GLOBAL_PALETTE",
+    "visual_prerequisites": [
+      "Daylight outdoor map (Anubis, Mirage, Dust2)"
+    ],
+    "editing_technique": "Film emulation with gentle S-curve contrast, soft highlight rolloff and subtle orange-teal complementary split.",
+    "suggested_effects": [
+      "3D LUT (.cube)",
+      "Halation / Film Grain 35mm fine"
+    ],
+    "suggested_transitions": [
+      "N/A"
+    ],
+    "suggested_audio_treatment": "Warm analog master EQ curve.",
+    "suggested_timing_range": "Full Timeline",
+    "davinci_resolve_recipe": {
+      "page": "Color",
+      "node_tree": "Node 1 (Exposure/Balance) -> Node 2 (Curves: Lift 0.02, Gain 0.95) -> Node 3 (Split Tone: Shadows teal +3, Highlights warm +4) -> Node 4 (LUT: Sandstone Cinematic)",
+      "curve_type": "Filmic S-Curve"
+    },
+    "confidence": "VERIFIED_IN_RESOLVE",
+    "source_reference_id": "ref_anubis_ace_master",
+    "source_timestamps": [
+      0.0
+    ],
+    "style_profile_affinity": [
+      "CINEMATIC",
+      "HYBRID"
+    ]
+  },
+  "COLOR_COLD_ESPORTS": {
+    "pattern_id": "COLOR_COLD_ESPORTS",
+    "name": "Cold Esports Clean Look",
+    "category": "COLOR_GRADING",
+    "description": "Ultra-crisp modern tournament aesthetic with neutral cool shadows, pure white highlights, and vibrant weapon skin saturation.",
+    "scene_type": "GLOBAL_PALETTE",
+    "visual_prerequisites": [
+      "Industrial / tactical maps (Nuke, Inferno, Ancient)"
+    ],
+    "editing_technique": "Linear contrast, midtone detail boost +12, saturation +15%, cool shadow shift.",
+    "suggested_effects": [
+      "Midtone Detail +15",
+      "Sharpening radius 0.48"
+    ],
+    "suggested_transitions": [
+      "N/A"
+    ],
+    "suggested_audio_treatment": "Crisp high-frequency boost (+1.5 dB @ 6 kHz).",
+    "suggested_timing_range": "Full Timeline",
+    "davinci_resolve_recipe": {
+      "page": "Color",
+      "node_tree": "Node 1 (Balance) -> Node 2 (Midtone Detail +12, Sat 62) -> Node 3 (Cool Lift: RGB 0.98, 0.99, 1.03)",
+      "curve_type": "Linear with Clean Black Point"
+    },
+    "confidence": "INFERRED",
+    "source_reference_id": "ref_cs2_montage_reel",
+    "source_timestamps": [
+      0.0
+    ],
+    "style_profile_affinity": [
+      "HYPE",
+      "HYBRID"
+    ]
+  }
+}

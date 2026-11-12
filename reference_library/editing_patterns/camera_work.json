@@ -1,0 +1,306 @@
+{
+  "PAT_HS_PUNCH_ref_ref_": {
+    "pattern_id": "PAT_HS_PUNCH_ref_ref_",
+    "name": "Headshot Micro Punch-In with Impact Flash",
+    "category": "DIRECTING",
+    "description": "Sudden 1.05x-1.08x camera crop zoom with a 3-frame luma flash accentuating a lethal headshot or sniper frag.",
+    "scene_type": "ENGAGEMENT",
+    "visual_prerequisites": [
+      "First person POV",
+      "Target in reticle crosshair",
+      "Muzzle flash / fatal hit confirmed"
+    ],
+    "editing_technique": "Micro zoom-in (scale 1.06x) for 0.12s duration, snapping back to 1.0x with cubic ease-out.",
+    "suggested_effects": [
+      "Transform node dynamic zoom",
+      "Brightness boost (+0.30)",
+      "Chromatic aberration RGB split (2px)"
+    ],
+    "suggested_transitions": [
+      "Match cut",
+      "Radial blur pop"
+    ],
+    "suggested_audio_treatment": "Real sub downer (< 80 Hz) paired with high-frequency metal snap dink.",
+    "suggested_timing_range": "0.10s to 0.15s (6 to 9 frames at 60 fps)",
+    "davinci_resolve_recipe": {
+      "page": "Fusion",
+      "node_tree": "MediaIn1 -> Transform1 (Size=1.06, Keyframe in 2f, out 7f) -> ColorCorrector1 (Gain=1.35) -> MediaOut1",
+      "curve_type": "Ease Out Cubic"
+    },
+    "confidence": "OBSERVED",
+    "source_reference_id": "ref_ref_cs2_montage_reel_93751afd",
+    "source_timestamps": [
+      0.5
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "HYPE"
+    ]
+  },
+  "PAT_ORBIT_ref_ref_": {
+    "pattern_id": "PAT_ORBIT_ref_ref_",
+    "name": "Smooth Hero Orbit Climax",
+    "category": "CAMERA_WORK",
+    "description": "3rd-person circular camera path revolving 120-180 degrees around the hero to celebrate a round-winning Ace.",
+    "scene_type": "ACE_CLIMAX",
+    "visual_prerequisites": [
+      "Hero has eliminated last enemy",
+      "Open bomb site or victory angle",
+      "Campath enabled in HLAE"
+    ],
+    "editing_technique": "Slow orbital camera glide with smooth ease-in/out, keeping hero in golden ratio third.",
+    "suggested_effects": [
+      "Cinematic LUT grade",
+      "Subtle vignette",
+      "Slow-motion 0.7x timescale"
+    ],
+    "suggested_transitions": [
+      "Smooth cross dissolve",
+      "Luma fade to black"
+    ],
+    "suggested_audio_treatment": "Extended cinematic sub decay (2.5s) with fading gunshot echoes into soundtrack hook.",
+    "suggested_timing_range": "2.5s to 3.5s",
+    "davinci_resolve_recipe": {
+      "page": "Color",
+      "node_tree": "Node 1 (Balance) -> Node 2 (LUT) -> Node 3 (Circular Power Window on Hero + Vignette)",
+      "curve_type": "Log curve with soft rolloff"
+    },
+    "confidence": "INFERRED",
+    "source_reference_id": "ref_ref_cs2_montage_reel_93751afd",
+    "source_timestamps": [
+      3.04
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "CINEMATIC"
+    ]
+  },
+  "PAT_HS_PUNCH_ref_ssst": {
+    "pattern_id": "PAT_HS_PUNCH_ref_ssst",
+    "name": "Headshot Micro Punch-In with Impact Flash",
+    "category": "DIRECTING",
+    "description": "Sudden 1.05x-1.08x camera crop zoom with a 3-frame luma flash accentuating a lethal headshot or sniper frag.",
+    "scene_type": "ENGAGEMENT",
+    "visual_prerequisites": [
+      "First person POV",
+      "Target in reticle crosshair",
+      "Muzzle flash / fatal hit confirmed"
+    ],
+    "editing_technique": "Micro zoom-in (scale 1.06x) for 0.12s duration, snapping back to 1.0x with cubic ease-out.",
+    "suggested_effects": [
+      "Transform node dynamic zoom",
+      "Brightness boost (+0.30)",
+      "Chromatic aberration RGB split (2px)"
+    ],
+    "suggested_transitions": [
+      "Match cut",
+      "Radial blur pop"
+    ],
+    "suggested_audio_treatment": "Real sub downer (< 80 Hz) paired with high-frequency metal snap dink.",
+    "suggested_timing_range": "0.10s to 0.15s (6 to 9 frames at 60 fps)",
+    "davinci_resolve_recipe": {
+      "page": "Fusion",
+      "node_tree": "MediaIn1 -> Transform1 (Size=1.06, Keyframe in 2f, out 7f) -> ColorCorrector1 (Gain=1.35) -> MediaOut1",
+      "curve_type": "Ease Out Cubic"
+    },
+    "confidence": "OBSERVED",
+    "source_reference_id": "ref_ssstik.io_1794490752764_d1588444",
+    "source_timestamps": [
+      0.5
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "HYPE"
+    ]
+  },
+  "PAT_ORBIT_ref_ssst": {
+    "pattern_id": "PAT_ORBIT_ref_ssst",
+    "name": "Smooth Hero Orbit Climax",
+    "category": "CAMERA_WORK",
+    "description": "3rd-person circular camera path revolving 120-180 degrees around the hero to celebrate a round-winning Ace.",
+    "scene_type": "ACE_CLIMAX",
+    "visual_prerequisites": [
+      "Hero has eliminated last enemy",
+      "Open bomb site or victory angle",
+      "Campath enabled in HLAE"
+    ],
+    "editing_technique": "Slow orbital camera glide with smooth ease-in/out, keeping hero in golden ratio third.",
+    "suggested_effects": [
+      "Cinematic LUT grade",
+      "Subtle vignette",
+      "Slow-motion 0.7x timescale"
+    ],
+    "suggested_transitions": [
+      "Smooth cross dissolve",
+      "Luma fade to black"
+    ],
+    "suggested_audio_treatment": "Extended cinematic sub decay (2.5s) with fading gunshot echoes into soundtrack hook.",
+    "suggested_timing_range": "2.5s to 3.5s",
+    "davinci_resolve_recipe": {
+      "page": "Color",
+      "node_tree": "Node 1 (Balance) -> Node 2 (LUT) -> Node 3 (Circular Power Window on Hero + Vignette)",
+      "curve_type": "Log curve with soft rolloff"
+    },
+    "confidence": "INFERRED",
+    "source_reference_id": "ref_ssstik.io_1794490752764_d1588444",
+    "source_timestamps": [
+      12.7
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "CINEMATIC"
+    ]
+  },
+  "PAT_HS_PUNCH_ref_\u0414\u0440\u0443\u0437": {
+    "pattern_id": "PAT_HS_PUNCH_ref_\u0414\u0440\u0443\u0437",
+    "name": "Headshot Micro Punch-In with Impact Flash",
+    "category": "DIRECTING",
+    "description": "Sudden 1.05x-1.08x camera crop zoom with a 3-frame luma flash accentuating a lethal headshot or sniper frag.",
+    "scene_type": "ENGAGEMENT",
+    "visual_prerequisites": [
+      "First person POV",
+      "Target in reticle crosshair",
+      "Muzzle flash / fatal hit confirmed"
+    ],
+    "editing_technique": "Micro zoom-in (scale 1.06x) for 0.12s duration, snapping back to 1.0x with cubic ease-out.",
+    "suggested_effects": [
+      "Transform node dynamic zoom",
+      "Brightness boost (+0.30)",
+      "Chromatic aberration RGB split (2px)"
+    ],
+    "suggested_transitions": [
+      "Match cut",
+      "Radial blur pop"
+    ],
+    "suggested_audio_treatment": "Real sub downer (< 80 Hz) paired with high-frequency metal snap dink.",
+    "suggested_timing_range": "0.10s to 0.15s (6 to 9 frames at 60 fps)",
+    "davinci_resolve_recipe": {
+      "page": "Fusion",
+      "node_tree": "MediaIn1 -> Transform1 (Size=1.06, Keyframe in 2f, out 7f) -> ColorCorrector1 (Gain=1.35) -> MediaOut1",
+      "curve_type": "Ease Out Cubic"
+    },
+    "confidence": "OBSERVED",
+    "source_reference_id": "ref_\u0414\u0440\u0443\u0437\u0435\u0439 \u043d\u0435 \u043c\u0435\u043d\u044f\u044e\u0442 \u043d\u0430 \u0431\u0430\u0431\u043b_89731028",
+    "source_timestamps": [
+      1.667
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "HYPE"
+    ]
+  },
+  "PAT_ORBIT_ref_\u0414\u0440\u0443\u0437": {
+    "pattern_id": "PAT_ORBIT_ref_\u0414\u0440\u0443\u0437",
+    "name": "Smooth Hero Orbit Climax",
+    "category": "CAMERA_WORK",
+    "description": "3rd-person circular camera path revolving 120-180 degrees around the hero to celebrate a round-winning Ace.",
+    "scene_type": "ACE_CLIMAX",
+    "visual_prerequisites": [
+      "Hero has eliminated last enemy",
+      "Open bomb site or victory angle",
+      "Campath enabled in HLAE"
+    ],
+    "editing_technique": "Slow orbital camera glide with smooth ease-in/out, keeping hero in golden ratio third.",
+    "suggested_effects": [
+      "Cinematic LUT grade",
+      "Subtle vignette",
+      "Slow-motion 0.7x timescale"
+    ],
+    "suggested_transitions": [
+      "Smooth cross dissolve",
+      "Luma fade to black"
+    ],
+    "suggested_audio_treatment": "Extended cinematic sub decay (2.5s) with fading gunshot echoes into soundtrack hook.",
+    "suggested_timing_range": "2.5s to 3.5s",
+    "davinci_resolve_recipe": {
+      "page": "Color",
+      "node_tree": "Node 1 (Balance) -> Node 2 (LUT) -> Node 3 (Circular Power Window on Hero + Vignette)",
+      "curve_type": "Log curve with soft rolloff"
+    },
+    "confidence": "INFERRED",
+    "source_reference_id": "ref_\u0414\u0440\u0443\u0437\u0435\u0439 \u043d\u0435 \u043c\u0435\u043d\u044f\u044e\u0442 \u043d\u0430 \u0431\u0430\u0431\u043b_89731028",
+    "source_timestamps": [
+      57.116
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "CINEMATIC"
+    ]
+  },
+  "PAT_HS_PUNCH_ref_\u041c\u043e\u044f ": {
+    "pattern_id": "PAT_HS_PUNCH_ref_\u041c\u043e\u044f ",
+    "name": "Headshot Micro Punch-In with Impact Flash",
+    "category": "DIRECTING",
+    "description": "Sudden 1.05x-1.08x camera crop zoom with a 3-frame luma flash accentuating a lethal headshot or sniper frag.",
+    "scene_type": "ENGAGEMENT",
+    "visual_prerequisites": [
+      "First person POV",
+      "Target in reticle crosshair",
+      "Muzzle flash / fatal hit confirmed"
+    ],
+    "editing_technique": "Micro zoom-in (scale 1.06x) for 0.12s duration, snapping back to 1.0x with cubic ease-out.",
+    "suggested_effects": [
+      "Transform node dynamic zoom",
+      "Brightness boost (+0.30)",
+      "Chromatic aberration RGB split (2px)"
+    ],
+    "suggested_transitions": [
+      "Match cut",
+      "Radial blur pop"
+    ],
+    "suggested_audio_treatment": "Real sub downer (< 80 Hz) paired with high-frequency metal snap dink.",
+    "suggested_timing_range": "0.10s to 0.15s (6 to 9 frames at 60 fps)",
+    "davinci_resolve_recipe": {
+      "page": "Fusion",
+      "node_tree": "MediaIn1 -> Transform1 (Size=1.06, Keyframe in 2f, out 7f) -> ColorCorrector1 (Gain=1.35) -> MediaOut1",
+      "curve_type": "Ease Out Cubic"
+    },
+    "confidence": "OBSERVED",
+    "source_reference_id": "ref_\u041c\u043e\u044f \u0433\u043e\u043b\u043e\u0432\u0430 \u0432\u0438\u043d\u0442\u043e\u043c \u2764\ufe0f_518a4460",
+    "source_timestamps": [
+      6.2
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "HYPE"
+    ]
+  },
+  "PAT_ORBIT_ref_\u041c\u043e\u044f ": {
+    "pattern_id": "PAT_ORBIT_ref_\u041c\u043e\u044f ",
+    "name": "Smooth Hero Orbit Climax",
+    "category": "CAMERA_WORK",
+    "description": "3rd-person circular camera path revolving 120-180 degrees around the hero to celebrate a round-winning Ace.",
+    "scene_type": "ACE_CLIMAX",
+    "visual_prerequisites": [
+      "Hero has eliminated last enemy",
+      "Open bomb site or victory angle",
+      "Campath enabled in HLAE"
+    ],
+    "editing_technique": "Slow orbital camera glide with smooth ease-in/out, keeping hero in golden ratio third.",
+    "suggested_effects": [
+      "Cinematic LUT grade",
+      "Subtle vignette",
+      "Slow-motion 0.7x timescale"
+    ],
+    "suggested_transitions": [
+      "Smooth cross dissolve",
+      "Luma fade to black"
+    ],
+    "suggested_audio_treatment": "Extended cinematic sub decay (2.5s) with fading gunshot echoes into soundtrack hook.",
+    "suggested_timing_range": "2.5s to 3.5s",
+    "davinci_resolve_recipe": {
+      "page": "Color",
+      "node_tree": "Node 1 (Balance) -> Node 2 (LUT) -> Node 3 (Circular Power Window on Hero + Vignette)",
+      "curve_type": "Log curve with soft rolloff"
+    },
+    "confidence": "INFERRED",
+    "source_reference_id": "ref_\u041c\u043e\u044f \u0433\u043e\u043b\u043e\u0432\u0430 \u0432\u0438\u043d\u0442\u043e\u043c \u2764\ufe0f_518a4460",
+    "source_timestamps": [
+      57.116
+    ],
+    "style_profile_affinity": [
+      "HYBRID",
+      "CINEMATIC"
+    ]
+  }
+}

@@ -20,74 +20,110 @@ TAKE_ORBIT = TAKES_DIR / "shot_anubis_ace_r19_04_climax_orbit.mp4"
 LUT_PATH = COLOR_DIR / "egyptian_sandstone_cinematic.cube"
 AUDIO_MASTER = AUDIO_DIR / "audio_master_v3.wav"
 
-def assemble_v3_master_16x9(output_path, preview=False):
-    print(f"\n--- Assembling Phase 3.2 16:9 {'Preview' if preview else 'Master'} -> {output_path} ---")
+def assemble_v3_master_16x9(output_path, preview=False, show_killfeed=False):
+    mode_str = "Broadcast Killfeed" if show_killfeed else "Pure Cinematic"
+    print(f"\n--- Assembling Phase 3.2 16:9 {'Preview' if preview else 'Master'} [{mode_str}] -> {output_path} ---")
     t0 = time.time()
     
     lut_fwd = str(LUT_PATH).replace("\\", "/")
     
-    # 5 video clips + xfade transitions:
-    # c1: Shoulder (0.0 to 2.35s)
-    # c2: Hero POV pt1 (0.0 to 9.35s)
-    # c3: Victim POV (0.0 to 1.45s)
-    # c4: Hero POV pt2 (10.50 to 13.65s) -> 3.15s
-    # c5: Orbit (0.0 to 2.80s)
-    # xfade 1: offset 2.15s, dur 0.20s -> len = 2.35 + 9.35 - 0.20 = 11.50s
-    # xfade 2: offset 11.35s, dur 0.20s -> len = 11.50 + 1.45 - 0.20 = 12.75s
-    # xfade 3: offset 12.60s, dur 0.15s -> len = 12.75 + 3.15 - 0.15 = 15.75s
-    # xfade 4: offset 15.50s, dur 0.25s -> len = 15.75 + 2.80 - 0.25 = 18.30s
-    # Let's adjust c4 and c5 slightly so total duration is exactly 18.50s:
-    # c1 = 2.35s
-    # c2 = 9.35s  (xfade1: offset 2.15, dur 0.20 -> ends at 11.50s)
-    # c3 = 1.45s  (xfade2: offset 11.30, dur 0.20 -> ends at 12.75s)
-    # c4 = 3.35s  (xfade3: offset 12.60, dur 0.15 -> ends at 15.95s)
-    # c5 = 2.80s  (xfade4: offset 15.70, dur 0.25 -> ends at 18.50s!)
-    
-    filter_complex = f"""
-    [0:v]trim=start=0.0:end=2.35,setpts=PTS-STARTPTS,fps=60[c1];
-    [1:v]trim=start=0.0:end=9.35,setpts=PTS-STARTPTS,fps=60[c2];
-    [2:v]trim=start=0.0:end=1.45,setpts=PTS-STARTPTS,fps=60[c3];
-    [1:v]trim=start=10.5:end=13.85,setpts=PTS-STARTPTS,fps=60[c4];
-    [3:v]trim=start=0.0:end=2.80,setpts=PTS-STARTPTS,fps=60[c5];
+    fx_filters = (
+        "crop=1600:900:160:90,scale=1920:1080:flags=lanczos,"
+        "crop=w='iw*(1-0.04*between(t,7.71,7.85)-0.06*between(t,12.18,12.30)-0.05*between(t,16.48,16.65))':"
+        "h='ih*(1-0.04*between(t,7.71,7.85)-0.06*between(t,12.18,12.30)-0.05*between(t,16.48,16.65))':"
+        "x='(iw-ow)/2':y='(ih-oh)/2',scale=1920:1080:flags=bicubic,"
+        f"lut3d='{lut_fwd}',"
+        "eq=brightness=0.25:contrast=1.25:enable='between(t,7.71,7.76)+between(t,10.43,10.48)+between(t,12.18,12.26)+between(t,13.48,13.54)+between(t,16.48,16.58)'"
+    )
 
-    [c1][c2]xfade=transition=slideleft:duration=0.20:offset=2.15[x1];
-    [x1][c3]xfade=transition=zoomin:duration=0.20:offset=11.30[x2];
-    [x2][c4]xfade=transition=zoomin:duration=0.15:offset=12.60[x3];
-    [x3][c5]xfade=transition=smoothleft:duration=0.25:offset=15.70[base_video];
+    if not show_killfeed:
+        # PURE CINEMATIC FRAGMOVIE CUT: Clean, no obstructive killfeed badges!
+        filter_complex = f"""
+        [0:v]trim=start=0.0:end=2.35,setpts=PTS-STARTPTS,fps=60,settb=1/60[c1];
+        [1:v]trim=start=5.77:end=12.20,setpts=PTS-STARTPTS,fps=60,settb=1/60[c2a];
+        [1:v]trim=start=12.20:end=15.80,setpts=0.25*(PTS-STARTPTS),fps=60,settb=1/60[c2b];
+        [1:v]trim=start=15.80:end=17.70,setpts=PTS-STARTPTS,fps=60,settb=1/60[c2c];
+        [c2a][c2b][c2c]concat=n=3:v=1:a=0,fps=60,settb=1/60[c2];
+        [2:v]trim=start=0.0:end=1.45,setpts=PTS-STARTPTS,fps=60,settb=1/60[c3];
+        [1:v]trim=start=18.60:end=21.80,setpts=PTS-STARTPTS,fps=60,settb=1/60[c4];
+        [3:v]trim=start=0.70:end=3.50,setpts=PTS-STARTPTS,fps=60,settb=1/60[c5];
 
-    [base_video]lut3d='{lut_fwd}',eq=brightness=0.30:contrast=1.25:enable='between(t,12.18,12.25)+between(t,15.52,15.60)'[graded];
+        [c1][c2]xfade=transition=slideleft:duration=0.20:offset=2.15[x1];
+        [x1][c3]xfade=transition=zoomin:duration=0.20:offset=11.30[x2];
+        [x2][c4]xfade=transition=zoomin:duration=0.15:offset=12.60[x3];
+        [x3][c5]xfade=transition=smoothleft:duration=0.25:offset=15.70[raw_montage];
 
-    [graded][4:v]overlay=0:0:enable='between(t,0.3,2.0)'[v_intro];
-    [v_intro][5:v]overlay=0:0:enable='between(t,7.83,10.45)'[v_s1];
-    [v_s1][6:v]overlay=0:0:enable='between(t,10.45,12.20)'[v_s2];
-    [v_s2][7:v]overlay=0:0:enable='between(t,12.20,13.00)'[v_s3];
-    [v_s3][8:v]overlay=0:0:enable='between(t,13.00,15.54)'[v_s4];
-    [v_s4][9:v]overlay=0:0:enable='between(t,15.54,18.50)'[v_s5];
-    [v_s5][10:v]overlay=0:0:enable='between(t,15.80,18.50)'[v_ace];
+        [raw_montage]{fx_filters}[graded];
 
-    [v_ace]fade=t=out:st=17.5:d=1.0[v_final]
-    """
+        [graded][4:v]overlay=0:0:enable='between(t,0.3,2.0)'[v_intro];
+        [v_intro][5:v]overlay=0:0:enable='between(t,16.60,18.50)'[v_ace];
 
-    cmd = [
-        "ffmpeg", "-y",
-        "-i", str(TAKE_SHOULDER),
-        "-i", str(TAKE_HERO),
-        "-i", str(TAKE_VICTIM),
-        "-i", str(TAKE_ORBIT),
-        "-i", str(OVERLAYS_DIR / "intro_card_16x9.png"),
-        "-i", str(OVERLAYS_DIR / "killfeed_16x9_state_1_kill1.png"),
-        "-i", str(OVERLAYS_DIR / "killfeed_16x9_state_2_kill1_2.png"),
-        "-i", str(OVERLAYS_DIR / "killfeed_16x9_state_3_kill1_2_3.png"),
-        "-i", str(OVERLAYS_DIR / "killfeed_16x9_state_4_kill2_3_4.png"),
-        "-i", str(OVERLAYS_DIR / "killfeed_16x9_state_5_kill3_4_5.png"),
-        "-i", str(OVERLAYS_DIR / "ace_card_16x9.png"),
-        "-i", str(AUDIO_MASTER),
-        "-filter_complex", filter_complex,
-        "-map", "[v_final]",
-        "-map", "11:a",
-        "-t", "18.5",
-        "-pix_fmt", "yuv420p"
-    ]
+        [v_ace]fade=t=out:st=17.5:d=1.0[v_final]
+        """
+        cmd = [
+            "ffmpeg", "-y",
+            "-i", str(TAKE_SHOULDER),
+            "-i", str(TAKE_HERO),
+            "-i", str(TAKE_VICTIM),
+            "-i", str(TAKE_ORBIT),
+            "-i", str(OVERLAYS_DIR / "intro_card_16x9.png"),
+            "-i", str(OVERLAYS_DIR / "ace_card_16x9.png"),
+            "-i", str(AUDIO_MASTER),
+            "-filter_complex", filter_complex,
+            "-map", "[v_final]",
+            "-map", "6:a",
+            "-t", "18.5",
+            "-pix_fmt", "yuv420p"
+        ]
+    else:
+        # ESPORTS BROADCAST CUT: Frame-accurate killfeed badges (state 5 strictly at 16.50s)
+        filter_complex = f"""
+        [0:v]trim=start=0.0:end=2.35,setpts=PTS-STARTPTS,fps=60,settb=1/60[c1];
+        [1:v]trim=start=5.77:end=12.20,setpts=PTS-STARTPTS,fps=60,settb=1/60[c2a];
+        [1:v]trim=start=12.20:end=15.80,setpts=0.25*(PTS-STARTPTS),fps=60,settb=1/60[c2b];
+        [1:v]trim=start=15.80:end=17.70,setpts=PTS-STARTPTS,fps=60,settb=1/60[c2c];
+        [c2a][c2b][c2c]concat=n=3:v=1:a=0,fps=60,settb=1/60[c2];
+        [2:v]trim=start=0.0:end=1.45,setpts=PTS-STARTPTS,fps=60,settb=1/60[c3];
+        [1:v]trim=start=18.60:end=21.80,setpts=PTS-STARTPTS,fps=60,settb=1/60[c4];
+        [3:v]trim=start=0.70:end=3.50,setpts=PTS-STARTPTS,fps=60,settb=1/60[c5];
+
+        [c1][c2]xfade=transition=slideleft:duration=0.20:offset=2.15[x1];
+        [x1][c3]xfade=transition=zoomin:duration=0.20:offset=11.30[x2];
+        [x2][c4]xfade=transition=zoomin:duration=0.15:offset=12.60[x3];
+        [x3][c5]xfade=transition=smoothleft:duration=0.25:offset=15.70[raw_montage];
+
+        [raw_montage]{fx_filters}[graded];
+
+        [graded][4:v]overlay=0:0:enable='between(t,0.3,2.0)'[v_intro];
+        [v_intro][5:v]overlay=0:0:enable='between(t,7.83,10.45)'[v_s1];
+        [v_s1][6:v]overlay=0:0:enable='between(t,10.45,12.20)'[v_s2];
+        [v_s2][7:v]overlay=0:0:enable='between(t,12.20,13.50)'[v_s3];
+        [v_s3][8:v]overlay=0:0:enable='between(t,13.50,16.50)'[v_s4];
+        [v_s4][9:v]overlay=0:0:enable='between(t,16.50,18.50)'[v_s5];
+        [v_s5][10:v]overlay=0:0:enable='between(t,16.60,18.50)'[v_ace];
+
+        [v_ace]fade=t=out:st=17.5:d=1.0[v_final]
+        """
+        cmd = [
+            "ffmpeg", "-y",
+            "-i", str(TAKE_SHOULDER),
+            "-i", str(TAKE_HERO),
+            "-i", str(TAKE_VICTIM),
+            "-i", str(TAKE_ORBIT),
+            "-i", str(OVERLAYS_DIR / "intro_card_16x9.png"),
+            "-i", str(OVERLAYS_DIR / "killfeed_16x9_state_1_kill1.png"),
+            "-i", str(OVERLAYS_DIR / "killfeed_16x9_state_2_kill1_2.png"),
+            "-i", str(OVERLAYS_DIR / "killfeed_16x9_state_3_kill1_2_3.png"),
+            "-i", str(OVERLAYS_DIR / "killfeed_16x9_state_4_kill2_3_4.png"),
+            "-i", str(OVERLAYS_DIR / "killfeed_16x9_state_5_kill3_4_5.png"),
+            "-i", str(OVERLAYS_DIR / "ace_card_16x9.png"),
+            "-i", str(AUDIO_MASTER),
+            "-filter_complex", filter_complex,
+            "-map", "[v_final]",
+            "-map", "11:a",
+            "-t", "18.5",
+            "-pix_fmt", "yuv420p"
+        ]
     
     if preview:
         cmd += ["-c:v", "h264_amf", "-quality", "speed", "-b:v", "8M", "-c:a", "aac", "-b:a", "192k"]
@@ -113,32 +149,30 @@ def assemble_v3_master_16x9(output_path, preview=False):
     print(f"Master render completed in {elapsed:.2f}s, size: {size_mb:.2f} MB")
 
 def assemble_v3_tiktok_9x16(output_path):
-    print(f"\n--- Assembling Phase 3.2 9:16 TikTok Vertical -> {output_path} ---")
+    print(f"\n--- Assembling Phase 3.2 9:16 TikTok Vertical (Clean Cinematic) -> {output_path} ---")
     t0 = time.time()
     
     lut_fwd = str(LUT_PATH).replace("\\", "/")
     
     filter_complex = f"""
-    [0:v]trim=start=0.0:end=2.35,setpts=PTS-STARTPTS,fps=60[c1];
-    [1:v]trim=start=0.0:end=9.35,setpts=PTS-STARTPTS,fps=60[c2];
-    [2:v]trim=start=0.0:end=1.45,setpts=PTS-STARTPTS,fps=60[c3];
-    [1:v]trim=start=10.5:end=13.85,setpts=PTS-STARTPTS,fps=60[c4];
-    [3:v]trim=start=0.0:end=2.80,setpts=PTS-STARTPTS,fps=60[c5];
+    [0:v]trim=start=0.0:end=2.35,setpts=PTS-STARTPTS,fps=60,settb=1/60[c1];
+    [1:v]trim=start=5.77:end=12.20,setpts=PTS-STARTPTS,fps=60,settb=1/60[c2a];
+    [1:v]trim=start=12.20:end=15.80,setpts=0.25*(PTS-STARTPTS),fps=60,settb=1/60[c2b];
+    [1:v]trim=start=15.80:end=17.70,setpts=PTS-STARTPTS,fps=60,settb=1/60[c2c];
+    [c2a][c2b][c2c]concat=n=3:v=1:a=0,fps=60,settb=1/60[c2];
+    [2:v]trim=start=0.0:end=1.45,setpts=PTS-STARTPTS,fps=60,settb=1/60[c3];
+    [1:v]trim=start=18.60:end=21.80,setpts=PTS-STARTPTS,fps=60,settb=1/60[c4];
+    [3:v]trim=start=0.70:end=3.50,setpts=PTS-STARTPTS,fps=60,settb=1/60[c5];
 
     [c1][c2]xfade=transition=slideleft:duration=0.20:offset=2.15[x1];
     [x1][c3]xfade=transition=zoomin:duration=0.20:offset=11.30[x2];
     [x2][c4]xfade=transition=zoomin:duration=0.15:offset=12.60[x3];
     [x3][c5]xfade=transition=smoothleft:duration=0.25:offset=15.70[base_video];
 
-    [base_video]crop=608:1080:656:0,scale=1080:1920:flags=lanczos,lut3d='{lut_fwd}',eq=brightness=0.30:contrast=1.25:enable='between(t,12.18,12.25)+between(t,15.52,15.60)'[graded_vertical];
+    [base_video]crop=608:1080:656:0,scale=1080:1920:flags=lanczos,crop=w='iw*(1-0.04*between(t,7.71,7.85)-0.06*between(t,12.18,12.30)-0.05*between(t,16.48,16.65))':h='ih*(1-0.04*between(t,7.71,7.85)-0.06*between(t,12.18,12.30)-0.05*between(t,16.48,16.65))':x='(iw-ow)/2':y='(ih-oh)/2',scale=1080:1920:flags=bicubic,lut3d='{lut_fwd}',eq=brightness=0.25:contrast=1.25:enable='between(t,7.71,7.76)+between(t,10.43,10.48)+between(t,12.18,12.26)+between(t,13.48,13.54)+between(t,16.48,16.58)'[graded_vertical];
 
     [graded_vertical][4:v]overlay=0:0:enable='between(t,0.3,2.0)'[v_intro];
-    [v_intro][5:v]overlay=0:0:enable='between(t,7.83,10.45)'[v_s1];
-    [v_s1][6:v]overlay=0:0:enable='between(t,10.45,12.20)'[v_s2];
-    [v_s2][7:v]overlay=0:0:enable='between(t,12.20,13.00)'[v_s3];
-    [v_s3][8:v]overlay=0:0:enable='between(t,13.00,15.54)'[v_s4];
-    [v_s4][9:v]overlay=0:0:enable='between(t,15.54,18.50)'[v_s5];
-    [v_s5][10:v]overlay=0:0:enable='between(t,15.80,18.50)'[v_ace];
+    [v_intro][5:v]overlay=0:0:enable='between(t,16.60,18.50)'[v_ace];
 
     [v_ace]fade=t=out:st=17.5:d=1.0[v_final]
     """
@@ -150,16 +184,11 @@ def assemble_v3_tiktok_9x16(output_path):
         "-i", str(TAKE_VICTIM),
         "-i", str(TAKE_ORBIT),
         "-i", str(OVERLAYS_DIR / "intro_card_tiktok.png"),
-        "-i", str(OVERLAYS_DIR / "killfeed_tiktok_state_1_kill1.png"),
-        "-i", str(OVERLAYS_DIR / "killfeed_tiktok_state_2_kill1_2.png"),
-        "-i", str(OVERLAYS_DIR / "killfeed_tiktok_state_3_kill1_2_3.png"),
-        "-i", str(OVERLAYS_DIR / "killfeed_tiktok_state_4_kill2_3_4.png"),
-        "-i", str(OVERLAYS_DIR / "killfeed_tiktok_state_5_kill3_4_5.png"),
         "-i", str(OVERLAYS_DIR / "ace_card_tiktok.png"),
         "-i", str(AUDIO_MASTER),
         "-filter_complex", filter_complex,
         "-map", "[v_final]",
-        "-map", "11:a",
+        "-map", "6:a",
         "-t", "18.5",
         "-pix_fmt", "yuv420p",
         "-c:v", "h264_amf", "-quality", "quality", "-b:v", "20M",
@@ -186,9 +215,15 @@ def assemble_v3_tiktok_9x16(output_path):
 if __name__ == "__main__":
     preview_mp4 = V3_DIR / "ACE_FINAL_V3_PREVIEW.mp4"
     master_mp4 = V3_DIR / "ACE_FINAL_V3_MASTER.mp4"
+    broadcast_mp4 = V3_DIR / "ACE_FINAL_V3_BROADCAST_KILLFEED.mp4"
     tiktok_mp4 = V3_DIR / "ACE_FINAL_V3_TIKTOK.mp4"
     
-    assemble_v3_master_16x9(preview_mp4, preview=True)
-    assemble_v3_master_16x9(master_mp4, preview=False)
+    # 1. Clean Cinematic Preview (Fast 1080p60)
+    assemble_v3_master_16x9(preview_mp4, preview=True, show_killfeed=False)
+    # 2. Pure Cinematic Master (24 Mbps AMF, clean combat focus, no obstructive badges)
+    assemble_v3_master_16x9(master_mp4, preview=False, show_killfeed=False)
+    # 3. Esports Broadcast Master (With frame-accurate tournament killfeed)
+    assemble_v3_master_16x9(broadcast_mp4, preview=False, show_killfeed=True)
+    # 4. Vertical TikTok Master (1080x1920)
     assemble_v3_tiktok_9x16(tiktok_mp4)
-    print("\nPhase 3.2: All 3 Master Deliverables Rendered Successfully!")
+    print("\nPhase 3.2: All Master Deliverables (Pure Cinematic & Broadcast) Rendered Successfully!")

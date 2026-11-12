@@ -367,6 +367,77 @@ export const api = {
     const res = await fetch(`${BASE_URL}/cinematic/production/transitions`)
     return handleResponse(res)
   },
+
+  // Phase 3.4 Fragmovie Reference Lab APIs
+  async getReferenceInbox(): Promise<any> {
+    const res = await fetch(`${BASE_URL}/cinematic/reference-lab/inbox`)
+    return handleResponse(res)
+  },
+
+  async scanReferenceInbox(): Promise<any> {
+    const res = await fetch(`${BASE_URL}/cinematic/reference-lab/scan`, {
+      method: 'POST',
+    })
+    return handleResponse(res)
+  },
+
+  async analyzeReferenceVideo(filename: string): Promise<any> {
+    const res = await fetch(`${BASE_URL}/cinematic/reference-lab/analyze/${encodeURIComponent(filename)}`, {
+      method: 'POST',
+    })
+    return handleResponse(res)
+  },
+
+  async getAnalyzedReferences(): Promise<any> {
+    const res = await fetch(`${BASE_URL}/cinematic/reference-lab/references`)
+    return handleResponse(res)
+  },
+
+  async getReferenceReport(refId: string): Promise<any> {
+    const res = await fetch(`${BASE_URL}/cinematic/reference-lab/references/${encodeURIComponent(refId)}`)
+    return handleResponse(res)
+  },
+
+  async getEditingPatterns(params?: { profile?: string; category?: string }): Promise<any> {
+    const query = new URLSearchParams()
+    if (params?.profile) query.append('profile', params.profile)
+    if (params?.category) query.append('category', params.category)
+    const url = `${BASE_URL}/cinematic/reference-lab/patterns${query.toString() ? `?${query.toString()}` : ''}`
+    const res = await fetch(url)
+    return handleResponse(res)
+  },
+
+  async getStyleGuide(): Promise<{ content: string; path: string }> {
+    const res = await fetch(`${BASE_URL}/cinematic/reference-lab/style-guide`)
+    return handleResponse(res)
+  },
+
+  getContactSheetUrl(filename: string): string {
+    return `${BASE_URL}/cinematic/reference-lab/contact-sheets/${filename}`
+  },
+
+  async voteReference(refId: string, vote: 'liked' | 'disliked' | null): Promise<any> {
+    const res = await fetch(`${BASE_URL}/cinematic/reference-lab/references/${encodeURIComponent(refId)}/vote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vote }),
+    })
+    return handleResponse(res)
+  },
+
+  async votePattern(patternId: string, vote: 'liked' | 'disliked' | null): Promise<any> {
+    const res = await fetch(`${BASE_URL}/cinematic/reference-lab/patterns/${encodeURIComponent(patternId)}/vote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ vote }),
+    })
+    return handleResponse(res)
+  },
+
+  async getReferenceCard(refId: string): Promise<{ reference_id: string; content: string; path: string }> {
+    const res = await fetch(`${BASE_URL}/cinematic/reference-lab/reference-cards/${encodeURIComponent(refId)}`)
+    return handleResponse(res)
+  },
 }
 
 
