@@ -11,7 +11,7 @@ import {
   SettingsIcon,
 } from './Icons'
 
-export type TabType = 'showcase' | 'studio' | 'library' | 'overview' | 'replay' | 'clips' | 'settings'
+export type TabType = 'showcase' | 'studio' | 'cinematic' | 'library' | 'overview' | 'replay' | 'clips' | 'settings'
 
 interface HeaderProps {
   activeTab: TabType
@@ -81,6 +81,18 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <ClapperboardIcon size={15} color={activeTab === 'studio' ? '#38bdf8' : '#38bdf8'} />
           <span>{t('nav.studio')}</span>
+        </button>
+
+        {/* 3. Cinematic Studio (Movie Director & DaVinci Production) */}
+        <button
+          className={`nav-tab nav-tab-cinematic ${activeTab === 'cinematic' ? 'active' : ''}`}
+          onClick={() => onTabChange('cinematic')}
+          title={lang === 'ru' ? 'Cinematic Studio — 3D камеры, HLAE траектории и проект DaVinci Resolve' : 'Cinematic Studio — 3D cameras, HLAE paths & DaVinci Resolve production'}
+        >
+          <SparkleIcon size={15} color={activeTab === 'cinematic' ? '#f59e0b' : '#f59e0b'} />
+          <span style={{ color: activeTab === 'cinematic' ? '#f59e0b' : 'inherit', fontWeight: 600 }}>
+            {lang === 'ru' ? 'Кинематик' : 'Cinematic'}
+          </span>
         </button>
 
         {/* 3. 2D Tactical Replay (3-й слева: радар и таймеры раунда) */}

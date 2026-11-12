@@ -792,6 +792,7 @@ def get_montage_video(filename: str):
     )
 
 
+
 @app.get("/api/montages", response_model=list[MontageDTO], tags=["rendering"])
 def list_montages_endpoint() -> list[MontageDTO]:
     """List all compiled montage movies in the output folder."""
@@ -1037,6 +1038,92 @@ def get_render_by_filename(filename: str):
             "Cache-Control": "public, max-age=3600",
         },
     )
+
+
+# ---------------------------------------------------------------------------
+# dem.Toshka — Cinematic Studio Endpoints
+# ---------------------------------------------------------------------------
+from backend.cinematic.service import CinematicService
+
+cinematic_service = CinematicService()
+
+
+@app.get("/api/cinematic/demos/{demo_id}/highlights", tags=["cinematic"])
+def get_cinematic_highlights(demo_id: int, session: Session = Depends(get_db)):
+    """Retrieve all highlights for a demo ranked by intensity with multi-angle intelligence."""
+    return cinematic_service.get_ranked_highlights(session, demo_id)
+
+
+@app.post("/api/cinematic/plan", tags=["cinematic"])
+def plan_cinematic_shots(payload: dict, session: Session = Depends(get_db)):
+    """Generate structured camera choreography and shot plan for selected highlights."""
+    demo_id = payload.get("demo_id")
+    highlight_ids = payload.get("highlight_ids", [])
+    fps = payload.get("fps", 60)
+    if not demo_id or not highlight_ids:
+        raise HTTPException(status_code=400, detail="demo_id and highlight_ids are required")
+    shots = cinematic_service.plan_cinematic_shots(session, int(demo_id), highlight_ids, fps=fps)
+    return {"shots": shots}
+
+
+@app.post("/api/cinematic/package", tags=["cinematic"])
+def create_production_package(payload: dict, session: Session = Depends(get_db)):
+    """Compile complete DaVinci Resolve production package (7 JSON manifests + FCPXML + Overlays)."""
+    demo_id = payload.get("demo_id")
+    shots = payload.get("shots", [])
+    project_name = payload.get("project_name")
+    if not demo_id or not shots:
+        raise HTTPException(status_code=400, detail="demo_id and shots are required")
+    try:
+        pkg_summary = cinematic_service.create_production_package(
+            session=session,
+            demo_id=int(demo_id),
+            shots_data=shots,
+            project_name=project_name,
+        )
+        return pkg_summary
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.get("/api/cinematic/package/{package_id}/fcpxml", tags=["cinematic"])
+def get_package_fcpxml(package_id: str):
+    """Download the generated DaVinci Resolve FCPXML file."""
+    fcpxml_file = RENDER_OUTPUT_DIR / "cinematic_packages" / package_id / "DaVinci_Resolve_Project.fcpxml"
+    if not fcpxml_file.is_file():
+        raise HTTPException(status_code=404, detail="FCPXML project file not found")
+    return FileResponse(
+        path=str(fcpxml_file),
+        media_type="application/xml",
+        filename=f"DaVinci_Resolve_Project_{package_id}.fcpxml",
+    )
+
+
+@app.get("/api/cinematic/package/{package_id}/manifests", tags=["cinematic"])
+def get_package_manifests(package_id: str):
+    """Retrieve all 7 JSON production manifests for a package."""
+    pkg_dir = RENDER_OUTPUT_DIR / "cinematic_packages" / package_id
+    if not pkg_dir.is_dir():
+        raise HTTPException(status_code=404, detail="Production package not found")
+
+    manifest_names = [
+        "highlight_manifest",
+        "shot_plan",
+        "camera_paths",
+        "capture_manifest",
+        "edit_decision_list",
+        "overlay_events",
+        "render_manifest",
+    ]
+    manifests: dict[str, Any] = {}
+    for name in manifest_names:
+        f = pkg_dir / f"{name}.json"
+        if f.is_file():
+            try:
+                manifests[name] = json.loads(f.read_text(encoding="utf-8"))
+            except Exception:
+                manifests[name] = None
+    return manifests
 
 
 # ---------------------------------------------------------------------------

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api } from './api'
 import { CinematicShowcaseView } from './components/CinematicShowcaseView'
+import { CinematicStudioView } from './components/CinematicStudioView'
 import { ClipSettingsModal } from './components/ClipSettingsModal'
 import { ClipsMontageView } from './components/ClipsMontageView'
 import { Header, type TabType } from './components/Header'
@@ -293,6 +294,16 @@ export function App() {
             demoRounds={rounds}
             onUploadDemo={handleUploadDemo}
             onParsePath={handleParsePath}
+          />
+        )}
+
+        {/* 2.5. Cinematic Studio: Multi-Camera 3D Director & DaVinci Production */}
+        {activeTab === 'cinematic' && (
+          <CinematicStudioView
+            currentDemo={activeDemo}
+            demos={demos}
+            onSelectDemo={selectDemo}
+            onNavigateTab={setActiveTab}
           />
         )}
 

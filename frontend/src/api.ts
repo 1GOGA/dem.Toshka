@@ -286,6 +286,39 @@ export const api = {
     const res = await fetch(`${BASE_URL}/settings/cs2-config-status`)
     return handleResponse(res)
   },
+
+  // Cinematic Studio API
+  async getCinematicHighlights(demoId: number): Promise<any[]> {
+    const res = await fetch(`${BASE_URL}/cinematic/demos/${demoId}/highlights`)
+    return handleResponse(res)
+  },
+
+  async planCinematicShots(demoId: number, highlightIds: string[], fps: number = 60): Promise<{ shots: any[] }> {
+    const res = await fetch(`${BASE_URL}/cinematic/plan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ demo_id: demoId, highlight_ids: highlightIds, fps }),
+    })
+    return handleResponse(res)
+  },
+
+  async createProductionPackage(demoId: number, shots: any[], projectName?: string): Promise<any> {
+    const res = await fetch(`${BASE_URL}/cinematic/package`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ demo_id: demoId, shots, project_name: projectName }),
+    })
+    return handleResponse(res)
+  },
+
+  async getPackageManifests(packageId: string): Promise<Record<string, any>> {
+    const res = await fetch(`${BASE_URL}/cinematic/package/${packageId}/manifests`)
+    return handleResponse(res)
+  },
+
+  getPackageFcpxmlUrl(packageId: string): string {
+    return `${BASE_URL}/cinematic/package/${packageId}/fcpxml`
+  },
 }
 
 
