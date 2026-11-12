@@ -32,6 +32,7 @@ class BatchClipItem:
     overhead_mode: Optional[bool] = None
     killfeed_only: Optional[bool] = None
     teamcounter_mode: Optional[bool] = None
+    preview_recording: bool = True
     camera_switches: list[tuple[int, Optional[str], Optional[str]]] = field(default_factory=list)
     # Tournament Killcam Replay (Victim death POV -> Rewind -> Hero POV)
     is_killcam_replay: bool = False
@@ -324,6 +325,35 @@ def _build_hud_commands(
     return cmds
 
 
+def _build_start_tick_hud_reinforcement(
+    hud_mode: str,
+    overhead_mode: Optional[bool] = None,
+    killfeed_only: Optional[bool] = None,
+    teamcounter_mode: Optional[bool] = None,
+) -> list[str]:
+    """Reinforce critical HUD convars at clip start_tick so demo seeking does not reset them."""
+    cmds: list[str] = []
+    if hud_mode == "real":
+        cmds.extend([
+            "hud_showtargetid 0",
+            "cl_hide_avatar_images 1",
+            "cl_teamid_overhead_mode 0",
+            "cl_teamcounter_playercount_mode 1",
+        ])
+    elif hud_mode == "none":
+        cmds.append("cl_drawhud 0")
+
+    if overhead_mode is not None:
+        cmds.append(f"cl_teamid_overhead_mode {1 if overhead_mode else 0}")
+    if killfeed_only is not None:
+        cmds.append(f"cl_draw_only_deathnotices {1 if killfeed_only else 0}")
+    elif hud_mode in ("killfeed_only", "huge_killfeed"):
+        cmds.append("cl_draw_only_deathnotices 1")
+    if teamcounter_mode is not None:
+        cmds.append(f"cl_teamcounter_playercount_mode {1 if teamcounter_mode else 0}")
+    return cmds
+
+
 def generate_render_cfg(
     start_tick: int,
     pov_steam_id: Optional[str] = None,
@@ -459,9 +489,14 @@ def generate_render_cfg(
                 lines.append(f'mirv_cmd addAtTick 5 "{radar_rot_tick5}"')
 
         # Schedule highlight recording start and end with guaranteed TrueView & demo UI suppression
-        if hud_mode == "real":
-            lines.append(f'mirv_cmd addAtTick {start_tick} "hud_showtargetid 0; cl_hide_avatar_images 1; cl_teamid_overhead_mode 0"')
-            lines.append(f'mirv_cmd addAtTick {start_tick} "cl_teamcounter_playercount_mode 1"')
+        hud_start_cmds = _build_start_tick_hud_reinforcement(
+            hud_mode,
+            overhead_mode=overhead_mode,
+            killfeed_only=killfeed_only,
+            teamcounter_mode=teamcounter_mode,
+        )
+        for h_cmd in hud_start_cmds:
+            lines.append(f'mirv_cmd addAtTick {start_tick} "{h_cmd}"')
 
         if radar_mode != "hidden":
             lines.append(f'mirv_cmd addAtTick {start_tick} "{radar_tick5}"')
@@ -624,9 +659,14 @@ def generate_batch_render_cfg(
                     lines.append(f'mirv_cmd addAtTick 5 "{radar_rot_tick5}"')
 
         # Start recording this clip with clean HUD & camera lock
-        if clip.hud_mode == "real":
-            lines.append(f'mirv_cmd addAtTick {clip.start_tick} "hud_showtargetid 0; cl_hide_avatar_images 1; cl_teamid_overhead_mode 0"')
-            lines.append(f'mirv_cmd addAtTick {clip.start_tick} "cl_teamcounter_playercount_mode 1"')
+        hud_start_cmds = _build_start_tick_hud_reinforcement(
+            clip.hud_mode,
+            overhead_mode=getattr(clip, "overhead_mode", None),
+            killfeed_only=getattr(clip, "killfeed_only", None),
+            teamcounter_mode=getattr(clip, "teamcounter_mode", None),
+        )
+        for h_cmd in hud_start_cmds:
+            lines.append(f'mirv_cmd addAtTick {clip.start_tick} "{h_cmd}"')
 
         if clip.radar_mode != "hidden":
             clip_rot = "cl_radar_rotate 1; cl_radar_always_centered 1" if clip.radar_mode == "player_focus" else None

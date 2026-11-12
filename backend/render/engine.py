@@ -299,6 +299,7 @@ class RenderEngine:
                         overhead_mode=getattr(task, "overhead_mode", None),
                         killfeed_only=getattr(task, "killfeed_only", None),
                         teamcounter_mode=getattr(task, "teamcounter_mode", None),
+                        preview_recording=getattr(task, "preview_recording", True),
                     )
                     for i, v in enumerate(victims)
                 ]
@@ -861,6 +862,10 @@ class RenderEngine:
                         crosshair_color=t.crosshair_color,
                         radar_mode=t.radar_mode,
                         hud_scale=getattr(t, "hud_scale", None),
+                        overhead_mode=getattr(t, "overhead_mode", None),
+                        killfeed_only=getattr(t, "killfeed_only", None),
+                        teamcounter_mode=getattr(t, "teamcounter_mode", None),
+                        preview_recording=getattr(t, "preview_recording", True),
                         camera_switches=t.camera_switches,
                         is_killcam_replay=t.is_killcam_replay,
                         killcam_victim_steam_id=t.killcam_victim_steam_id,

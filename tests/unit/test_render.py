@@ -264,6 +264,97 @@ class TestCfgGenerator:
         assert all(len(line) < 200 for line in content.splitlines())
         assert cfg_path.exists()
 
+    def test_batch_cfg_respects_killfeed_only_and_reinforces_at_start_tick(self, tmp_path):
+        from backend.render.cfg_generator import BatchClipItem, generate_batch_render_cfg
+
+        out_dir = tmp_path / "batch_kf"
+        clips = [
+            BatchClipItem(
+                clip_id="c1",
+                start_tick=1000,
+                end_tick=1500,
+                pov_name="Player1",
+                hud_mode="full",
+                killfeed_only=True,
+                overhead_mode=False,
+                teamcounter_mode=True,
+            ),
+            BatchClipItem(
+                clip_id="c2",
+                start_tick=3000,
+                end_tick=3500,
+                pov_name="Player2",
+                hud_mode="real",
+                killfeed_only=True,
+            ),
+        ]
+        content = generate_batch_render_cfg(clips=clips, output_dir=out_dir, fps=120)
+        assert "cl_draw_only_deathnotices 1" in content
+        assert 'mirv_cmd addAtTick 1000 "cl_draw_only_deathnotices 1"' in content
+        assert 'mirv_cmd addAtTick 1000 "cl_teamid_overhead_mode 0"' in content
+        assert 'mirv_cmd addAtTick 1000 "cl_teamcounter_playercount_mode 1"' in content
+        assert 'mirv_cmd addAtTick 3000 "cl_draw_only_deathnotices 1"' in content
+
+    def test_render_batch_forwards_killfeed_only_to_cfg(self, tmp_path, monkeypatch):
+        from backend.render.engine import RenderEngine
+
+        demo = tmp_path / "match.dem"
+        demo.write_bytes(b"HL2DEMO")
+        csgo_dir = tmp_path / "csgo"
+        cfg_dir = csgo_dir / "cfg"
+        cfg_dir.mkdir(parents=True)
+        cs2_exe = tmp_path / "cs2.exe"
+        cs2_exe.write_bytes(b"")
+        hlae_exe = tmp_path / "HLAE.exe"
+        hlae_exe.write_bytes(b"")
+        hook_dll = tmp_path / "AfxHookSource2.dll"
+        hook_dll.write_bytes(b"")
+
+        captured_clips = []
+
+        def fake_generate_batch_cfg(clips, output_dir, output_cfg_path=None, fps=60, jump_lead_ticks=20):
+            captured_clips.extend(clips)
+            return ""
+
+        monkeypatch.setattr("backend.render.engine.generate_batch_render_cfg", fake_generate_batch_cfg)
+        monkeypatch.setattr("backend.render.engine.subprocess.Popen", lambda *a, **kw: (_ for _ in ()).throw(RuntimeError("stop")))
+
+        engine = RenderEngine(cs2_exe=cs2_exe, csgo_dir=csgo_dir, hlae_exe=hlae_exe, hook_dll=hook_dll)
+        tasks = [
+            RenderTask(
+                task_id="t1",
+                demo_path=demo,
+                start_tick=1000,
+                end_tick=1500,
+                pov_steam_id="76561198000000001",
+                pov_name="Player1",
+                output_path=tmp_path / "o1.mp4",
+                killfeed_only=True,
+                overhead_mode=False,
+                teamcounter_mode=True,
+                preview_recording=False,
+            ),
+            RenderTask(
+                task_id="t2",
+                demo_path=demo,
+                start_tick=2000,
+                end_tick=2500,
+                pov_steam_id="76561198000000002",
+                pov_name="Player2",
+                output_path=tmp_path / "o2.mp4",
+                killfeed_only=True,
+                overhead_mode=False,
+                teamcounter_mode=True,
+                preview_recording=False,
+            ),
+        ]
+        engine.render_batch(tasks)
+        assert len(captured_clips) == 2
+        assert all(c.killfeed_only is True for c in captured_clips)
+        assert all(c.overhead_mode is False for c in captured_clips)
+        assert all(c.teamcounter_mode is True for c in captured_clips)
+        assert all(c.preview_recording is False for c in captured_clips)
+
 
 class TestVerifier:
     def test_missing_file_returns_false(self, tmp_path):
