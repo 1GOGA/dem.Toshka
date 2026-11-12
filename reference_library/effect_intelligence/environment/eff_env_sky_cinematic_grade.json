@@ -1,0 +1,33 @@
+{
+  "effect_id": "EFF_ENV_SKY_CINEMATIC_GRADE",
+  "name": "Mirage/Anubis Sky Contrast & Gradient",
+  "category": "ENVIRONMENT",
+  "purpose": "Deepen washed-out desert skyboxes with rich cyan-azure gradient and cloud texture separation.",
+  "suitable_scene_types": [
+    "ESTABLISHING",
+    "ACE_CLIMAX",
+    "APPROACH"
+  ],
+  "trigger_conditions": [
+    "Outdoor site with visible skybox (Anubis canal, Mirage A-site, Dust2 long)"
+  ],
+  "required_visual_conditions": "Upper 30% of frame contains sky geometry.",
+  "required_source_footage": "Any outdoor CS2 demo footage.",
+  "required_masks_or_mattes": "Linear gradient mask or sky luma qualifier.",
+  "recommended_timing": "Continuous across scene duration.",
+  "intensity_ranges": {
+    "sky_luma_reduction": "-10% to -20%",
+    "cyan_saturation": "+15%"
+  },
+  "recommended_color_palette": "Deep Mediterranean azure (#0284c7) to warm horizon gold (#fef08a).",
+  "fusion_node_structure": "MediaIn1 -> ColorCorrector1 (Hue: 205, Sat: 1.25, Gamma: 0.85) masked by LinearGradientMask1 -> MediaOut1",
+  "resolve_implementation_instructions": "Color Page: Node with Qualifier keyed to Skybox, lower Lift/Gamma, shift tint towards #0284c7; apply soft feather.",
+  "required_plugins": "Native DaVinci Resolve Built-in",
+  "free_studio_compatibility": "Free 21.0 & Studio",
+  "hardware_requirements": "Zero extra overhead",
+  "reference_examples": [
+    "ssstik.io_1794490695954.mp4 Mirage A site"
+  ],
+  "confidence": "VERIFIED",
+  "qa_procedure": "Check horizon boundaries around stone pillars and building rooftops for dark fringing or halo artifacts."
+}

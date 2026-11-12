@@ -1,0 +1,93 @@
+{
+	Tools = ordered() {
+		Player_Outline_Subtle = GroupOperator {
+			CtrlWZoom = false,
+			CustomData = {
+				Path = {
+					Map = {
+						["Setting:"] = "FusionTemplates:/Edit/Effects/"
+					}
+				},
+			},
+			Inputs = ordered() {
+				Input1 = InstanceInput {
+					SourceOp = "MediaIn",
+					Source = "Output",
+				},
+				RimWidth = InstanceInput {
+					SourceOp = "ErodeDilate",
+					Source = "FilterWidth",
+					Default = 0.0015,
+					Name = "Rim Edge Width",
+				},
+				GlowGain = InstanceInput {
+					SourceOp = "Glow",
+					Source = "Gain",
+					Default = 1.35,
+					Name = "Rim Glow Gain",
+				},
+			},
+			Outputs = ordered() {
+				Output1 = InstanceOutput {
+					SourceOp = "MergeFinal",
+					Source = "Output",
+				},
+			},
+			ViewInfo = GroupInfo { Pos = { 0, 0 } },
+			Tools = ordered() {
+				MediaIn = PipeRouter {
+					ViewInfo = PipeRouterInfo { Pos = { -220, 0 } },
+				},
+				EdgeDetect = EdgeDetect {
+					Inputs = {
+						Input = Input {
+							SourceOp = "MediaIn",
+							Source = "Output",
+						},
+						Threshold = Input { Value = 0.45, },
+						Edges = Input { Value = 1, },
+					},
+					ViewInfo = OperatorInfo { Pos = { -110, -50 } },
+				},
+				ErodeDilate = DilateErode {
+					Inputs = {
+						Input = Input {
+							SourceOp = "EdgeDetect",
+							Source = "Output",
+						},
+						FilterWidth = Input { Value = 0.0015, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 0, -50 } },
+				},
+				Glow = Glow {
+					Inputs = {
+						Input = Input {
+							SourceOp = "ErodeDilate",
+							Source = "Output",
+						},
+						Blend = Input { Value = 0.6, },
+						Filter = Input { Value = 1, },
+						Gain = Input { Value = 1.35, },
+						Threshold = Input { Value = 0.5, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 110, -50 } },
+				},
+				MergeFinal = Merge {
+					Inputs = {
+						Background = Input {
+							SourceOp = "MediaIn",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "Glow",
+							Source = "Output",
+						},
+						ApplyMode = Input { Value = "Screen", },
+						PerformDepthMerge = Input { Value = 0, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 220, 0 } },
+				},
+			},
+		}
+	}
+}

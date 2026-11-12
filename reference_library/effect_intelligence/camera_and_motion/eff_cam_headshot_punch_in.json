@@ -1,0 +1,34 @@
+{
+  "effect_id": "EFF_CAM_HEADSHOT_PUNCH_IN",
+  "name": "Lethal Headshot Micro Punch-In (1.06x)",
+  "category": "CAMERA_AND_MOTION",
+  "purpose": "Add physical impact punch to a lethal weapon discharge without disorienting the viewer.",
+  "suitable_scene_types": [
+    "ENGAGEMENT",
+    "MULTIKILL"
+  ],
+  "trigger_conditions": [
+    "Weapon muzzle flash frame",
+    "Fatal bullet registration"
+  ],
+  "required_visual_conditions": "Target in crosshair reticle.",
+  "required_source_footage": "First-person POV capture.",
+  "required_masks_or_mattes": "None.",
+  "recommended_timing": "0.10s to 0.15s (snaps back over 6 frames).",
+  "intensity_ranges": {
+    "scale": "1.05x to 1.08x",
+    "ease_curve": "Exponential Out"
+  },
+  "recommended_color_palette": "Coupled with 2-frame luma boost (+20% gain).",
+  "fusion_node_structure": "MediaIn1 -> Transform1 (Size: 1.06, Keyframes: 0f=1.00, 1f=1.06, 6f=1.00) -> ColorCorrector1 -> MediaOut1",
+  "resolve_implementation_instructions": "Fusion or Edit Page: Dynamic Zoom or Transform node keyframed 1.06x scale on hit frame, easing back to 1.0x with cubic curve.",
+  "required_plugins": "Native DaVinci Resolve Built-in",
+  "free_studio_compatibility": "Free 21.0 & Studio",
+  "hardware_requirements": "Zero overhead",
+  "reference_examples": [
+    "ssstik.io_1794490531192.mp4 @ 3.50s",
+    "ACE_FINAL_V3 @ 7.71s"
+  ],
+  "confidence": "VERIFIED",
+  "qa_procedure": "Check that crosshair remains centered; no black border edges visible during crop."
+}

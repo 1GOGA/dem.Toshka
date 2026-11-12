@@ -1,0 +1,33 @@
+{
+  "effect_id": "EFF_COMP_CHROMA_DEPTH_SEPARATION",
+  "name": "Chroma/Depth Background Separation",
+  "category": "COMPOSITING",
+  "purpose": "Isolate foreground player character from background geometry for localized color treatments.",
+  "suitable_scene_types": [
+    "APPROACH",
+    "ACE_CLIMAX"
+  ],
+  "trigger_conditions": [
+    "Hero introduction",
+    "Climax celebration"
+  ],
+  "required_visual_conditions": "High contrast or distinct color difference between character and background.",
+  "required_source_footage": "Clean CS2 demo footage or green screen HLAE stream.",
+  "required_masks_or_mattes": "DeltaKeyer chroma matte or rotoscope polygon mask.",
+  "recommended_timing": "Scene duration.",
+  "intensity_ranges": {
+    "despill": "auto",
+    "edge_softness": "1.2 px"
+  },
+  "recommended_color_palette": "Background desaturated 20%, Foreground fully saturated.",
+  "fusion_node_structure": "MediaIn1 (Background) -> ColorCorrector1 (Sat: 0.8) \nMediaIn2 (Foreground Key) -> DeltaKeyer1 -> Merge1 over Background -> MediaOut1",
+  "resolve_implementation_instructions": "Fusion Page: DeltaKeyer isolates character, background node desaturated and blurred slightly, composite with clean alpha.",
+  "required_plugins": "Native Fusion Built-in",
+  "free_studio_compatibility": "Free 21.0 & Studio",
+  "hardware_requirements": "Smooth real-time playback",
+  "reference_examples": [
+    "Моя голова винтом @ 45.2s"
+  ],
+  "confidence": "VERIFIED",
+  "qa_procedure": "Inspect hair and weapon barrel edges for green/fringing artifacts."
+}

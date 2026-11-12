@@ -1,0 +1,33 @@
+{
+  "effect_id": "EFF_TIME_FREEZE_FRAME_ACCENT",
+  "name": "Fatal Frame Micro-Freeze Accent",
+  "category": "TIME_MANIPULATION",
+  "purpose": "Hold single peak-impact frame for 3-5 frames to accentuate fatal hit before resuming fast tempo.",
+  "suitable_scene_types": [
+    "ENGAGEMENT",
+    "MULTIKILL"
+  ],
+  "trigger_conditions": [
+    "Lethal headshot hit confirmation",
+    "Flashbang explosion peak"
+  ],
+  "required_visual_conditions": "Clear muzzle flash or bullet impact sprite on screen.",
+  "required_source_footage": "60 FPS capture.",
+  "required_masks_or_mattes": "Optional player mask.",
+  "recommended_timing": "0.05s to 0.08s (3 to 5 frames at 60 FPS).",
+  "intensity_ranges": {
+    "freeze_frames": "3 to 5",
+    "punch_scale": "1.04x"
+  },
+  "recommended_color_palette": "White impact flash overlay (#ffffff at 20% opacity).",
+  "fusion_node_structure": "MediaIn1 -> TimeStretcher1 (SourceTime held 4f) -> BrightnessContrast1 (Gain: 1.25) -> MediaOut1",
+  "resolve_implementation_instructions": "Edit Page: Freeze Frame tool on fatal frame, blade 4 frames, resume speed with instant snap.",
+  "required_plugins": "Native DaVinci Resolve Built-in",
+  "free_studio_compatibility": "Free 21.0 & Studio",
+  "hardware_requirements": "Minimal CPU/GPU load",
+  "reference_examples": [
+    "ssstik.io_1794490531192.mp4 @ 0.50s"
+  ],
+  "confidence": "VERIFIED",
+  "qa_procedure": "Ensure audio does not mute abruptly; layer a sub-downer or snare pop underneath the held frame."
+}

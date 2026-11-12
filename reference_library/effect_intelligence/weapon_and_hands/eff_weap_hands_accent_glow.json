@@ -1,0 +1,33 @@
+{
+  "effect_id": "EFF_WEAP_HANDS_ACCENT_GLOW",
+  "name": "First-Person Hands & Gloves Accent Glow",
+  "category": "WEAPON_AND_HANDS",
+  "purpose": "Subtly accent glove details and knife pull-out animation during tactical repositioning.",
+  "suitable_scene_types": [
+    "APPROACH",
+    "SPRAY_TRANSFER"
+  ],
+  "trigger_conditions": [
+    "Knife switch animation",
+    "Quick weapon draw"
+  ],
+  "required_visual_conditions": "Glove model prominent in viewmodel.",
+  "required_source_footage": "POV capture.",
+  "required_masks_or_mattes": "Bottom screen quadrant mask.",
+  "recommended_timing": "0.3s to 0.6s.",
+  "intensity_ranges": {
+    "glow_gain": "1.10 to 1.25",
+    "softness": "0.35"
+  },
+  "recommended_color_palette": "Soft neutral white (#ffffff) or subtle amber tone.",
+  "fusion_node_structure": "MediaIn1 -> PolygonMask1 (Glove shape) -> FastGlow1 (Gain: 1.15) -> MediaOut1",
+  "resolve_implementation_instructions": "Fusion Page: Apply gentle FastGlow with high threshold (0.75) masked to bottom 25% of frame.",
+  "required_plugins": "Native Fusion Built-in",
+  "free_studio_compatibility": "Free 21.0 & Studio",
+  "hardware_requirements": "Smooth 60 FPS playback",
+  "reference_examples": [
+    "ssstik.io_1794490752764.mp4"
+  ],
+  "confidence": "INFERRED",
+  "qa_procedure": "Ensure glow fades out completely before shooting commences."
+}

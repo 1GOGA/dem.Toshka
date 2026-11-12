@@ -1,0 +1,41 @@
+{
+	Tools = ordered() {
+		Sky_Cinematic_Grade = GroupOperator {
+			Inputs = ordered() {
+				Input1 = InstanceInput { SourceOp = "MediaIn", Source = "Output", },
+			},
+			Outputs = ordered() {
+				Output1 = InstanceOutput { SourceOp = "MergeFinal", Source = "Output", },
+			},
+			Tools = ordered() {
+				MediaIn = PipeRouter { ViewInfo = PipeRouterInfo { Pos = { -200, 0 } }, },
+				SkyGradMask = RectangleMask {
+					Inputs = {
+						Center = Input { Value = { 0.5, 0.8 }, },
+						Width = Input { Value = 1.0, },
+						Height = Input { Value = 0.5, },
+						SoftEdge = Input { Value = 0.25, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 0, -100 } },
+				},
+				ColorGrade = ColorCorrector {
+					Inputs = {
+						Input = Input { SourceOp = "MediaIn", Source = "Output", },
+						EffectMask = Input { SourceOp = "SkyGradMask", Source = "Mask", },
+						MasterHue = Input { Value = 0.55, }, -- Deep Azure
+						MasterSaturation = Input { Value = 1.25, },
+						MasterGamma = Input { Value = 0.85, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 0, -40 } },
+				},
+				MergeFinal = Merge {
+					Inputs = {
+						Background = Input { SourceOp = "MediaIn", Source = "Output", },
+						Foreground = Input { SourceOp = "ColorGrade", Source = "Output", },
+					},
+					ViewInfo = OperatorInfo { Pos = { 160, 0 } },
+				},
+			},
+		}
+	}
+}

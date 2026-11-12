@@ -1,0 +1,35 @@
+{
+  "effect_id": "EFF_TIME_OPTICAL_FLOW_SLOWMO",
+  "name": "Optical Flow High-Fidelity Slow Motion",
+  "category": "TIME_MANIPULATION",
+  "purpose": "Dramatize decisive sniper shot or final 1v1 clutch kill without frame jitter or judder.",
+  "suitable_scene_types": [
+    "ENGAGEMENT",
+    "CLUTCH",
+    "ACE_CLIMAX"
+  ],
+  "trigger_conditions": [
+    "Fatal AWP headshot",
+    "1v1 clutch decider",
+    "Final elimination of round"
+  ],
+  "required_visual_conditions": "Clear visibility of victim and weapon, continuous camera motion, minimal overlapping smoke occlusion.",
+  "required_source_footage": "60 FPS minimum uncompressed CS2 demo capture via HLAE.",
+  "required_masks_or_mattes": "None (operates on primary video buffer via optical vector estimation).",
+  "recommended_timing": "0.40s to 0.80s total duration around bullet impact.",
+  "intensity_ranges": {
+    "speed_percentage": "35% to 50%",
+    "shutter_compensation": "180 deg"
+  },
+  "recommended_color_palette": "Inherits scene grade with subtle 5% saturation boost.",
+  "fusion_node_structure": "MediaIn1 -> OpticalFlow1 (Output: Vectors) -> VectorMotionBlur1 -> TimeSpeed1 (Speed: 0.50, Interpolate: Flow) -> MediaOut1",
+  "resolve_implementation_instructions": "Edit Page: Right-click clip -> Retime Process: Optical Flow, Motion Estimation: Enhanced Better. Retime curve speed point at impact frame lowered to 40%.",
+  "required_plugins": "Native DaVinci Resolve Built-in",
+  "free_studio_compatibility": "Compatible with DaVinci Resolve Free 21.0 & Studio",
+  "hardware_requirements": "AMD Radeon RX 5700 XT / 8GB VRAM (OpenCL enabled)",
+  "reference_examples": [
+    "ssstik.io_1794490752764.mp4 @ 11.2s sniper flick"
+  ],
+  "confidence": "VERIFIED",
+  "qa_procedure": "Inspect edges of crosshair and player silhouette for vector warping or ghosting; ensure no frame duplication."
+}

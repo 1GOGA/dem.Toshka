@@ -1,0 +1,33 @@
+{
+  "effect_id": "EFF_WEAP_SPECULAR_RIM_LIGHT",
+  "name": "Weapon Edge Specular Rim Light",
+  "category": "WEAPON_AND_HANDS",
+  "purpose": "Emphasize weapon silhouette and metallic skin reflections during ADS or trigger pull.",
+  "suitable_scene_types": [
+    "ENGAGEMENT",
+    "APPROACH"
+  ],
+  "trigger_conditions": [
+    "Weapon inspection",
+    "Initial sightline alignment"
+  ],
+  "required_visual_conditions": "Weapon model clearly visible in lower right/center of first-person view.",
+  "required_source_footage": "First-person POV capture with weapon viewmodel enabled.",
+  "required_masks_or_mattes": "Viewmodel bounding mask (lower right quadrant).",
+  "recommended_timing": "0.5s to 1.5s.",
+  "intensity_ranges": {
+    "specular_boost": "+15% to +25%",
+    "falloff": "sharp"
+  },
+  "recommended_color_palette": "Matches weapon skin dominant secondary tone (#e2e8f0 or #f59e0b).",
+  "fusion_node_structure": "MediaIn1 -> RectangleMask1 (Viewmodel ROI) -> HighPassFilter1 -> BrightnessContrast1 (Gain: 1.4) -> Merge1 (Add) -> MediaOut1",
+  "resolve_implementation_instructions": "Fusion Page: HighPass filter isolates metallic edges on rifle, BrightnessContrast amplifies edge glints, add-merged onto original.",
+  "required_plugins": "Native Fusion Built-in",
+  "free_studio_compatibility": "Free 21.0 & Studio",
+  "hardware_requirements": "Negligible compute",
+  "reference_examples": [
+    "ssstik.io_1794490531192.mp4 M4A1-S inspection"
+  ],
+  "confidence": "VERIFIED",
+  "qa_procedure": "Ensure crosshair area is excluded from mask; skin decals must not distort."
+}

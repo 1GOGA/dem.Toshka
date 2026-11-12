@@ -1,0 +1,32 @@
+{
+  "effect_id": "EFF_COMP_LIGHT_WRAP_INTEGRATION",
+  "name": "Directional Light Wrap on Player Edges",
+  "category": "COMPOSITING",
+  "purpose": "Blend foreground player naturally into bright outdoor environment lights.",
+  "suitable_scene_types": [
+    "ESTABLISHING",
+    "ACE_CLIMAX"
+  ],
+  "trigger_conditions": [
+    "Player keyed over bright background or illuminated by strong sun"
+  ],
+  "required_visual_conditions": "Strong contrast difference between foreground and background.",
+  "required_source_footage": "Composited shot.",
+  "required_masks_or_mattes": "Inverted edge matte.",
+  "recommended_timing": "Continuous across composite.",
+  "intensity_ranges": {
+    "wrap_radius": "4 to 8 px",
+    "wrap_opacity": "0.35"
+  },
+  "recommended_color_palette": "Matches ambient skybox illumination (#fef08a).",
+  "fusion_node_structure": "Foreground -> MatteDilate1 -> Subtract -> BackgroundBlur -> Merge1 (Screen) over Foreground",
+  "resolve_implementation_instructions": "Fusion Page: Create LightWrap macro spilling background colors inward over character outline.",
+  "required_plugins": "Native Fusion Built-in",
+  "free_studio_compatibility": "Free 21.0 & Studio",
+  "hardware_requirements": "GPU OpenCL compute",
+  "reference_examples": [
+    "Anubis Orbit composite"
+  ],
+  "confidence": "VERIFIED",
+  "qa_procedure": "Ensure light wrap does not wash out player face or weapon details."
+}

@@ -1,0 +1,33 @@
+{
+  "effect_id": "EFF_SUBJ_OUTLINE_SUBTLE_WHITE",
+  "name": "Player Contour Subtle White Rim",
+  "category": "SUBJECT_HIGHLIGHT",
+  "purpose": "Separate enemy silhouette from dark background clutter in tactical engagement moments.",
+  "suitable_scene_types": [
+    "ENGAGEMENT",
+    "APPROACH"
+  ],
+  "trigger_conditions": [
+    "Enemy enters sightline from shadow or smoke edge",
+    "Sniper target acquisition"
+  ],
+  "required_visual_conditions": "Clear contrast difference between player model and background or tracked player matte.",
+  "required_source_footage": "CS2 gameplay capture (clean HUD preferred).",
+  "required_masks_or_mattes": "Luma keyer or edge detect bitmap mask.",
+  "recommended_timing": "0.30s to 0.60s fade in and out.",
+  "intensity_ranges": {
+    "rim_width_px": "2 to 4 px",
+    "glow_intensity": "0.35 to 0.55"
+  },
+  "recommended_color_palette": "Crisp optical white (#f0f4f8) with soft feathered edge.",
+  "fusion_node_structure": "MediaIn1 -> ChannelBooleans1 -> EdgeDetect1 (Sobel) -> ErodeDilate1 (Dilate: 1.5) -> FastGlow1 (Glow: 0.45) -> Merge1 (ApplyMode: Screen) onto MediaIn1",
+  "resolve_implementation_instructions": "Fusion Page: Connect MediaIn1 to EdgeDetect node, filter out background luma, dilate edges, screen-composite over original.",
+  "required_plugins": "Native Fusion Built-in",
+  "free_studio_compatibility": "Free 21.0 & Studio",
+  "hardware_requirements": "GPU OpenCL compute (< 50MB VRAM)",
+  "reference_examples": [
+    "ssstik.io_1794490752764.mp4 target lock"
+  ],
+  "confidence": "VERIFIED",
+  "qa_procedure": "Verify outline does not bleed onto background walls; disable mask when enemy is heavily behind cover."
+}

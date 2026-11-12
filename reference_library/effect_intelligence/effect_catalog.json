@@ -1,0 +1,700 @@
+{
+  "EFF_TIME_OPTICAL_FLOW_SLOWMO": {
+    "effect_id": "EFF_TIME_OPTICAL_FLOW_SLOWMO",
+    "name": "Optical Flow High-Fidelity Slow Motion",
+    "category": "TIME_MANIPULATION",
+    "purpose": "Dramatize decisive sniper shot or final 1v1 clutch kill without frame jitter or judder.",
+    "suitable_scene_types": [
+      "ENGAGEMENT",
+      "CLUTCH",
+      "ACE_CLIMAX"
+    ],
+    "trigger_conditions": [
+      "Fatal AWP headshot",
+      "1v1 clutch decider",
+      "Final elimination of round"
+    ],
+    "required_visual_conditions": "Clear visibility of victim and weapon, continuous camera motion, minimal overlapping smoke occlusion.",
+    "required_source_footage": "60 FPS minimum uncompressed CS2 demo capture via HLAE.",
+    "required_masks_or_mattes": "None (operates on primary video buffer via optical vector estimation).",
+    "recommended_timing": "0.40s to 0.80s total duration around bullet impact.",
+    "intensity_ranges": {
+      "speed_percentage": "35% to 50%",
+      "shutter_compensation": "180 deg"
+    },
+    "recommended_color_palette": "Inherits scene grade with subtle 5% saturation boost.",
+    "fusion_node_structure": "MediaIn1 -> OpticalFlow1 (Output: Vectors) -> VectorMotionBlur1 -> TimeSpeed1 (Speed: 0.50, Interpolate: Flow) -> MediaOut1",
+    "resolve_implementation_instructions": "Edit Page: Right-click clip -> Retime Process: Optical Flow, Motion Estimation: Enhanced Better. Retime curve speed point at impact frame lowered to 40%.",
+    "required_plugins": "Native DaVinci Resolve Built-in",
+    "free_studio_compatibility": "Compatible with DaVinci Resolve Free 21.0 & Studio",
+    "hardware_requirements": "AMD Radeon RX 5700 XT / 8GB VRAM (OpenCL enabled)",
+    "reference_examples": [
+      "ssstik.io_1794490752764.mp4 @ 11.2s sniper flick"
+    ],
+    "confidence": "VERIFIED",
+    "qa_procedure": "Inspect edges of crosshair and player silhouette for vector warping or ghosting; ensure no frame duplication."
+  },
+  "EFF_TIME_INTERFRAG_SPEEDRAMP": {
+    "effect_id": "EFF_TIME_INTERFRAG_SPEEDRAMP",
+    "name": "Inter-Frag Traversal Speed Ramp",
+    "category": "TIME_MANIPULATION",
+    "purpose": "Compress non-combat traversal corridors between separate kills while maintaining spatial orientation.",
+    "suitable_scene_types": [
+      "SPRAY_TRANSFER",
+      "MULTIKILL"
+    ],
+    "trigger_conditions": [
+      "Player running between kill 1 and kill 2",
+      "Corridor repositioning without active firing"
+    ],
+    "required_visual_conditions": "Clear movement vector, steady camera without violent shaking.",
+    "required_source_footage": "60 FPS CS2 gameplay POV capture.",
+    "required_masks_or_mattes": "None.",
+    "recommended_timing": "0.60s to 1.20s duration.",
+    "intensity_ranges": {
+      "speed_multiplier": "2.5x to 4.0x",
+      "motion_blur_shutter": "240 deg"
+    },
+    "recommended_color_palette": "Slight directional luma darkening (-5% gain) during peak velocity.",
+    "fusion_node_structure": "MediaIn1 -> Retime1 (Curve: Bezier Cubic Ease) -> DirectionalBlur1 (Angle: 0, Length: 0.05) -> MediaOut1",
+    "resolve_implementation_instructions": "Edit Page: Add Retime Speed Points at start and end of corridor. Set center section to 350%, smooth tangents with Bezier curves.",
+    "required_plugins": "Native DaVinci Resolve Built-in",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "Real-time 60 FPS playback on RX 5700 XT",
+    "reference_examples": [
+      "ssstik.io_1794490531192.mp4 @ 1.50s",
+      "ACE_FINAL_V3 @ 8.58s-9.48s"
+    ],
+    "confidence": "VERIFIED",
+    "qa_procedure": "Verify timeline duration matches audio beat grid; check that player gun snaps back to normal speed before trigger pull."
+  },
+  "EFF_TIME_FREEZE_FRAME_ACCENT": {
+    "effect_id": "EFF_TIME_FREEZE_FRAME_ACCENT",
+    "name": "Fatal Frame Micro-Freeze Accent",
+    "category": "TIME_MANIPULATION",
+    "purpose": "Hold single peak-impact frame for 3-5 frames to accentuate fatal hit before resuming fast tempo.",
+    "suitable_scene_types": [
+      "ENGAGEMENT",
+      "MULTIKILL"
+    ],
+    "trigger_conditions": [
+      "Lethal headshot hit confirmation",
+      "Flashbang explosion peak"
+    ],
+    "required_visual_conditions": "Clear muzzle flash or bullet impact sprite on screen.",
+    "required_source_footage": "60 FPS capture.",
+    "required_masks_or_mattes": "Optional player mask.",
+    "recommended_timing": "0.05s to 0.08s (3 to 5 frames at 60 FPS).",
+    "intensity_ranges": {
+      "freeze_frames": "3 to 5",
+      "punch_scale": "1.04x"
+    },
+    "recommended_color_palette": "White impact flash overlay (#ffffff at 20% opacity).",
+    "fusion_node_structure": "MediaIn1 -> TimeStretcher1 (SourceTime held 4f) -> BrightnessContrast1 (Gain: 1.25) -> MediaOut1",
+    "resolve_implementation_instructions": "Edit Page: Freeze Frame tool on fatal frame, blade 4 frames, resume speed with instant snap.",
+    "required_plugins": "Native DaVinci Resolve Built-in",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "Minimal CPU/GPU load",
+    "reference_examples": [
+      "ssstik.io_1794490531192.mp4 @ 0.50s"
+    ],
+    "confidence": "VERIFIED",
+    "qa_procedure": "Ensure audio does not mute abruptly; layer a sub-downer or snare pop underneath the held frame."
+  },
+  "EFF_SUBJ_OUTLINE_SUBTLE_WHITE": {
+    "effect_id": "EFF_SUBJ_OUTLINE_SUBTLE_WHITE",
+    "name": "Player Contour Subtle White Rim",
+    "category": "SUBJECT_HIGHLIGHT",
+    "purpose": "Separate enemy silhouette from dark background clutter in tactical engagement moments.",
+    "suitable_scene_types": [
+      "ENGAGEMENT",
+      "APPROACH"
+    ],
+    "trigger_conditions": [
+      "Enemy enters sightline from shadow or smoke edge",
+      "Sniper target acquisition"
+    ],
+    "required_visual_conditions": "Clear contrast difference between player model and background or tracked player matte.",
+    "required_source_footage": "CS2 gameplay capture (clean HUD preferred).",
+    "required_masks_or_mattes": "Luma keyer or edge detect bitmap mask.",
+    "recommended_timing": "0.30s to 0.60s fade in and out.",
+    "intensity_ranges": {
+      "rim_width_px": "2 to 4 px",
+      "glow_intensity": "0.35 to 0.55"
+    },
+    "recommended_color_palette": "Crisp optical white (#f0f4f8) with soft feathered edge.",
+    "fusion_node_structure": "MediaIn1 -> ChannelBooleans1 -> EdgeDetect1 (Sobel) -> ErodeDilate1 (Dilate: 1.5) -> FastGlow1 (Glow: 0.45) -> Merge1 (ApplyMode: Screen) onto MediaIn1",
+    "resolve_implementation_instructions": "Fusion Page: Connect MediaIn1 to EdgeDetect node, filter out background luma, dilate edges, screen-composite over original.",
+    "required_plugins": "Native Fusion Built-in",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "GPU OpenCL compute (< 50MB VRAM)",
+    "reference_examples": [
+      "ssstik.io_1794490752764.mp4 target lock"
+    ],
+    "confidence": "VERIFIED",
+    "qa_procedure": "Verify outline does not bleed onto background walls; disable mask when enemy is heavily behind cover."
+  },
+  "EFF_SUBJ_OUTLINE_CYAN_FLOW": {
+    "effect_id": "EFF_SUBJ_OUTLINE_CYAN_FLOW",
+    "name": "Tactical Cyan Player Glow",
+    "category": "SUBJECT_HIGHLIGHT",
+    "purpose": "Give cinematic esports sci-fi accent to hero player entry or weapon reload.",
+    "suitable_scene_types": [
+      "APPROACH",
+      "ESTABLISHING"
+    ],
+    "trigger_conditions": [
+      "Shoulder camera approach",
+      "Hero walking out of connector"
+    ],
+    "required_visual_conditions": "Hero character occupying central vertical third of frame.",
+    "required_source_footage": "3rd person or shoulder camera capture.",
+    "required_masks_or_mattes": "Tracked circular power window or subject mask.",
+    "recommended_timing": "1.0s to 2.0s duration.",
+    "intensity_ranges": {
+      "glow_radius": "10 to 25 px",
+      "blend": "0.40"
+    },
+    "recommended_color_palette": "Cyber cyan (#06b6d4) with electric blue falloff (#0284c7).",
+    "fusion_node_structure": "MediaIn1 -> LumaKeyer1 -> ColorCorrector1 (Hue: 195, Tint: Cyan) -> SoftGlow1 (Threshold: 0.5, Gain: 1.4) -> Merge1 (Screen) -> MediaOut1",
+    "resolve_implementation_instructions": "Fusion Page: LumaKeyer extracts bright highlights on player armor, ColorCorrector tints to cyan, SoftGlow adds optical aura.",
+    "required_plugins": "Native Fusion Built-in / Glow Expo optional",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "Real-time GPU playback",
+    "reference_examples": [
+      "Моя голова винтом @ 12.4s"
+    ],
+    "confidence": "VERIFIED",
+    "qa_procedure": "Check that cyan color does not corrupt hero weapon skin colors; mask out the hands if skin accuracy is required."
+  },
+  "EFF_SUBJ_OUTLINE_GOLD_CLIMAX": {
+    "effect_id": "EFF_SUBJ_OUTLINE_GOLD_CLIMAX",
+    "name": "Climax Ace Warm Gold Silhouette Glow",
+    "category": "SUBJECT_HIGHLIGHT",
+    "purpose": "Celebrate round-winning 5K ACE with a warm regal golden aura around the hero during orbit camera.",
+    "suitable_scene_types": [
+      "ACE_CLIMAX",
+      "AFTERMATH"
+    ],
+    "trigger_conditions": [
+      "5th kill confirmation",
+      "Orbit camera around victorious player"
+    ],
+    "required_visual_conditions": "Hero model centered in 3rd-person circular camera path.",
+    "required_source_footage": "HLAE orbit campath footage.",
+    "required_masks_or_mattes": "Elliptical feathered mask tracking hero torso.",
+    "recommended_timing": "2.0s to 3.0s (holds through fade to black).",
+    "intensity_ranges": {
+      "glow_gain": "1.5 to 2.2",
+      "color_warmth": "Gold #f59e0b"
+    },
+    "recommended_color_palette": "Pure gold (#ffd700), warm amber (#d97706), champagne highlights (#fffbeb).",
+    "fusion_node_structure": "MediaIn1 -> BrightnessContrast1 -> Glow1 (Glow: 0.85, Color: Gold) -> DirectionalBlur1 (subtle ray sweep) -> Merge1 (Screen) -> MediaOut1",
+    "resolve_implementation_instructions": "Fusion/Color Page: Power window on hero in Color page, raise Gain to 1.15, warm tint to 25° hue; layer with Fusion soft golden bloom.",
+    "required_plugins": "Native DaVinci Resolve Built-in",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "AMD RX 5700 XT verified",
+    "reference_examples": [
+      "ACE_FINAL_V3 @ 16.5s-18.5s"
+    ],
+    "confidence": "VERIFIED",
+    "qa_procedure": "Verify hero silhouette remains legible; avoid clipping highlight details on helmet or weapon."
+  },
+  "EFF_WEAP_SPECULAR_RIM_LIGHT": {
+    "effect_id": "EFF_WEAP_SPECULAR_RIM_LIGHT",
+    "name": "Weapon Edge Specular Rim Light",
+    "category": "WEAPON_AND_HANDS",
+    "purpose": "Emphasize weapon silhouette and metallic skin reflections during ADS or trigger pull.",
+    "suitable_scene_types": [
+      "ENGAGEMENT",
+      "APPROACH"
+    ],
+    "trigger_conditions": [
+      "Weapon inspection",
+      "Initial sightline alignment"
+    ],
+    "required_visual_conditions": "Weapon model clearly visible in lower right/center of first-person view.",
+    "required_source_footage": "First-person POV capture with weapon viewmodel enabled.",
+    "required_masks_or_mattes": "Viewmodel bounding mask (lower right quadrant).",
+    "recommended_timing": "0.5s to 1.5s.",
+    "intensity_ranges": {
+      "specular_boost": "+15% to +25%",
+      "falloff": "sharp"
+    },
+    "recommended_color_palette": "Matches weapon skin dominant secondary tone (#e2e8f0 or #f59e0b).",
+    "fusion_node_structure": "MediaIn1 -> RectangleMask1 (Viewmodel ROI) -> HighPassFilter1 -> BrightnessContrast1 (Gain: 1.4) -> Merge1 (Add) -> MediaOut1",
+    "resolve_implementation_instructions": "Fusion Page: HighPass filter isolates metallic edges on rifle, BrightnessContrast amplifies edge glints, add-merged onto original.",
+    "required_plugins": "Native Fusion Built-in",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "Negligible compute",
+    "reference_examples": [
+      "ssstik.io_1794490531192.mp4 M4A1-S inspection"
+    ],
+    "confidence": "VERIFIED",
+    "qa_procedure": "Ensure crosshair area is excluded from mask; skin decals must not distort."
+  },
+  "EFF_WEAP_HANDS_ACCENT_GLOW": {
+    "effect_id": "EFF_WEAP_HANDS_ACCENT_GLOW",
+    "name": "First-Person Hands & Gloves Accent Glow",
+    "category": "WEAPON_AND_HANDS",
+    "purpose": "Subtly accent glove details and knife pull-out animation during tactical repositioning.",
+    "suitable_scene_types": [
+      "APPROACH",
+      "SPRAY_TRANSFER"
+    ],
+    "trigger_conditions": [
+      "Knife switch animation",
+      "Quick weapon draw"
+    ],
+    "required_visual_conditions": "Glove model prominent in viewmodel.",
+    "required_source_footage": "POV capture.",
+    "required_masks_or_mattes": "Bottom screen quadrant mask.",
+    "recommended_timing": "0.3s to 0.6s.",
+    "intensity_ranges": {
+      "glow_gain": "1.10 to 1.25",
+      "softness": "0.35"
+    },
+    "recommended_color_palette": "Soft neutral white (#ffffff) or subtle amber tone.",
+    "fusion_node_structure": "MediaIn1 -> PolygonMask1 (Glove shape) -> FastGlow1 (Gain: 1.15) -> MediaOut1",
+    "resolve_implementation_instructions": "Fusion Page: Apply gentle FastGlow with high threshold (0.75) masked to bottom 25% of frame.",
+    "required_plugins": "Native Fusion Built-in",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "Smooth 60 FPS playback",
+    "reference_examples": [
+      "ssstik.io_1794490752764.mp4"
+    ],
+    "confidence": "INFERRED",
+    "qa_procedure": "Ensure glow fades out completely before shooting commences."
+  },
+  "EFF_WEAP_INSPECT_LOUPE_ZOOM": {
+    "effect_id": "EFF_WEAP_INSPECT_LOUPE_ZOOM",
+    "name": "Tactical Weapon Inspect Circular Loupe",
+    "category": "WEAPON_AND_HANDS",
+    "purpose": "Magnify weapon sticker or inspect detail with a circular glass distortion lens.",
+    "suitable_scene_types": [
+      "APPROACH",
+      "AFTERMATH"
+    ],
+    "trigger_conditions": [
+      "Player presses weapon inspect key",
+      "Post-round victory pause"
+    ],
+    "required_visual_conditions": "Weapon static during inspect flourish.",
+    "required_source_footage": "POV footage.",
+    "required_masks_or_mattes": "Circular mask with chromatic aberration ring.",
+    "recommended_timing": "1.2s to 2.0s duration.",
+    "intensity_ranges": {
+      "zoom_scale": "1.4x to 1.8x",
+      "border_width": "3px"
+    },
+    "recommended_color_palette": "Cyan ring (#38bdf8) with subtle glass distortion.",
+    "fusion_node_structure": "MediaIn1 -> Transform1 (Scale: 1.6, Center: [0.72, 0.35]) -> EllipseMask1 -> Merge1 over MediaIn1 -> Paint1 (Ring border)",
+    "resolve_implementation_instructions": "Fusion Page or Loupe Blaster Free: Place magnifying circle over weapon decal with cubic ease in/out.",
+    "required_plugins": "Native Fusion or Loupe Blaster Free",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "Low GPU cost",
+    "reference_examples": [
+      "European Filmmaker Loupe Blaster standard edit"
+    ],
+    "confidence": "VERIFIED",
+    "qa_procedure": "Check lens border anti-aliasing; ensure center coordinates lock accurately to weapon movement."
+  },
+  "EFF_ENV_SKY_CINEMATIC_GRADE": {
+    "effect_id": "EFF_ENV_SKY_CINEMATIC_GRADE",
+    "name": "Mirage/Anubis Sky Contrast & Gradient",
+    "category": "ENVIRONMENT",
+    "purpose": "Deepen washed-out desert skyboxes with rich cyan-azure gradient and cloud texture separation.",
+    "suitable_scene_types": [
+      "ESTABLISHING",
+      "ACE_CLIMAX",
+      "APPROACH"
+    ],
+    "trigger_conditions": [
+      "Outdoor site with visible skybox (Anubis canal, Mirage A-site, Dust2 long)"
+    ],
+    "required_visual_conditions": "Upper 30% of frame contains sky geometry.",
+    "required_source_footage": "Any outdoor CS2 demo footage.",
+    "required_masks_or_mattes": "Linear gradient mask or sky luma qualifier.",
+    "recommended_timing": "Continuous across scene duration.",
+    "intensity_ranges": {
+      "sky_luma_reduction": "-10% to -20%",
+      "cyan_saturation": "+15%"
+    },
+    "recommended_color_palette": "Deep Mediterranean azure (#0284c7) to warm horizon gold (#fef08a).",
+    "fusion_node_structure": "MediaIn1 -> ColorCorrector1 (Hue: 205, Sat: 1.25, Gamma: 0.85) masked by LinearGradientMask1 -> MediaOut1",
+    "resolve_implementation_instructions": "Color Page: Node with Qualifier keyed to Skybox, lower Lift/Gamma, shift tint towards #0284c7; apply soft feather.",
+    "required_plugins": "Native DaVinci Resolve Built-in",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "Zero extra overhead",
+    "reference_examples": [
+      "ssstik.io_1794490695954.mp4 Mirage A site"
+    ],
+    "confidence": "VERIFIED",
+    "qa_procedure": "Check horizon boundaries around stone pillars and building rooftops for dark fringing or halo artifacts."
+  },
+  "EFF_ENV_VOLUMETRIC_SUN_RAYS": {
+    "effect_id": "EFF_ENV_VOLUMETRIC_SUN_RAYS",
+    "name": "Volumetric God Rays & Atmosphere",
+    "category": "ENVIRONMENT",
+    "purpose": "Add warm volumetric sunlight beams spilling past doorway archways and columns.",
+    "suitable_scene_types": [
+      "ESTABLISHING",
+      "APPROACH"
+    ],
+    "trigger_conditions": [
+      "Direct sunlight entering shadow portal (Anubis connector, Mirage palace)"
+    ],
+    "required_visual_conditions": "Strong key light source shining into shaded interior.",
+    "required_source_footage": "Scenic or approach camera footage.",
+    "required_masks_or_mattes": "Threshold highlight mask.",
+    "recommended_timing": "1.5s to 3.0s.",
+    "intensity_ranges": {
+      "ray_length": "0.15 to 0.35",
+      "ray_opacity": "0.25 to 0.40"
+    },
+    "recommended_color_palette": "Warm sunlight amber (#fef3c7).",
+    "fusion_node_structure": "MediaIn1 -> LumaKeyer1 (Highs only) -> Rays1 (Angle: 45, Length: 0.25, Decay: 0.95) -> Merge1 (Screen) -> MediaOut1",
+    "resolve_implementation_instructions": "Fusion Page: Rays node connected to bright sun highlights, angled along sunlight vector, screen-blended with soft opacity.",
+    "required_plugins": "Native Fusion Built-in",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "OpenCL rays calculation (< 80ms render)",
+    "reference_examples": [
+      "Anubis Ace Take 2 Shoulder approach archway"
+    ],
+    "confidence": "VERIFIED",
+    "qa_procedure": "Ensure rays do not obscure enemy silhouettes or crosshair reticle."
+  },
+  "EFF_ENV_SMOKE_PARTICLE_BOOST": {
+    "effect_id": "EFF_ENV_SMOKE_PARTICLE_BOOST",
+    "name": "Grenade Smoke Contrast & Edge Sharpness",
+    "category": "ENVIRONMENT",
+    "purpose": "Enhance volumetric depth and edge billow definition of CS2 Source 2 responsive smoke grenades.",
+    "suitable_scene_types": [
+      "TENSION",
+      "ENGAGEMENT"
+    ],
+    "trigger_conditions": [
+      "Active smoke grenade blooming in combat zone"
+    ],
+    "required_visual_conditions": "Visible volumetric smoke cloud in midground.",
+    "required_source_footage": "CS2 gameplay footage.",
+    "required_masks_or_mattes": "Smoke luma qualifier.",
+    "recommended_timing": "Continuous during smoke dissipation.",
+    "intensity_ranges": {
+      "mid_detail": "+25%",
+      "contrast": "+10%"
+    },
+    "recommended_color_palette": "Cool charcoal smoke (#334155).",
+    "fusion_node_structure": "MediaIn1 -> UnsharpMask1 (Radius: 2.5, Amount: 0.6) masked by MidtonesQualifier1 -> MediaOut1",
+    "resolve_implementation_instructions": "Color Page: Midtone Detail slider set to +35 on qualified smoke node.",
+    "required_plugins": "Native DaVinci Resolve Built-in",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "Negligible load",
+    "reference_examples": [
+      "ssstik.io_1794490531192.mp4 smoke push"
+    ],
+    "confidence": "INFERRED",
+    "qa_procedure": "Ensure sharpening does not introduce noisy grain in deep shadows."
+  },
+  "EFF_COMP_CHROMA_DEPTH_SEPARATION": {
+    "effect_id": "EFF_COMP_CHROMA_DEPTH_SEPARATION",
+    "name": "Chroma/Depth Background Separation",
+    "category": "COMPOSITING",
+    "purpose": "Isolate foreground player character from background geometry for localized color treatments.",
+    "suitable_scene_types": [
+      "APPROACH",
+      "ACE_CLIMAX"
+    ],
+    "trigger_conditions": [
+      "Hero introduction",
+      "Climax celebration"
+    ],
+    "required_visual_conditions": "High contrast or distinct color difference between character and background.",
+    "required_source_footage": "Clean CS2 demo footage or green screen HLAE stream.",
+    "required_masks_or_mattes": "DeltaKeyer chroma matte or rotoscope polygon mask.",
+    "recommended_timing": "Scene duration.",
+    "intensity_ranges": {
+      "despill": "auto",
+      "edge_softness": "1.2 px"
+    },
+    "recommended_color_palette": "Background desaturated 20%, Foreground fully saturated.",
+    "fusion_node_structure": "MediaIn1 (Background) -> ColorCorrector1 (Sat: 0.8) \nMediaIn2 (Foreground Key) -> DeltaKeyer1 -> Merge1 over Background -> MediaOut1",
+    "resolve_implementation_instructions": "Fusion Page: DeltaKeyer isolates character, background node desaturated and blurred slightly, composite with clean alpha.",
+    "required_plugins": "Native Fusion Built-in",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "Smooth real-time playback",
+    "reference_examples": [
+      "Моя голова винтом @ 45.2s"
+    ],
+    "confidence": "VERIFIED",
+    "qa_procedure": "Inspect hair and weapon barrel edges for green/fringing artifacts."
+  },
+  "EFF_COMP_LIGHT_WRAP_INTEGRATION": {
+    "effect_id": "EFF_COMP_LIGHT_WRAP_INTEGRATION",
+    "name": "Directional Light Wrap on Player Edges",
+    "category": "COMPOSITING",
+    "purpose": "Blend foreground player naturally into bright outdoor environment lights.",
+    "suitable_scene_types": [
+      "ESTABLISHING",
+      "ACE_CLIMAX"
+    ],
+    "trigger_conditions": [
+      "Player keyed over bright background or illuminated by strong sun"
+    ],
+    "required_visual_conditions": "Strong contrast difference between foreground and background.",
+    "required_source_footage": "Composited shot.",
+    "required_masks_or_mattes": "Inverted edge matte.",
+    "recommended_timing": "Continuous across composite.",
+    "intensity_ranges": {
+      "wrap_radius": "4 to 8 px",
+      "wrap_opacity": "0.35"
+    },
+    "recommended_color_palette": "Matches ambient skybox illumination (#fef08a).",
+    "fusion_node_structure": "Foreground -> MatteDilate1 -> Subtract -> BackgroundBlur -> Merge1 (Screen) over Foreground",
+    "resolve_implementation_instructions": "Fusion Page: Create LightWrap macro spilling background colors inward over character outline.",
+    "required_plugins": "Native Fusion Built-in",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "GPU OpenCL compute",
+    "reference_examples": [
+      "Anubis Orbit composite"
+    ],
+    "confidence": "VERIFIED",
+    "qa_procedure": "Ensure light wrap does not wash out player face or weapon details."
+  },
+  "EFF_COMP_RGB_CHANNEL_SPLIT": {
+    "effect_id": "EFF_COMP_RGB_CHANNEL_SPLIT",
+    "name": "Fatal Impact Chromatic Aberration",
+    "category": "COMPOSITING",
+    "purpose": "Simulate optical lens distortion and shockwave RGB split on lethal headshots or sniper recoil.",
+    "suitable_scene_types": [
+      "ENGAGEMENT",
+      "MULTIKILL"
+    ],
+    "trigger_conditions": [
+      "Fatal trigger pull",
+      "Heavy explosion impact"
+    ],
+    "required_visual_conditions": "Frame with high motion or sudden gunfire.",
+    "required_source_footage": "60 FPS capture.",
+    "required_masks_or_mattes": "None.",
+    "recommended_timing": "0.08s to 0.15s (5 to 9 frames).",
+    "intensity_ranges": {
+      "red_offset_px": "+3 px",
+      "blue_offset_px": "-3 px"
+    },
+    "recommended_color_palette": "Red-Cyan chromatic fringing.",
+    "fusion_node_structure": "MediaIn1 -> ChannelBooleans1 (Red) -> Transform1 (X: +3px)\nMediaIn1 -> ChannelBooleans2 (Green) -> Passthrough\nMediaIn1 -> ChannelBooleans3 (Blue) -> Transform2 (X: -3px)\nMerge back via ChannelBooleans Add -> MediaOut1",
+    "resolve_implementation_instructions": "Fusion Page: Split R/G/B channels with ChannelBooleans, apply horizontal micro-shift to Red and Blue, keyframe return to 0.",
+    "required_plugins": "Native Fusion Built-in",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "Real-time playback",
+    "reference_examples": [
+      "Друзей не меняют на бабло @ 14.8s"
+    ],
+    "confidence": "VERIFIED",
+    "qa_procedure": "Verify distortion snaps back to clean un-split image within 8 frames to avoid causing eye strain."
+  },
+  "EFF_CAM_HEADSHOT_PUNCH_IN": {
+    "effect_id": "EFF_CAM_HEADSHOT_PUNCH_IN",
+    "name": "Lethal Headshot Micro Punch-In (1.06x)",
+    "category": "CAMERA_AND_MOTION",
+    "purpose": "Add physical impact punch to a lethal weapon discharge without disorienting the viewer.",
+    "suitable_scene_types": [
+      "ENGAGEMENT",
+      "MULTIKILL"
+    ],
+    "trigger_conditions": [
+      "Weapon muzzle flash frame",
+      "Fatal bullet registration"
+    ],
+    "required_visual_conditions": "Target in crosshair reticle.",
+    "required_source_footage": "First-person POV capture.",
+    "required_masks_or_mattes": "None.",
+    "recommended_timing": "0.10s to 0.15s (snaps back over 6 frames).",
+    "intensity_ranges": {
+      "scale": "1.05x to 1.08x",
+      "ease_curve": "Exponential Out"
+    },
+    "recommended_color_palette": "Coupled with 2-frame luma boost (+20% gain).",
+    "fusion_node_structure": "MediaIn1 -> Transform1 (Size: 1.06, Keyframes: 0f=1.00, 1f=1.06, 6f=1.00) -> ColorCorrector1 -> MediaOut1",
+    "resolve_implementation_instructions": "Fusion or Edit Page: Dynamic Zoom or Transform node keyframed 1.06x scale on hit frame, easing back to 1.0x with cubic curve.",
+    "required_plugins": "Native DaVinci Resolve Built-in",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "Zero overhead",
+    "reference_examples": [
+      "ssstik.io_1794490531192.mp4 @ 3.50s",
+      "ACE_FINAL_V3 @ 7.71s"
+    ],
+    "confidence": "VERIFIED",
+    "qa_procedure": "Check that crosshair remains centered; no black border edges visible during crop."
+  },
+  "EFF_CAM_WHIP_PAN_270": {
+    "effect_id": "EFF_CAM_WHIP_PAN_270",
+    "name": "Directional Whip Pan (270° Shutter Angle)",
+    "category": "CAMERA_AND_MOTION",
+    "purpose": "Seamlessly connect two distinct camera positions through high-velocity directional motion blur.",
+    "suitable_scene_types": [
+      "SPRAY_TRANSFER",
+      "MULTIKILL",
+      "APPROACH"
+    ],
+    "trigger_conditions": [
+      "Camera cut between adjacent zones",
+      "Flick from victim to secondary target"
+    ],
+    "required_visual_conditions": "Continuity of motion direction (left-to-right or right-to-left across cut).",
+    "required_source_footage": "60 FPS footage.",
+    "required_masks_or_mattes": "None.",
+    "recommended_timing": "0.20s to 0.35s (12 to 20 frames).",
+    "intensity_ranges": {
+      "shutter_angle": "270 deg",
+      "blur_length": "0.08 to 0.15"
+    },
+    "recommended_color_palette": "Matches scene background.",
+    "fusion_node_structure": "MediaIn1 -> Transform1 (X Pan: 0.0 to -0.3) -> DirectionalBlur1 (Angle: 0, Length: 0.12) -> Dissolve1 into MediaIn2 with inverse pan -> MediaOut1",
+    "resolve_implementation_instructions": "Fusion Page: Directional blur macro across cut point with 270° motion blur, matching horizontal velocity vectors.",
+    "required_plugins": "Native Fusion Built-in",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "RX 5700 XT verified",
+    "reference_examples": [
+      "Моя голова винтом @ 18.2s",
+      "ACE_FINAL_V3 Take 1 to Take 2 cut"
+    ],
+    "confidence": "VERIFIED",
+    "qa_procedure": "Ensure direction of blur matches player movement; avoid vertical blur on horizontal turns."
+  },
+  "EFF_CAM_ORBIT_CLIMAX_GLIDE": {
+    "effect_id": "EFF_CAM_ORBIT_CLIMAX_GLIDE",
+    "name": "Hero Orbit Climax Camera Path",
+    "category": "CAMERA_AND_MOTION",
+    "purpose": "Celebrate round-winning 5K ACE with a cinematic 360-degree rotating third-person glide.",
+    "suitable_scene_types": [
+      "ACE_CLIMAX",
+      "AFTERMATH"
+    ],
+    "trigger_conditions": [
+      "5K Ace completion",
+      "All enemies eliminated"
+    ],
+    "required_visual_conditions": "Hero character in open bomb site or victory angle.",
+    "required_source_footage": "HLAE mirv_campath orbit stream.",
+    "required_masks_or_mattes": "None.",
+    "recommended_timing": "2.5s to 3.5s.",
+    "intensity_ranges": {
+      "fov": "85 deg",
+      "rotation_arc": "120 to 180 deg"
+    },
+    "recommended_color_palette": "Warm victory tone with soft vignette.",
+    "fusion_node_structure": "MediaIn1 -> ColorCorrector1 (Warm LUT) -> Vignette1 (Softness: 0.5) -> MediaOut1",
+    "resolve_implementation_instructions": "Edit Page: Place Orbit Take on V1, apply ease-in spline curve, align audio hook to orbit apex.",
+    "required_plugins": "HLAE + Native Resolve",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "Smooth playback",
+    "reference_examples": [
+      "ACE_FINAL_V3 Take 4 (15.70s-18.50s)"
+    ],
+    "confidence": "VERIFIED",
+    "qa_procedure": "Verify campath does not clip into walls or stone pillars; ensure hero stays in focus."
+  },
+  "EFF_COL_EGYPTIAN_SANDSTONE": {
+    "effect_id": "EFF_COL_EGYPTIAN_SANDSTONE",
+    "name": "Egyptian Sandstone Filmic LUT Grade",
+    "category": "COLOR",
+    "purpose": "Create cohesive cinematic film look on desert maps (Anubis, Mirage, Dust2) with rich warm stone tones.",
+    "suitable_scene_types": [
+      "ESTABLISHING",
+      "APPROACH",
+      "ENGAGEMENT",
+      "ACE_CLIMAX"
+    ],
+    "trigger_conditions": [
+      "Desert or sandstone map environment"
+    ],
+    "required_visual_conditions": "Natural outdoor sunlight.",
+    "required_source_footage": "Clean gameplay footage.",
+    "required_masks_or_mattes": "None (global grade).",
+    "recommended_timing": "Full scene duration.",
+    "intensity_ranges": {
+      "lift": "-0.015",
+      "gain": "1.04",
+      "sat": "1.10"
+    },
+    "recommended_color_palette": "Golden sandstone (#f4ecd8), deep teal shadows (#1a1d24).",
+    "fusion_node_structure": "MediaIn1 -> OCIOFileTransform1 / FileLUT1 (Egyptian_Sandstone.cube) -> MediaOut1",
+    "resolve_implementation_instructions": "Color Page: Node 1 Primaries Lift -0.015, Gain 1.04; Node 2 Custom S-Curve; Node 3 Warm shadow tint.",
+    "required_plugins": "Native DaVinci Resolve Built-in",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "Zero compute overhead",
+    "reference_examples": [
+      "ssstik.io_1794490695954.mp4",
+      "ACE_FINAL_V3 Master Color Grade"
+    ],
+    "confidence": "VERIFIED",
+    "qa_procedure": "Inspect skin tones on character arms; ensure values fall within safe broadcast rec.709 gamut."
+  },
+  "EFF_COL_COLD_ESPORTS_NOIR": {
+    "effect_id": "EFF_COL_COLD_ESPORTS_NOIR",
+    "name": "Cold Tournament Esports Contrast Grade",
+    "category": "COLOR",
+    "purpose": "Elevate tactical competitive tension on urban/concrete maps (Inferno, Nuke, Overpass).",
+    "suitable_scene_types": [
+      "TENSION",
+      "ENGAGEMENT"
+    ],
+    "trigger_conditions": [
+      "Urban, industrial or rainy map environment"
+    ],
+    "required_visual_conditions": "Overcast or indoor fluorescent lighting.",
+    "required_source_footage": "Clean gameplay footage.",
+    "required_masks_or_mattes": "None.",
+    "recommended_timing": "Full scene duration.",
+    "intensity_ranges": {
+      "sat": "0.85",
+      "contrast": "+18%"
+    },
+    "recommended_color_palette": "Slate gray (#475569), cold cobalt shadows (#1e293b), sharp white highlights (#f8fafc).",
+    "fusion_node_structure": "MediaIn1 -> ColorCorrector1 (Sat: 0.85, Tint: Blue-Gray) -> BrightnessContrast1 (Contrast: 1.18) -> MediaOut1",
+    "resolve_implementation_instructions": "Color Page: Desaturate reds/greens slightly, lift shadow contrast, cool down color temperature to 5800K.",
+    "required_plugins": "Native DaVinci Resolve Built-in",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "Zero compute overhead",
+    "reference_examples": [
+      "ssstik.io_1794490531192.mp4 Inferno"
+    ],
+    "confidence": "VERIFIED",
+    "qa_procedure": "Verify enemy player silhouettes remain easily distinguishable from dark building walls."
+  },
+  "EFF_COL_BLOOM_HALATION_GLOW": {
+    "effect_id": "EFF_COL_BLOOM_HALATION_GLOW",
+    "name": "Filmic Muzzle Flash & Specular Halation",
+    "category": "COLOR",
+    "purpose": "Recreate authentic optical film halation around bright muzzle bursts, sun reflections and sparks.",
+    "suitable_scene_types": [
+      "ENGAGEMENT",
+      "MULTIKILL"
+    ],
+    "trigger_conditions": [
+      "Rifle muzzle discharge",
+      "HE grenade blast"
+    ],
+    "required_visual_conditions": "Pixel luminance exceeding 85 IRE (pure white cores).",
+    "required_source_footage": "CS2 gameplay footage.",
+    "required_masks_or_mattes": "Highlight threshold keyer.",
+    "recommended_timing": "0.05s to 0.10s (2 to 4 frames per gunshot).",
+    "intensity_ranges": {
+      "bloom_threshold": "0.75",
+      "halation_spread": "12 px"
+    },
+    "recommended_color_palette": "Warm orange-red edge bleed (#f97316).",
+    "fusion_node_structure": "MediaIn1 -> LumaKeyer1 (Threshold: 0.8) -> Blur1 (Radius: 8) -> ColorCorrector1 (Tint: Red-Orange) -> Merge1 (Screen) over MediaIn1",
+    "resolve_implementation_instructions": "Fusion Page or Glow Expo: Apply threshold glow with warm red-orange tint to highlight fringes.",
+    "required_plugins": "Native Fusion Built-in / Glow Expo",
+    "free_studio_compatibility": "Free 21.0 & Studio",
+    "hardware_requirements": "GPU OpenCL verified",
+    "reference_examples": [
+      "Друзей не меняют на бабло @ 31.4s"
+    ],
+    "confidence": "VERIFIED",
+    "qa_procedure": "Check that halation does not turn entire weapon red; confine to specular fringe pixels."
+  }
+}

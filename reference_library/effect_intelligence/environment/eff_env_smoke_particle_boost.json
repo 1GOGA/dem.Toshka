@@ -1,0 +1,32 @@
+{
+  "effect_id": "EFF_ENV_SMOKE_PARTICLE_BOOST",
+  "name": "Grenade Smoke Contrast & Edge Sharpness",
+  "category": "ENVIRONMENT",
+  "purpose": "Enhance volumetric depth and edge billow definition of CS2 Source 2 responsive smoke grenades.",
+  "suitable_scene_types": [
+    "TENSION",
+    "ENGAGEMENT"
+  ],
+  "trigger_conditions": [
+    "Active smoke grenade blooming in combat zone"
+  ],
+  "required_visual_conditions": "Visible volumetric smoke cloud in midground.",
+  "required_source_footage": "CS2 gameplay footage.",
+  "required_masks_or_mattes": "Smoke luma qualifier.",
+  "recommended_timing": "Continuous during smoke dissipation.",
+  "intensity_ranges": {
+    "mid_detail": "+25%",
+    "contrast": "+10%"
+  },
+  "recommended_color_palette": "Cool charcoal smoke (#334155).",
+  "fusion_node_structure": "MediaIn1 -> UnsharpMask1 (Radius: 2.5, Amount: 0.6) masked by MidtonesQualifier1 -> MediaOut1",
+  "resolve_implementation_instructions": "Color Page: Midtone Detail slider set to +35 on qualified smoke node.",
+  "required_plugins": "Native DaVinci Resolve Built-in",
+  "free_studio_compatibility": "Free 21.0 & Studio",
+  "hardware_requirements": "Negligible load",
+  "reference_examples": [
+    "ssstik.io_1794490531192.mp4 smoke push"
+  ],
+  "confidence": "INFERRED",
+  "qa_procedure": "Ensure sharpening does not introduce noisy grain in deep shadows."
+}

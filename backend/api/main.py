@@ -1521,6 +1521,238 @@ def get_reference_card(ref_id: str) -> dict[str, Any]:
     return {"reference_id": ref_id, "content": content, "path": str(card_path.resolve())}
 
 
+# ---------------------------------------------------------------------------
+# Phase 3.5: AI VFX Intelligence & Decision Engine Endpoints
+# ---------------------------------------------------------------------------
+import json
+from backend.cinematic.vfx_decision_engine import (
+    VfxDecisionEngine,
+    VfxSceneContext,
+    VfxDecision,
+)
+
+_vfx_engine = VfxDecisionEngine()
+
+
+@app.get("/api/cinematic/vfx/catalog", tags=["cinematic"])
+def get_vfx_catalog(category: Optional[str] = None) -> dict[str, Any]:
+    """Retrieve full catalog of 21 actionable VFX recipes across 7 categories."""
+    catalog = _vfx_engine.catalog
+    if category:
+        cat_upper = category.upper()
+        catalog = {k: v for k, v in catalog.items() if v.get("category", "").upper() == cat_upper}
+    return {
+        "count": len(catalog),
+        "category_filter": category,
+        "effects": list(catalog.values()),
+    }
+
+
+@app.post("/api/cinematic/vfx/decide", tags=["cinematic"])
+async def decide_vfx(request: Request) -> dict[str, Any]:
+    """Context-aware effect selection and rejection rationale for a shot/scene."""
+    data = await request.json()
+    tier = data.get("requested_tier", "SUBTLE")
+    ctx = VfxSceneContext(
+        scene_id=data.get("scene_id", "scene_default"),
+        scene_category=data.get("scene_category", "ENGAGEMENT"),
+        camera_type=data.get("camera_type", "FIRST_PERSON"),
+        fps=float(data.get("fps", 60.0)),
+        time_seconds=float(data.get("time_seconds", 0.0)),
+        duration_seconds=float(data.get("duration_seconds", 2.5)),
+        is_kill_event=bool(data.get("is_kill_event", False)),
+        is_headshot=bool(data.get("is_headshot", False)),
+        is_ace_kill=bool(data.get("is_ace_kill", False)),
+        is_clutch=bool(data.get("is_clutch", False)),
+        player_visible=bool(data.get("player_visible", True)),
+        enemy_visible=bool(data.get("enemy_visible", False)),
+        weapon_visible=bool(data.get("weapon_visible", True)),
+        is_outdoor_sky_visible=bool(data.get("is_outdoor_sky_visible", False)),
+        has_music_drop=bool(data.get("has_music_drop", False)),
+        rapid_kill_interval=data.get("rapid_kill_interval"),
+        current_editing_intensity=float(data.get("current_editing_intensity", 0.5)),
+        user_liked_effects=data.get("user_liked_effects", []),
+        user_disliked_effects=data.get("user_disliked_effects", []),
+    )
+    decision = _vfx_engine.decide_vfx(ctx, requested_tier=tier)
+    from dataclasses import asdict
+    return asdict(decision)
+
+
+@app.post("/api/cinematic/vfx/compare", tags=["cinematic"])
+async def compare_vfx_tiers(request: Request) -> dict[str, Any]:
+    """Generate 3-tier comparison: Clean vs Subtle vs Strong Cinematic."""
+    data = await request.json()
+    ctx = VfxSceneContext(
+        scene_id=data.get("scene_id", "scene_compare"),
+        scene_category=data.get("scene_category", "ACE_CLIMAX"),
+        camera_type=data.get("camera_type", "ORBIT_CAMERA"),
+        fps=float(data.get("fps", 60.0)),
+        time_seconds=float(data.get("time_seconds", 15.0)),
+        duration_seconds=float(data.get("duration_seconds", 3.0)),
+        is_kill_event=bool(data.get("is_kill_event", True)),
+        is_headshot=bool(data.get("is_headshot", False)),
+        is_ace_kill=bool(data.get("is_ace_kill", True)),
+        is_clutch=bool(data.get("is_clutch", False)),
+        player_visible=bool(data.get("player_visible", True)),
+        enemy_visible=bool(data.get("enemy_visible", False)),
+        weapon_visible=bool(data.get("weapon_visible", False)),
+        is_outdoor_sky_visible=bool(data.get("is_outdoor_sky_visible", True)),
+        has_music_drop=bool(data.get("has_music_drop", True)),
+        rapid_kill_interval=data.get("rapid_kill_interval"),
+        current_editing_intensity=float(data.get("current_editing_intensity", 0.8)),
+        user_liked_effects=data.get("user_liked_effects", []),
+        user_disliked_effects=data.get("user_disliked_effects", []),
+    )
+    tiers = _vfx_engine.compare_scene_tiers(ctx)
+    from dataclasses import asdict
+    return {k: asdict(v) for k, v in tiers.items()}
+
+
+@app.get("/api/cinematic/vfx/presets", tags=["cinematic"])
+def list_vfx_presets() -> dict[str, Any]:
+    """List available native Fusion .setting presets in assets/fusion_presets/."""
+    presets_dir = pathlib.Path("assets/fusion_presets")
+    if not presets_dir.is_dir():
+        return {"count": 0, "presets": []}
+    presets = []
+    for p in sorted(presets_dir.glob("*.setting")):
+        presets.append({
+            "filename": p.name,
+            "name": p.stem.replace("_", " "),
+            "size_bytes": p.stat().st_size,
+            "path": str(p.as_posix()),
+            "url": f"/api/cinematic/vfx/presets/{p.name}/download",
+        })
+    return {"count": len(presets), "presets": presets}
+
+
+@app.get("/api/cinematic/vfx/presets/{preset_name}/download", tags=["cinematic"])
+def download_vfx_preset(preset_name: str):
+    """Download individual Fusion .setting file for direct drag-and-drop into Resolve."""
+    preset_path = pathlib.Path("assets/fusion_presets") / preset_name
+    if not preset_path.is_file():
+        raise HTTPException(status_code=404, detail=f"Preset '{preset_name}' not found.")
+    return FileResponse(str(preset_path), media_type="text/plain", filename=preset_name)
+
+
+@app.get("/api/cinematic/vfx/tests", tags=["cinematic"])
+def get_vfx_validation_tests() -> dict[str, Any]:
+    """Retrieve list of generated real video validation tests and contact sheets."""
+    test_dir = pathlib.Path("renders/vfx_validation_tests")
+    if not test_dir.is_dir():
+        return {"count": 0, "tests": []}
+
+    test_manifests = [
+        {
+            "id": "test_01",
+            "title": "Slow-Motion Quality Matrix (4-Way)",
+            "description": "100% Original vs 75% Retime vs 50% Frame Blend vs 50% Optical Flow",
+            "video": "test_01_slowmo_matrix.mp4",
+            "thumbnail": "test_01_slowmo_matrix.png",
+            "category": "TIME_MANIPULATION",
+        },
+        {
+            "id": "test_02",
+            "title": "Player Outline & Gold Climax Bloom",
+            "description": "Raw In-Game Hero Orbit vs Fusion Player Outline & Golden Climax Bloom",
+            "video": "test_02_player_outline_climax.mp4",
+            "thumbnail": "test_02_player_outline_climax.png",
+            "category": "SUBJECT_HIGHLIGHT",
+        },
+        {
+            "id": "test_03",
+            "title": "Weapon Specular Rim Light & Hands",
+            "description": "Raw POV Weapon vs Specular Rim Light & High-frequency Clarify",
+            "video": "test_03_weapon_hands_accent.mp4",
+            "thumbnail": "test_03_weapon_hands_accent.png",
+            "category": "WEAPON_AND_HANDS",
+        },
+        {
+            "id": "test_04",
+            "title": "Egyptian Sandstone & Sky Grade",
+            "description": "Engine Default Flat Lighting vs Egyptian Sandstone & Azure Sky Split",
+            "video": "test_04_sky_sandstone_grade.mp4",
+            "thumbnail": "test_04_sky_sandstone_grade.png",
+            "category": "ENVIRONMENT",
+        },
+        {
+            "id": "test_05",
+            "title": "Dynamic Directional Whip Pan",
+            "description": "Seamless camera wipe transition between shoulder approach and POV engagement",
+            "video": "test_05_whip_pan_transition.mp4",
+            "thumbnail": "test_05_whip_pan_transition.png",
+            "category": "CAMERA_AND_MOTION",
+        },
+        {
+            "id": "test_06",
+            "title": "3-Tier Treatment Comparison",
+            "description": "Clean Original vs Subtle (Recommended) vs Strong Stylized Climax",
+            "video": "test_06_three_tier_comparison.mp4",
+            "thumbnail": "test_06_three_tier_comparison.png",
+            "category": "COMPOSITING",
+        },
+    ]
+
+    items = []
+    for m in test_manifests:
+        vid_p = test_dir / m["video"]
+        thumb_p = test_dir / m["thumbnail"]
+        items.append({
+            **m,
+            "video_ready": vid_p.is_file() and vid_p.stat().st_size > 0,
+            "video_url": f"/renders/vfx_validation_tests/{m['video']}",
+            "thumbnail_ready": thumb_p.is_file(),
+            "thumbnail_url": f"/renders/vfx_validation_tests/{m['thumbnail']}",
+            "video_size_bytes": vid_p.stat().st_size if vid_p.is_file() else 0,
+        })
+
+    return {"count": len(items), "tests": items}
+
+
+@app.post("/api/cinematic/vfx/feedback", tags=["cinematic"])
+async def submit_vfx_feedback(request: Request) -> dict[str, Any]:
+    """Records user simple Like / Dislike preference on VFX effects and decisions."""
+    data = await request.json()
+    effect_id = data.get("effect_id")
+    vote = data.get("vote")  # "like", "dislike", None
+    note = data.get("note", "")
+
+    fb_file = pathlib.Path("reference_library/effect_intelligence/user_feedback.json")
+    records = []
+    if fb_file.is_file():
+        try:
+            with open(fb_file, "r", encoding="utf-8") as f:
+                records = json.load(f)
+        except Exception:
+            records = []
+
+    records = [r for r in records if r.get("effect_id") != effect_id]
+    if vote:
+        records.append({
+            "effect_id": effect_id,
+            "vote": vote,
+            "note": note,
+            "timestamp": "2026-11-12T17:15:00Z"
+        })
+
+    with open(fb_file, "w", encoding="utf-8") as f:
+        json.dump(records, f, indent=2, ensure_ascii=False)
+
+    return {"status": "success", "effect_id": effect_id, "vote": vote}
+
+
+@app.get("/api/cinematic/vfx/plugin-research", tags=["cinematic"])
+def get_vfx_plugin_research() -> dict[str, Any]:
+    """Retrieve markdown Plugin Lab research report."""
+    res_path = pathlib.Path("reference_library/effect_intelligence/PLUGIN_RESEARCH.md")
+    if not res_path.is_file():
+        raise HTTPException(status_code=404, detail="Plugin research document not found.")
+    with open(res_path, "r", encoding="utf-8") as f:
+        content = f.read()
+    return {"content": content, "path": str(res_path.resolve())}
+
+
 
 
 

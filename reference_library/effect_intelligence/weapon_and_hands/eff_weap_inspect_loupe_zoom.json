@@ -1,0 +1,33 @@
+{
+  "effect_id": "EFF_WEAP_INSPECT_LOUPE_ZOOM",
+  "name": "Tactical Weapon Inspect Circular Loupe",
+  "category": "WEAPON_AND_HANDS",
+  "purpose": "Magnify weapon sticker or inspect detail with a circular glass distortion lens.",
+  "suitable_scene_types": [
+    "APPROACH",
+    "AFTERMATH"
+  ],
+  "trigger_conditions": [
+    "Player presses weapon inspect key",
+    "Post-round victory pause"
+  ],
+  "required_visual_conditions": "Weapon static during inspect flourish.",
+  "required_source_footage": "POV footage.",
+  "required_masks_or_mattes": "Circular mask with chromatic aberration ring.",
+  "recommended_timing": "1.2s to 2.0s duration.",
+  "intensity_ranges": {
+    "zoom_scale": "1.4x to 1.8x",
+    "border_width": "3px"
+  },
+  "recommended_color_palette": "Cyan ring (#38bdf8) with subtle glass distortion.",
+  "fusion_node_structure": "MediaIn1 -> Transform1 (Scale: 1.6, Center: [0.72, 0.35]) -> EllipseMask1 -> Merge1 over MediaIn1 -> Paint1 (Ring border)",
+  "resolve_implementation_instructions": "Fusion Page or Loupe Blaster Free: Place magnifying circle over weapon decal with cubic ease in/out.",
+  "required_plugins": "Native Fusion or Loupe Blaster Free",
+  "free_studio_compatibility": "Free 21.0 & Studio",
+  "hardware_requirements": "Low GPU cost",
+  "reference_examples": [
+    "European Filmmaker Loupe Blaster standard edit"
+  ],
+  "confidence": "VERIFIED",
+  "qa_procedure": "Check lens border anti-aliasing; ensure center coordinates lock accurately to weapon movement."
+}

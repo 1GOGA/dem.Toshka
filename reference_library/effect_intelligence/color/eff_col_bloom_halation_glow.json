@@ -1,0 +1,33 @@
+{
+  "effect_id": "EFF_COL_BLOOM_HALATION_GLOW",
+  "name": "Filmic Muzzle Flash & Specular Halation",
+  "category": "COLOR",
+  "purpose": "Recreate authentic optical film halation around bright muzzle bursts, sun reflections and sparks.",
+  "suitable_scene_types": [
+    "ENGAGEMENT",
+    "MULTIKILL"
+  ],
+  "trigger_conditions": [
+    "Rifle muzzle discharge",
+    "HE grenade blast"
+  ],
+  "required_visual_conditions": "Pixel luminance exceeding 85 IRE (pure white cores).",
+  "required_source_footage": "CS2 gameplay footage.",
+  "required_masks_or_mattes": "Highlight threshold keyer.",
+  "recommended_timing": "0.05s to 0.10s (2 to 4 frames per gunshot).",
+  "intensity_ranges": {
+    "bloom_threshold": "0.75",
+    "halation_spread": "12 px"
+  },
+  "recommended_color_palette": "Warm orange-red edge bleed (#f97316).",
+  "fusion_node_structure": "MediaIn1 -> LumaKeyer1 (Threshold: 0.8) -> Blur1 (Radius: 8) -> ColorCorrector1 (Tint: Red-Orange) -> Merge1 (Screen) over MediaIn1",
+  "resolve_implementation_instructions": "Fusion Page or Glow Expo: Apply threshold glow with warm red-orange tint to highlight fringes.",
+  "required_plugins": "Native Fusion Built-in / Glow Expo",
+  "free_studio_compatibility": "Free 21.0 & Studio",
+  "hardware_requirements": "GPU OpenCL verified",
+  "reference_examples": [
+    "Друзей не меняют на бабло @ 31.4s"
+  ],
+  "confidence": "VERIFIED",
+  "qa_procedure": "Check that halation does not turn entire weapon red; confine to specular fringe pixels."
+}

@@ -1,0 +1,31 @@
+{
+	Tools = ordered() {
+		ACE_Climax = GroupOperator {
+			Inputs = ordered() {
+				Input1 = InstanceInput { SourceOp = "MediaIn", Source = "Output", },
+			},
+			Outputs = ordered() {
+				Output1 = InstanceOutput { SourceOp = "VignetteNode", Source = "Output", },
+			},
+			Tools = ordered() {
+				MediaIn = PipeRouter { ViewInfo = PipeRouterInfo { Pos = { -180, 0 } }, },
+				WarmBloom = SoftGlow {
+					Inputs = {
+						Input = Input { SourceOp = "MediaIn", Source = "Output", },
+						Gain = Input { Value = 1.25, },
+						Threshold = Input { Value = 0.65, },
+					},
+					ViewInfo = OperatorInfo { Pos = { -60, 0 } },
+				},
+				VignetteNode = ColorCorrector {
+					Inputs = {
+						Input = Input { SourceOp = "WarmBloom", Source = "Output", },
+						MasterGain = Input { Value = 1.05, },
+						MasterSaturation = Input { Value = 1.15, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 60, 0 } },
+				},
+			},
+		}
+	}
+}

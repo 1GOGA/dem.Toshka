@@ -1,0 +1,30 @@
+{
+	Tools = ordered() {
+		SpeedRamp_Accent = GroupOperator {
+			Inputs = ordered() {
+				Input1 = InstanceInput { SourceOp = "MediaIn", Source = "Output", },
+			},
+			Outputs = ordered() {
+				Output1 = InstanceOutput { SourceOp = "DirBlur", Source = "Output", },
+			},
+			Tools = ordered() {
+				MediaIn = PipeRouter { ViewInfo = PipeRouterInfo { Pos = { -150, 0 } }, },
+				TimeScale = TimeSpeed {
+					Inputs = {
+						Input = Input { SourceOp = "MediaIn", Source = "Output", },
+						Speed = Input { Value = 3.5, },
+						InterpolateBetweenFrames = Input { Value = 1, },
+					},
+					ViewInfo = OperatorInfo { Pos = { -20, 0 } },
+				},
+				DirBlur = DirectionalBlur {
+					Inputs = {
+						Input = Input { SourceOp = "TimeScale", Source = "Output", },
+						Length = Input { Value = 0.06, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 100, 0 } },
+				},
+			},
+		}
+	}
+}

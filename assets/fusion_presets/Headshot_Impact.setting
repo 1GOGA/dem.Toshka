@@ -1,0 +1,29 @@
+{
+	Tools = ordered() {
+		Headshot_Impact = GroupOperator {
+			Inputs = ordered() {
+				Input1 = InstanceInput { SourceOp = "MediaIn", Source = "Output", },
+			},
+			Outputs = ordered() {
+				Output1 = InstanceOutput { SourceOp = "FlashGrade", Source = "Output", },
+			},
+			Tools = ordered() {
+				MediaIn = PipeRouter { ViewInfo = PipeRouterInfo { Pos = { -150, 0 } }, },
+				MicroPunch = Transform {
+					Inputs = {
+						Input = Input { SourceOp = "MediaIn", Source = "Output", },
+						Size = Input { Value = 1.06, },
+					},
+					ViewInfo = OperatorInfo { Pos = { -30, 0 } },
+				},
+				FlashGrade = BrightnessContrast {
+					Inputs = {
+						Input = Input { SourceOp = "MicroPunch", Source = "Output", },
+						Gain = Input { Value = 1.35, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 90, 0 } },
+				},
+			},
+		}
+	}
+}

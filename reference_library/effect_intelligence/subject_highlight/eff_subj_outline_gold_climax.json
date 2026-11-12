@@ -1,0 +1,33 @@
+{
+  "effect_id": "EFF_SUBJ_OUTLINE_GOLD_CLIMAX",
+  "name": "Climax Ace Warm Gold Silhouette Glow",
+  "category": "SUBJECT_HIGHLIGHT",
+  "purpose": "Celebrate round-winning 5K ACE with a warm regal golden aura around the hero during orbit camera.",
+  "suitable_scene_types": [
+    "ACE_CLIMAX",
+    "AFTERMATH"
+  ],
+  "trigger_conditions": [
+    "5th kill confirmation",
+    "Orbit camera around victorious player"
+  ],
+  "required_visual_conditions": "Hero model centered in 3rd-person circular camera path.",
+  "required_source_footage": "HLAE orbit campath footage.",
+  "required_masks_or_mattes": "Elliptical feathered mask tracking hero torso.",
+  "recommended_timing": "2.0s to 3.0s (holds through fade to black).",
+  "intensity_ranges": {
+    "glow_gain": "1.5 to 2.2",
+    "color_warmth": "Gold #f59e0b"
+  },
+  "recommended_color_palette": "Pure gold (#ffd700), warm amber (#d97706), champagne highlights (#fffbeb).",
+  "fusion_node_structure": "MediaIn1 -> BrightnessContrast1 -> Glow1 (Glow: 0.85, Color: Gold) -> DirectionalBlur1 (subtle ray sweep) -> Merge1 (Screen) -> MediaOut1",
+  "resolve_implementation_instructions": "Fusion/Color Page: Power window on hero in Color page, raise Gain to 1.15, warm tint to 25° hue; layer with Fusion soft golden bloom.",
+  "required_plugins": "Native DaVinci Resolve Built-in",
+  "free_studio_compatibility": "Free 21.0 & Studio",
+  "hardware_requirements": "AMD RX 5700 XT verified",
+  "reference_examples": [
+    "ACE_FINAL_V3 @ 16.5s-18.5s"
+  ],
+  "confidence": "VERIFIED",
+  "qa_procedure": "Verify hero silhouette remains legible; avoid clipping highlight details on helmet or weapon."
+}

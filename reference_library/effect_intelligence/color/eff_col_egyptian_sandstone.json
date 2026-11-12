@@ -1,0 +1,36 @@
+{
+  "effect_id": "EFF_COL_EGYPTIAN_SANDSTONE",
+  "name": "Egyptian Sandstone Filmic LUT Grade",
+  "category": "COLOR",
+  "purpose": "Create cohesive cinematic film look on desert maps (Anubis, Mirage, Dust2) with rich warm stone tones.",
+  "suitable_scene_types": [
+    "ESTABLISHING",
+    "APPROACH",
+    "ENGAGEMENT",
+    "ACE_CLIMAX"
+  ],
+  "trigger_conditions": [
+    "Desert or sandstone map environment"
+  ],
+  "required_visual_conditions": "Natural outdoor sunlight.",
+  "required_source_footage": "Clean gameplay footage.",
+  "required_masks_or_mattes": "None (global grade).",
+  "recommended_timing": "Full scene duration.",
+  "intensity_ranges": {
+    "lift": "-0.015",
+    "gain": "1.04",
+    "sat": "1.10"
+  },
+  "recommended_color_palette": "Golden sandstone (#f4ecd8), deep teal shadows (#1a1d24).",
+  "fusion_node_structure": "MediaIn1 -> OCIOFileTransform1 / FileLUT1 (Egyptian_Sandstone.cube) -> MediaOut1",
+  "resolve_implementation_instructions": "Color Page: Node 1 Primaries Lift -0.015, Gain 1.04; Node 2 Custom S-Curve; Node 3 Warm shadow tint.",
+  "required_plugins": "Native DaVinci Resolve Built-in",
+  "free_studio_compatibility": "Free 21.0 & Studio",
+  "hardware_requirements": "Zero compute overhead",
+  "reference_examples": [
+    "ssstik.io_1794490695954.mp4",
+    "ACE_FINAL_V3 Master Color Grade"
+  ],
+  "confidence": "VERIFIED",
+  "qa_procedure": "Inspect skin tones on character arms; ensure values fall within safe broadcast rec.709 gamut."
+}

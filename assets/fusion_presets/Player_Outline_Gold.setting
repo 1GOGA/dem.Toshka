@@ -1,0 +1,55 @@
+{
+	Tools = ordered() {
+		Player_Outline_Gold = GroupOperator {
+			Inputs = ordered() {
+				Input1 = InstanceInput {
+					SourceOp = "MediaIn",
+					Source = "Output",
+				},
+			},
+			Outputs = ordered() {
+				Output1 = InstanceOutput {
+					SourceOp = "MergeFinal",
+					Source = "Output",
+				},
+			},
+			Tools = ordered() {
+				MediaIn = PipeRouter {
+					ViewInfo = PipeRouterInfo { Pos = { -220, 0 } },
+				},
+				LumaKeyer = LumaKeyer {
+					Inputs = {
+						Input = Input { SourceOp = "MediaIn", Source = "Output", },
+						Low = Input { Value = 0.60, },
+					},
+					ViewInfo = OperatorInfo { Pos = { -110, -40 } },
+				},
+				ColorTint = ColorCorrector {
+					Inputs = {
+						Input = Input { SourceOp = "LumaKeyer", Source = "Output", },
+						MasterHue = Input { Value = 0.08, }, -- Gold/Amber
+						MasterSaturation = Input { Value = 2.0, },
+						Gain = Input { Value = 1.8, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 0, -40 } },
+				},
+				Glow = Glow {
+					Inputs = {
+						Input = Input { SourceOp = "ColorTint", Source = "Output", },
+						Gain = Input { Value = 1.8, },
+						Glow = Input { Value = 0.8, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 110, -40 } },
+				},
+				MergeFinal = Merge {
+					Inputs = {
+						Background = Input { SourceOp = "MediaIn", Source = "Output", },
+						Foreground = Input { SourceOp = "Glow", Source = "Output", },
+						ApplyMode = Input { Value = "Screen", },
+					},
+					ViewInfo = OperatorInfo { Pos = { 220, 0 } },
+				},
+			},
+		}
+	}
+}

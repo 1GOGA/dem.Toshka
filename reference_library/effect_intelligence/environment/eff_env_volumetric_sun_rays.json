@@ -1,0 +1,32 @@
+{
+  "effect_id": "EFF_ENV_VOLUMETRIC_SUN_RAYS",
+  "name": "Volumetric God Rays & Atmosphere",
+  "category": "ENVIRONMENT",
+  "purpose": "Add warm volumetric sunlight beams spilling past doorway archways and columns.",
+  "suitable_scene_types": [
+    "ESTABLISHING",
+    "APPROACH"
+  ],
+  "trigger_conditions": [
+    "Direct sunlight entering shadow portal (Anubis connector, Mirage palace)"
+  ],
+  "required_visual_conditions": "Strong key light source shining into shaded interior.",
+  "required_source_footage": "Scenic or approach camera footage.",
+  "required_masks_or_mattes": "Threshold highlight mask.",
+  "recommended_timing": "1.5s to 3.0s.",
+  "intensity_ranges": {
+    "ray_length": "0.15 to 0.35",
+    "ray_opacity": "0.25 to 0.40"
+  },
+  "recommended_color_palette": "Warm sunlight amber (#fef3c7).",
+  "fusion_node_structure": "MediaIn1 -> LumaKeyer1 (Highs only) -> Rays1 (Angle: 45, Length: 0.25, Decay: 0.95) -> Merge1 (Screen) -> MediaOut1",
+  "resolve_implementation_instructions": "Fusion Page: Rays node connected to bright sun highlights, angled along sunlight vector, screen-blended with soft opacity.",
+  "required_plugins": "Native Fusion Built-in",
+  "free_studio_compatibility": "Free 21.0 & Studio",
+  "hardware_requirements": "OpenCL rays calculation (< 80ms render)",
+  "reference_examples": [
+    "Anubis Ace Take 2 Shoulder approach archway"
+  ],
+  "confidence": "VERIFIED",
+  "qa_procedure": "Ensure rays do not obscure enemy silhouettes or crosshair reticle."
+}

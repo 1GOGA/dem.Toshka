@@ -1,0 +1,41 @@
+{
+	Tools = ordered() {
+		Hands_AccentGlow = GroupOperator {
+			Inputs = ordered() {
+				Input1 = InstanceInput { SourceOp = "MediaIn", Source = "Output", },
+			},
+			Outputs = ordered() {
+				Output1 = InstanceOutput { SourceOp = "MergeFinal", Source = "Output", },
+			},
+			Tools = ordered() {
+				MediaIn = PipeRouter { ViewInfo = PipeRouterInfo { Pos = { -200, 0 } }, },
+				MaskBottom = RectangleMask {
+					Inputs = {
+						Center = Input { Value = { 0.5, 0.2 }, },
+						Width = Input { Value = 1.0, },
+						Height = Input { Value = 0.45, },
+						SoftEdge = Input { Value = 0.15, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 0, -100 } },
+				},
+				FastGlow1 = FastGlow {
+					Inputs = {
+						Input = Input { SourceOp = "MediaIn", Source = "Output", },
+						EffectMask = Input { SourceOp = "MaskBottom", Source = "Mask", },
+						Gain = Input { Value = 1.25, },
+						Threshold = Input { Value = 0.65, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 0, -40 } },
+				},
+				MergeFinal = Merge {
+					Inputs = {
+						Background = Input { SourceOp = "MediaIn", Source = "Output", },
+						Foreground = Input { SourceOp = "FastGlow1", Source = "Output", },
+						Blend = Input { Value = 0.5, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 160, 0 } },
+				},
+			},
+		}
+	}
+}

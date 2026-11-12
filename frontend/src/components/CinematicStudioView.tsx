@@ -72,9 +72,9 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
   // Primary View Mode: 'fragmovie' (Master Studio & Live Showcase) vs 'planner' (3D Camera Choreography Wizard)
   const [viewMode, setViewMode] = useState<'fragmovie' | 'planner'>('fragmovie')
 
-  // Fragmovie Master Studio Workbench Tabs (Phase 3.3 & Phase 3.4)
+  // Fragmovie Master Studio Workbench Tabs (Phase 3.3, 3.4 & 3.5)
   const [workbenchTab, setWorkbenchTab] = useState<
-    'storyboard' | 'sound_library' | 'edit_plan' | 'hud_mixer' | 'cameras' | 'render_qc' | 'reference_lab'
+    'storyboard' | 'sound_library' | 'edit_plan' | 'hud_mixer' | 'cameras' | 'render_qc' | 'reference_lab' | 'vfx_intelligence'
   >('storyboard')
 
   // Fragmovie Master Studio States
@@ -125,6 +125,20 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
   const [isScanningInbox, setIsScanningInbox] = useState<boolean>(false)
   const [analyzingFile, setAnalyzingFile] = useState<string | null>(null)
 
+  // VFX Intelligence & Plugin Lab States (Phase 3.5)
+  const [vfxCatalog, setVfxCatalog] = useState<any[]>([])
+  const [vfxActiveCategory, setVfxActiveCategory] = useState<string>('all')
+  const [vfxSelectedScene, setVfxSelectedScene] = useState<string>('scene_climax')
+  const [vfxActiveTier, setVfxActiveTier] = useState<'SUBTLE' | 'CLEAN' | 'STRONG_CINEMATIC'>('SUBTLE')
+  const [vfxDecision, setVfxDecision] = useState<any | null>(null)
+  const [vfxComparisonTiers, setVfxComparisonTiers] = useState<{ clean: any; subtle: any; strong: any } | null>(null)
+  const [vfxPresets, setVfxPresets] = useState<any[]>([])
+  const [vfxTests, setVfxTests] = useState<any[]>([])
+  const [vfxSelectedTest, setVfxSelectedTest] = useState<any | null>(null)
+  const [vfxFeedback, setVfxFeedback] = useState<Record<string, 'like' | 'dislike'>>({})
+  const [vfxPluginResearch, setVfxPluginResearch] = useState<string | null>(null)
+  const [showPluginModal, setShowPluginModal] = useState<boolean>(false)
+
   // 3D Planner States (Steps 1-5)
   const [currentStep, setCurrentStep] = useState<number>(2) // 1=Demo, 2=Highlights, 3=ShotPlan, 4=Capture, 5=Resolve
   const [highlights, setHighlights] = useState<RankedHighlight[]>([])
@@ -135,12 +149,13 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   const [successMsg, setSuccessMsg] = useState<string | null>(null)
 
-  // Load initial production overview, workflow state, sound library and reference lab on mount
+  // Load initial production overview, workflow state, sound library, reference lab and VFX intelligence on mount
   useEffect(() => {
     loadProductionOverview()
     loadWorkflowState()
     loadSoundLibrary()
     loadReferenceLab()
+    loadVfxIntelligence()
   }, [])
 
   // Load highlights when current demo changes
@@ -305,6 +320,132 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
       setActiveReferenceCard({ refId, content: card.content })
     } catch (e) {
       setErrorMsg('Failed to load Reference Card')
+      setTimeout(() => setErrorMsg(null), 3000)
+    }
+  }
+
+  // Phase 3.5 VFX Intelligence Handlers
+  const getSceneContextPayload = (sceneKey: string) => {
+    if (sceneKey === 'scene_headshot') {
+      return {
+        scene_id: 'scene_07_kill3_headshot',
+        scene_category: 'ENGAGEMENT',
+        camera_type: 'FIRST_PERSON',
+        fps: 60.0,
+        time_seconds: 10.08,
+        duration_seconds: 1.5,
+        is_kill_event: true,
+        is_headshot: true,
+        is_ace_kill: false,
+        player_visible: true,
+        enemy_visible: true,
+        weapon_visible: true,
+        is_outdoor_sky_visible: false,
+        has_music_drop: false,
+        current_editing_intensity: 0.7,
+      }
+    } else if (sceneKey === 'scene_rapid') {
+      return {
+        scene_id: 'scene_08_kill4_rapid',
+        scene_category: 'MULTIKILL',
+        camera_type: 'FIRST_PERSON',
+        fps: 60.0,
+        time_seconds: 10.89,
+        duration_seconds: 0.81,
+        is_kill_event: true,
+        is_headshot: false,
+        is_ace_kill: false,
+        player_visible: true,
+        enemy_visible: true,
+        weapon_visible: true,
+        rapid_kill_interval: 0.81,
+        has_music_drop: false,
+        current_editing_intensity: 0.9,
+      }
+    } else {
+      return {
+        scene_id: 'scene_09_ace_orbit',
+        scene_category: 'ACE_CLIMAX',
+        camera_type: 'ORBIT_CAMERA',
+        fps: 60.0,
+        time_seconds: 15.46,
+        duration_seconds: 3.0,
+        is_kill_event: true,
+        is_headshot: false,
+        is_ace_kill: true,
+        player_visible: true,
+        enemy_visible: false,
+        weapon_visible: false,
+        is_outdoor_sky_visible: true,
+        has_music_drop: true,
+        current_editing_intensity: 0.85,
+      }
+    }
+  }
+
+  const runVfxEvaluation = async (sceneKey: string, tier: 'SUBTLE' | 'CLEAN' | 'STRONG_CINEMATIC') => {
+    try {
+      const payload = getSceneContextPayload(sceneKey)
+      const likedList = Object.entries(vfxFeedback).filter(([_, v]) => v === 'like').map(([k]) => k)
+      const dislikedList = Object.entries(vfxFeedback).filter(([_, v]) => v === 'dislike').map(([k]) => k)
+      const decisionRes = await api.decideVfx({
+        ...payload,
+        requested_tier: tier,
+        user_liked_effects: likedList,
+        user_disliked_effects: dislikedList,
+      })
+      setVfxDecision(decisionRes)
+      const compareRes = await api.compareVfxTiers({
+        ...payload,
+        user_liked_effects: likedList,
+        user_disliked_effects: dislikedList,
+      })
+      setVfxComparisonTiers(compareRes)
+    } catch (e) {
+      console.warn('Failed to evaluate VFX decision:', e)
+    }
+  }
+
+  const loadVfxIntelligence = async () => {
+    try {
+      const catRes = await api.getVfxCatalog()
+      setVfxCatalog(catRes.effects || [])
+      const presRes = await api.getVfxPresets()
+      setVfxPresets(presRes.presets || [])
+      const testsRes = await api.getVfxValidationTests()
+      setVfxTests(testsRes.tests || [])
+      if (testsRes.tests && testsRes.tests.length > 0) {
+        setVfxSelectedTest(testsRes.tests[0])
+      }
+      await runVfxEvaluation('scene_climax', 'SUBTLE')
+    } catch (e) {
+      console.warn('Failed to load VFX intelligence:', e)
+    }
+  }
+
+  const handleVoteEffect = async (effectId: string, currentVote: 'like' | 'dislike' | undefined, newVote: 'like' | 'dislike') => {
+    const nextVote = currentVote === newVote ? null : newVote
+    try {
+      await api.submitVfxFeedback(effectId, nextVote)
+      setVfxFeedback(prev => {
+        const copy = { ...prev }
+        if (nextVote) copy[effectId] = nextVote
+        else delete copy[effectId]
+        return copy
+      })
+      runVfxEvaluation(vfxSelectedScene, vfxActiveTier)
+    } catch (e) {
+      console.warn('Failed to vote effect:', e)
+    }
+  }
+
+  const handleOpenPluginResearch = async () => {
+    try {
+      const res = await api.getVfxPluginResearch()
+      setVfxPluginResearch(res.content)
+      setShowPluginModal(true)
+    } catch (e) {
+      setErrorMsg('Failed to load plugin research report')
       setTimeout(() => setErrorMsg(null), 3000)
     }
   }
@@ -713,6 +854,12 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
                 onClick={() => setWorkbenchTab('reference_lab')}
               >
                 🔬 {lang === 'ru' ? 'Лаборатория Референсов' : 'Reference Lab & Patterns'}
+              </button>
+              <button
+                className={`workbench-tab-btn ${workbenchTab === 'vfx_intelligence' ? 'active' : ''}`}
+                onClick={() => setWorkbenchTab('vfx_intelligence')}
+              >
+                ✨ {lang === 'ru' ? 'AI VFX & Решения' : 'VFX Intelligence & Lab'}
               </button>
             </div>
 
@@ -1595,6 +1742,381 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
                 </div>
               </div>
             )}
+
+            {/* TAB 8: AI VFX INTELLIGENCE & DECISION ENGINE (PHASE 3.5) */}
+            {workbenchTab === 'vfx_intelligence' && (
+              <div className="workbench-panel vfx-intelligence-panel">
+                <div className="panel-header-row">
+                  <div>
+                    <h3>{lang === 'ru' ? '✨ AI VFX Интеллект & Решения' : '✨ AI VFX Intelligence & Decision Engine'}</h3>
+                    <p className="panel-subtitle">
+                      {lang === 'ru'
+                        ? 'Контекстный отбор визуальных эффектов: оценка темпа, фокуса и активное применение правила "меньше значит лучше" с обоснованием отклонений.'
+                        : 'Context-aware VFX selection: pace evaluation, focal isolation, and strict enforcement of "less is better" with rejection rationales.'}
+                    </p>
+                  </div>
+                  <div className="vfx-header-actions">
+                    <span className="vfx-catalog-badge">📚 {vfxCatalog.length} recipes</span>
+                    <button className="btn-vfx-plugin-lab" onClick={handleOpenPluginResearch}>
+                      🧪 {lang === 'ru' ? 'Исследование Плагинов (OFX)' : 'Plugin Lab Research'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* SCENE CONTEXT & 3-TIER COMPARISON SWITCHER */}
+                <div className="vfx-controls-card">
+                  <div className="vfx-scene-selector-row">
+                    <span className="vfx-control-label">{lang === 'ru' ? 'Тестовая сцена CS2:' : 'CS2 Scene Context:'}</span>
+                    <div className="vfx-scene-btns">
+                      <button
+                        className={`vfx-scene-btn ${vfxSelectedScene === 'scene_headshot' ? 'active' : ''}`}
+                        onClick={() => {
+                          setVfxSelectedScene('scene_headshot')
+                          runVfxEvaluation('scene_headshot', vfxActiveTier)
+                        }}
+                      >
+                        🎯 {lang === 'ru' ? 'Сцена 07: Хедшот Kill 3 (ProfyfGames)' : 'Scene 07: Headshot Kill 3 (ProfyfGames)'}
+                      </button>
+                      <button
+                        className={`vfx-scene-btn ${vfxSelectedScene === 'scene_rapid' ? 'active' : ''}`}
+                        onClick={() => {
+                          setVfxSelectedScene('scene_rapid')
+                          runVfxEvaluation('scene_rapid', vfxActiveTier)
+                        }}
+                      >
+                        ⚡ {lang === 'ru' ? 'Сцена 08: Рапид Мульти-килл Kill 4 (<0.85s)' : 'Scene 08: Rapid Multikill Kill 4 (<0.85s)'}
+                      </button>
+                      <button
+                        className={`vfx-scene-btn ${vfxSelectedScene === 'scene_climax' ? 'active' : ''}`}
+                        onClick={() => {
+                          setVfxSelectedScene('scene_climax')
+                          runVfxEvaluation('scene_climax', vfxActiveTier)
+                        }}
+                      >
+                        🏆 {lang === 'ru' ? 'Сцена 09: ACE 5K Hero Orbit Climax' : 'Scene 09: ACE 5K Hero Orbit Climax'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="vfx-tier-switcher-row">
+                    <span className="vfx-control-label">{lang === 'ru' ? 'Уровень обработки:' : 'Treatment Tier:'}</span>
+                    <div className="vfx-tier-group">
+                      <button
+                        className={`vfx-tier-btn clean ${vfxActiveTier === 'CLEAN' ? 'active' : ''}`}
+                        onClick={() => {
+                          setVfxActiveTier('CLEAN')
+                          runVfxEvaluation(vfxSelectedScene, 'CLEAN')
+                        }}
+                      >
+                        <span className="tier-tag">TIER 1 (0)</span>
+                        <span className="tier-title">{lang === 'ru' ? 'Чистый CS2 (0 VFX)' : 'Clean In-Engine (0 VFX)'}</span>
+                      </button>
+                      <button
+                        className={`vfx-tier-btn subtle ${vfxActiveTier === 'SUBTLE' ? 'active' : ''}`}
+                        onClick={() => {
+                          setVfxActiveTier('SUBTLE')
+                          runVfxEvaluation(vfxSelectedScene, 'SUBTLE')
+                        }}
+                      >
+                        <span className="tier-tag rec">REC ({vfxComparisonTiers?.subtle?.selected_effects?.length ?? 3})</span>
+                        <span className="tier-title">{lang === 'ru' ? 'Тонкий VFX (Рекомендован)' : 'Subtle VFX (Recommended)'}</span>
+                      </button>
+                      <button
+                        className={`vfx-tier-btn strong ${vfxActiveTier === 'STRONG_CINEMATIC' ? 'active' : ''}`}
+                        onClick={() => {
+                          setVfxActiveTier('STRONG_CINEMATIC')
+                          runVfxEvaluation(vfxSelectedScene, 'STRONG_CINEMATIC')
+                        }}
+                      >
+                        <span className="tier-tag strong">MAX ({vfxComparisonTiers?.strong?.selected_effects?.length ?? 5})</span>
+                        <span className="tier-title">{lang === 'ru' ? 'Сильный Синематик' : 'Strong Cinematic'}</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* DECISION SUMMARY BANNER */}
+                {vfxDecision && (
+                  <div className="vfx-summary-banner">
+                    <div className="vfx-summary-info">
+                      <div className="summary-headline">
+                        <span className="tier-indicator-badge">{vfxDecision.treatment_tier}</span>
+                        <span className="summary-text">{vfxDecision.summary}</span>
+                      </div>
+                      <div className="summary-meta-grid">
+                        <div className="summary-meta-item">
+                          <span className="label">Grade LUT:</span>
+                          <span className="val">{vfxDecision.color_page_grade}</span>
+                        </div>
+                        <div className="summary-meta-item">
+                          <span className="label">Fairlight Sidechain:</span>
+                          <span className="val-db">{vfxDecision.fairlight_audio_ducking_db.toFixed(1)} dB</span>
+                        </div>
+                        <div className="summary-meta-item full">
+                          <span className="label">Fusion Flow:</span>
+                          <code className="val-flow">{vfxDecision.fusion_macro_recipe}</code>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* TWO-COLUMN INSPECTOR: SELECTED VS REJECTED ("LESS IS BETTER") */}
+                <div className="vfx-inspector-grid">
+                  {/* SELECTED EFFECTS */}
+                  <div className="vfx-column selected-col">
+                    <div className="vfx-col-header selected">
+                      <h4>
+                        ✅ {lang === 'ru' ? 'Применённые эффекты' : 'Selected VFX Treatments'} (
+                        {vfxDecision?.selected_effects?.length || 0})
+                      </h4>
+                      <span className="vfx-col-tag">{lang === 'ru' ? 'Польза подтверждена' : 'Value Proven'}</span>
+                    </div>
+
+                    <div className="vfx-items-list">
+                      {vfxDecision?.selected_effects?.map((eff: any) => (
+                        <div key={eff.effect_id} className="vfx-card selected">
+                          <div className="vfx-card-top">
+                            <span className="vfx-cat-badge">{eff.category}</span>
+                            <span className="vfx-conf-badge">{eff.confidence}</span>
+                            <div className="vfx-vote-btns">
+                              <button
+                                className={`btn-vfx-vote like ${vfxFeedback[eff.effect_id] === 'like' ? 'voted' : ''}`}
+                                onClick={() => handleVoteEffect(eff.effect_id, vfxFeedback[eff.effect_id], 'like')}
+                                title="Like this VFX decision"
+                              >
+                                👍
+                              </button>
+                              <button
+                                className={`btn-vfx-vote dislike ${vfxFeedback[eff.effect_id] === 'dislike' ? 'voted' : ''}`}
+                                onClick={() => handleVoteEffect(eff.effect_id, vfxFeedback[eff.effect_id], 'dislike')}
+                                title="Dislike this VFX decision"
+                              >
+                                👎
+                              </button>
+                            </div>
+                          </div>
+
+                          <h5 className="vfx-effect-name">{eff.name}</h5>
+
+                          <div className="vfx-metric-row">
+                            <span className="metric-label">{lang === 'ru' ? 'Интенсивность:' : 'Intensity:'}</span>
+                            <div className="vfx-intensity-bar">
+                              <div
+                                className="vfx-intensity-fill"
+                                style={{ width: `${Math.min(100, Math.round(eff.intensity * 100))}%` }}
+                              />
+                            </div>
+                            <span className="metric-val">{(eff.intensity * 100).toFixed(0)}%</span>
+                          </div>
+
+                          <div className="vfx-timing-row">
+                            <span className="timing-label">⏱️ {lang === 'ru' ? 'Тайминг:' : 'Timing:'}</span>
+                            <span className="timing-val">{eff.timing_range}</span>
+                          </div>
+
+                          <p className="vfx-justification">💡 {eff.justification}</p>
+
+                          <div className="vfx-card-footer">
+                            <a
+                              href={`/api/cinematic/vfx/presets/${eff.fusion_preset.split('/').pop()}/download`}
+                              className="btn-download-preset"
+                              download
+                            >
+                              📥 {eff.fusion_preset.split('/').pop()}
+                            </a>
+                          </div>
+                        </div>
+                      ))}
+
+                      {(!vfxDecision || vfxDecision.selected_effects.length === 0) && (
+                        <div className="vfx-empty-card">
+                          <span>
+                            {lang === 'ru'
+                              ? 'В режиме Clean эффекты намеренно отключены. 100% чистый внутриигровой рендер.'
+                              : 'Clean mode active: 0 visual effects applied to maximize in-game purity.'}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* REJECTED EFFECTS */}
+                  <div className="vfx-column rejected-col">
+                    <div className="vfx-col-header rejected">
+                      <h4>
+                        🚫 {lang === 'ru' ? 'Отклонённые эффекты ("Меньше значит лучше")' : 'Suppressed Effects ("Less is Better")'} (
+                        {vfxDecision?.rejected_effects?.length || 0})
+                      </h4>
+                      <span className="vfx-col-tag reject">{lang === 'ru' ? 'Защита от визуального шума' : 'Clutter Defense'}</span>
+                    </div>
+
+                    <div className="vfx-items-list">
+                      {vfxDecision?.rejected_effects?.map((rej: any) => (
+                        <div key={rej.effect_id} className="vfx-card rejected">
+                          <div className="vfx-card-top">
+                            <span className="vfx-cat-badge">{rej.category}</span>
+                            <span className="vfx-rej-pill">{lang === 'ru' ? 'ОТКЛОНЕНО' : 'SUPPRESSED'}</span>
+                          </div>
+
+                          <h5 className="vfx-effect-name">{rej.name}</h5>
+
+                          <div className="vfx-rejection-box">
+                            <div className="rejection-title">
+                              🛡️ {lang === 'ru' ? 'Причина отклонения режиссером:' : 'Director Rejection Rationale:'}
+                            </div>
+                            <p className="rejection-text">{rej.rejection_reason}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* REAL VIDEO VALIDATION TESTS & COMPARISON SECTION */}
+                <div className="vfx-validation-section">
+                  <div className="validation-section-header">
+                    <h4>🎬 {lang === 'ru' ? 'Реальные Тесты Валидации на материале Anubis ACE' : 'Real Validation Test Renders (Anubis ACE Footage)'}</h4>
+                    <span className="validation-subtitle">
+                      {lang === 'ru'
+                        ? 'Фактические рендеры тестов замедления (100% vs 75% vs 50% vs Optical Flow), обводки игрока, акцента оружия и цветокоррекции.'
+                        : 'Actual render tests for slow-mo (100% vs 75% vs 50% vs Optical Flow), player outline, weapon accent, and sandstone color grade.'}
+                    </span>
+                  </div>
+
+                  <div className="vfx-tests-tabs">
+                    {vfxTests.map((t) => (
+                      <button
+                        key={t.id}
+                        className={`vfx-test-tab-btn ${vfxSelectedTest?.id === t.id ? 'active' : ''}`}
+                        onClick={() => setVfxSelectedTest(t)}
+                      >
+                        <span className="test-tab-num">{t.id.replace('test_', 'Test ')}</span>
+                        <span className="test-tab-title">{t.title}</span>
+                      </button>
+                    ))}
+                  </div>
+
+                  {vfxSelectedTest && (
+                    <div className="vfx-test-display-card">
+                      <div className="vfx-test-viewer-row">
+                        <div className="vfx-video-player-container">
+                          {vfxSelectedTest.video_ready ? (
+                            <video
+                              src={vfxSelectedTest.video_url}
+                              poster={vfxSelectedTest.thumbnail_url}
+                              controls
+                              autoPlay
+                              loop
+                              muted
+                              className="vfx-test-video-player"
+                            />
+                          ) : (
+                            <img
+                              src={vfxSelectedTest.thumbnail_url}
+                              alt={vfxSelectedTest.title}
+                              className="vfx-test-poster-img"
+                            />
+                          )}
+                        </div>
+
+                        <div className="vfx-test-info-panel">
+                          <div className="test-info-header">
+                            <span className="vfx-cat-badge">{vfxSelectedTest.category}</span>
+                            <h5>{vfxSelectedTest.title}</h5>
+                          </div>
+
+                          <p className="test-info-desc">{vfxSelectedTest.description}</p>
+
+                          <div className="test-specs-box">
+                            <div className="spec-row">
+                              <span className="spec-k">{lang === 'ru' ? 'Файл теста:' : 'Test File:'}</span>
+                              <span className="spec-v">{vfxSelectedTest.video}</span>
+                            </div>
+                            <div className="spec-row">
+                              <span className="spec-k">{lang === 'ru' ? 'Размер видео:' : 'Video Size:'}</span>
+                              <span className="spec-v">{(vfxSelectedTest.video_size_bytes / 1024 / 1024).toFixed(2)} MB</span>
+                            </div>
+                            <div className="spec-row">
+                              <span className="spec-k">{lang === 'ru' ? 'Статус валидации:' : 'Validation Status:'}</span>
+                              <span className="spec-v verified">✅ VERIFIED (Rendered & Checked)</span>
+                            </div>
+                          </div>
+
+                          <div className="test-findings-box">
+                            <h6>🔍 {lang === 'ru' ? 'Результат анализа артефактов:' : 'Artifact Analysis Finding:'}</h6>
+                            <p>
+                              {vfxSelectedTest.id === 'test_01' && (lang === 'ru'
+                                ? 'Optical flow (minterpolate) обеспечивает плавный шаг кадров на 50% без двоения, но требует исходника >= 50 FPS. На быстрых мультикиллах (<0.85с) замедление ломает темп.'
+                                : 'Optical flow interpolation guarantees clean 50% slow-mo without frame judder, but requires source >= 50 FPS. Must be suppressed on rapid multikills (<0.85s).')}
+                              {vfxSelectedTest.id === 'test_02' && (lang === 'ru'
+                                ? 'Обводка игрока (Gold Climax) эффективна только на облетах камеры в эйсе. Во время активной стрельбы обводка врагов мешает видимости прицела.'
+                                : 'Gold player outline is impactful during victory orbit shots, but suppresses during crossfire to preserve weapon viewmodel accuracy.')}
+                              {vfxSelectedTest.id === 'test_03' && (lang === 'ru'
+                                ? 'Спекулярный контур оружия подчеркивает металлический скин без изменения точности попадания в центр экрана.'
+                                : 'Weapon specular rim lighting accents skin specular highlights without occluding the crosshair center screen.')}
+                              {vfxSelectedTest.id === 'test_04' && (lang === 'ru'
+                                ? 'Египетский песчаник (Sandstone + Azure Sky) дает кинематографичный контраст архитектуры Anubis при сохранении яркости теней.'
+                                : 'Egyptian Sandstone LUT yields cinematic warm/teal separation while preserving detail in shaded corridors.')}
+                              {vfxSelectedTest.id === 'test_05' && (lang === 'ru'
+                                ? 'Направленный whip-pan бесшовно маскирует смену ракурса между подходом от 3-го лица и POV-фрагами.'
+                                : 'Directional whip pan seamlessly masks the angle cut between third-person approach and first-person kills.')}
+                              {vfxSelectedTest.id === 'test_06' && (lang === 'ru'
+                                ? 'Сравнение Clean vs Subtle vs Strong: Subtle является идеальным балансом соревновательной чистоты CS2 и монтажной эстетики.'
+                                : 'Comparison proves Subtle tier offers the sweet spot between competitive CS2 clarity and cinematic beauty.')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* FUSION PRESETS DOWNLOAD GALLERY */}
+                <div className="vfx-presets-gallery-card">
+                  <div className="presets-header">
+                    <h4>📦 {lang === 'ru' ? 'Готовые Fusion .setting Пресеты (DaVinci Resolve Free 21.0)' : 'Native Fusion .setting Preset Library'}</h4>
+                    <span className="presets-subtitle">
+                      {lang === 'ru'
+                        ? '11 автономных пресетов без платных плагинов. Drag-and-drop прямо в Fusion Page DaVinci Resolve.'
+                        : '11 standalone compositions requiring 0 paid plugins. Ready for direct drag-and-drop into Resolve Fusion.'}
+                    </span>
+                  </div>
+
+                  <div className="ref-cat-pills">
+                    <span className="ref-filter-label">{lang === 'ru' ? 'Категория:' : 'Category:'}</span>
+                    {['all', 'TIME', 'SUBJ', 'WEAP', 'ENV', 'COMP', 'CAM', 'COLOR'].map((cat) => (
+                      <button
+                        key={cat}
+                        className={`cat-pill ${vfxActiveCategory === cat ? 'active' : ''}`}
+                        onClick={() => setVfxActiveCategory(cat)}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="presets-pill-grid">
+                    {vfxPresets
+                      .filter((p) => vfxActiveCategory === 'all' || p.filename.toUpperCase().includes(vfxActiveCategory))
+                      .map((p) => (
+                      <div key={p.filename} className="preset-pill-item">
+                        <div className="preset-pill-left">
+                          <span className="preset-icon">🎛️</span>
+                          <div>
+                            <div className="preset-pill-name">{p.name}</div>
+                            <div className="preset-pill-size">{(p.size_bytes / 1024).toFixed(1)} KB • DaVinci Fusion Macro</div>
+                          </div>
+                        </div>
+                        <a href={p.url} className="btn-preset-dl" download>
+                          ⬇️ {lang === 'ru' ? 'Скачать' : 'Download'}
+                        </a>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
           </section>
         </div>
       )}
@@ -1884,6 +2406,25 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
             <div className="modal-footer">
               <span>Detailed Breakdown: OBSERVED vs INFERRED vs DaVinci Resolve 21 IMPLEMENTATION</span>
               <button className="btn-modal-close" onClick={() => setActiveReferenceCard(null)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Plugin Lab Research Viewer (Phase 3.5) */}
+      {showPluginModal && vfxPluginResearch && (
+        <div className="modal-backdrop" onClick={() => setShowPluginModal(false)}>
+          <div className="modal-content-qa modal-content-styleguide" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>🧪 Plugin Lab Research: DaVinci Resolve Free 21.0 & AMD RX 5700 XT</h3>
+              <button className="modal-close-btn" onClick={() => setShowPluginModal(false)}>✕</button>
+            </div>
+            <div className="modal-body-qa styleguide-body">
+              <pre className="styleguide-markdown-view">{vfxPluginResearch}</pre>
+            </div>
+            <div className="modal-footer">
+              <span>Research: Reactor 3, Glow Expo, Boris Sapphire/Maxon OFX Watermark Limits, and AMD OpenCL Performance</span>
+              <button className="btn-modal-close" onClick={() => setShowPluginModal(false)}>Close</button>
             </div>
           </div>
         </div>

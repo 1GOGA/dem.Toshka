@@ -1,0 +1,38 @@
+{
+	Tools = ordered() {
+		Weapon_RimLight = GroupOperator {
+			Inputs = ordered() {
+				Input1 = InstanceInput { SourceOp = "MediaIn", Source = "Output", },
+			},
+			Outputs = ordered() {
+				Output1 = InstanceOutput { SourceOp = "MergeFinal", Source = "Output", },
+			},
+			Tools = ordered() {
+				MediaIn = PipeRouter { ViewInfo = PipeRouterInfo { Pos = { -200, 0 } }, },
+				HighPass = HighPass {
+					Inputs = {
+						Input = Input { SourceOp = "MediaIn", Source = "Output", },
+						FilterWidth = Input { Value = 0.002, },
+					},
+					ViewInfo = OperatorInfo { Pos = { -80, -40 } },
+				},
+				Brightness = BrightnessContrast {
+					Inputs = {
+						Input = Input { SourceOp = "HighPass", Source = "Output", },
+						Gain = Input { Value = 1.6, },
+						ClipBlack = Input { Value = 1, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 40, -40 } },
+				},
+				MergeFinal = Merge {
+					Inputs = {
+						Background = Input { SourceOp = "MediaIn", Source = "Output", },
+						Foreground = Input { SourceOp = "Brightness", Source = "Output", },
+						ApplyMode = Input { Value = "Linear Light", },
+					},
+					ViewInfo = OperatorInfo { Pos = { 160, 0 } },
+				},
+			},
+		}
+	}
+}

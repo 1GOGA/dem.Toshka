@@ -1,0 +1,32 @@
+{
+  "effect_id": "EFF_COL_COLD_ESPORTS_NOIR",
+  "name": "Cold Tournament Esports Contrast Grade",
+  "category": "COLOR",
+  "purpose": "Elevate tactical competitive tension on urban/concrete maps (Inferno, Nuke, Overpass).",
+  "suitable_scene_types": [
+    "TENSION",
+    "ENGAGEMENT"
+  ],
+  "trigger_conditions": [
+    "Urban, industrial or rainy map environment"
+  ],
+  "required_visual_conditions": "Overcast or indoor fluorescent lighting.",
+  "required_source_footage": "Clean gameplay footage.",
+  "required_masks_or_mattes": "None.",
+  "recommended_timing": "Full scene duration.",
+  "intensity_ranges": {
+    "sat": "0.85",
+    "contrast": "+18%"
+  },
+  "recommended_color_palette": "Slate gray (#475569), cold cobalt shadows (#1e293b), sharp white highlights (#f8fafc).",
+  "fusion_node_structure": "MediaIn1 -> ColorCorrector1 (Sat: 0.85, Tint: Blue-Gray) -> BrightnessContrast1 (Contrast: 1.18) -> MediaOut1",
+  "resolve_implementation_instructions": "Color Page: Desaturate reds/greens slightly, lift shadow contrast, cool down color temperature to 5800K.",
+  "required_plugins": "Native DaVinci Resolve Built-in",
+  "free_studio_compatibility": "Free 21.0 & Studio",
+  "hardware_requirements": "Zero compute overhead",
+  "reference_examples": [
+    "ssstik.io_1794490531192.mp4 Inferno"
+  ],
+  "confidence": "VERIFIED",
+  "qa_procedure": "Verify enemy player silhouettes remain easily distinguishable from dark building walls."
+}

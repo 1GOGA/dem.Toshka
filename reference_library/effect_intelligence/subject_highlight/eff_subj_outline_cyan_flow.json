@@ -1,0 +1,33 @@
+{
+  "effect_id": "EFF_SUBJ_OUTLINE_CYAN_FLOW",
+  "name": "Tactical Cyan Player Glow",
+  "category": "SUBJECT_HIGHLIGHT",
+  "purpose": "Give cinematic esports sci-fi accent to hero player entry or weapon reload.",
+  "suitable_scene_types": [
+    "APPROACH",
+    "ESTABLISHING"
+  ],
+  "trigger_conditions": [
+    "Shoulder camera approach",
+    "Hero walking out of connector"
+  ],
+  "required_visual_conditions": "Hero character occupying central vertical third of frame.",
+  "required_source_footage": "3rd person or shoulder camera capture.",
+  "required_masks_or_mattes": "Tracked circular power window or subject mask.",
+  "recommended_timing": "1.0s to 2.0s duration.",
+  "intensity_ranges": {
+    "glow_radius": "10 to 25 px",
+    "blend": "0.40"
+  },
+  "recommended_color_palette": "Cyber cyan (#06b6d4) with electric blue falloff (#0284c7).",
+  "fusion_node_structure": "MediaIn1 -> LumaKeyer1 -> ColorCorrector1 (Hue: 195, Tint: Cyan) -> SoftGlow1 (Threshold: 0.5, Gain: 1.4) -> Merge1 (Screen) -> MediaOut1",
+  "resolve_implementation_instructions": "Fusion Page: LumaKeyer extracts bright highlights on player armor, ColorCorrector tints to cyan, SoftGlow adds optical aura.",
+  "required_plugins": "Native Fusion Built-in / Glow Expo optional",
+  "free_studio_compatibility": "Free 21.0 & Studio",
+  "hardware_requirements": "Real-time GPU playback",
+  "reference_examples": [
+    "Моя голова винтом @ 12.4s"
+  ],
+  "confidence": "VERIFIED",
+  "qa_procedure": "Check that cyan color does not corrupt hero weapon skin colors; mask out the hands if skin accuracy is required."
+}

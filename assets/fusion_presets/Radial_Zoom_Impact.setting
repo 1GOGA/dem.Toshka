@@ -1,0 +1,29 @@
+{
+	Tools = ordered() {
+		Radial_Zoom_Impact = GroupOperator {
+			Inputs = ordered() {
+				Input1 = InstanceInput { SourceOp = "MediaIn", Source = "Output", },
+			},
+			Outputs = ordered() {
+				Output1 = InstanceOutput { SourceOp = "RadialBlur1", Source = "Output", },
+			},
+			Tools = ordered() {
+				MediaIn = PipeRouter { ViewInfo = PipeRouterInfo { Pos = { -150, 0 } }, },
+				ZoomTransform = Transform {
+					Inputs = {
+						Input = Input { SourceOp = "MediaIn", Source = "Output", },
+						Size = Input { Value = 1.12, },
+					},
+					ViewInfo = OperatorInfo { Pos = { -20, 0 } },
+				},
+				RadialBlur1 = DirectionalBlur {
+					Inputs = {
+						Input = Input { SourceOp = "ZoomTransform", Source = "Output", },
+						Length = Input { Value = 0.08, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 100, 0 } },
+				},
+			},
+		}
+	}
+}

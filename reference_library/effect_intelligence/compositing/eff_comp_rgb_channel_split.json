@@ -1,0 +1,33 @@
+{
+  "effect_id": "EFF_COMP_RGB_CHANNEL_SPLIT",
+  "name": "Fatal Impact Chromatic Aberration",
+  "category": "COMPOSITING",
+  "purpose": "Simulate optical lens distortion and shockwave RGB split on lethal headshots or sniper recoil.",
+  "suitable_scene_types": [
+    "ENGAGEMENT",
+    "MULTIKILL"
+  ],
+  "trigger_conditions": [
+    "Fatal trigger pull",
+    "Heavy explosion impact"
+  ],
+  "required_visual_conditions": "Frame with high motion or sudden gunfire.",
+  "required_source_footage": "60 FPS capture.",
+  "required_masks_or_mattes": "None.",
+  "recommended_timing": "0.08s to 0.15s (5 to 9 frames).",
+  "intensity_ranges": {
+    "red_offset_px": "+3 px",
+    "blue_offset_px": "-3 px"
+  },
+  "recommended_color_palette": "Red-Cyan chromatic fringing.",
+  "fusion_node_structure": "MediaIn1 -> ChannelBooleans1 (Red) -> Transform1 (X: +3px)\nMediaIn1 -> ChannelBooleans2 (Green) -> Passthrough\nMediaIn1 -> ChannelBooleans3 (Blue) -> Transform2 (X: -3px)\nMerge back via ChannelBooleans Add -> MediaOut1",
+  "resolve_implementation_instructions": "Fusion Page: Split R/G/B channels with ChannelBooleans, apply horizontal micro-shift to Red and Blue, keyframe return to 0.",
+  "required_plugins": "Native Fusion Built-in",
+  "free_studio_compatibility": "Free 21.0 & Studio",
+  "hardware_requirements": "Real-time playback",
+  "reference_examples": [
+    "Друзей не меняют на бабло @ 14.8s"
+  ],
+  "confidence": "VERIFIED",
+  "qa_procedure": "Verify distortion snaps back to clean un-split image within 8 frames to avoid causing eye strain."
+}

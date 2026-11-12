@@ -1,0 +1,34 @@
+{
+  "effect_id": "EFF_TIME_INTERFRAG_SPEEDRAMP",
+  "name": "Inter-Frag Traversal Speed Ramp",
+  "category": "TIME_MANIPULATION",
+  "purpose": "Compress non-combat traversal corridors between separate kills while maintaining spatial orientation.",
+  "suitable_scene_types": [
+    "SPRAY_TRANSFER",
+    "MULTIKILL"
+  ],
+  "trigger_conditions": [
+    "Player running between kill 1 and kill 2",
+    "Corridor repositioning without active firing"
+  ],
+  "required_visual_conditions": "Clear movement vector, steady camera without violent shaking.",
+  "required_source_footage": "60 FPS CS2 gameplay POV capture.",
+  "required_masks_or_mattes": "None.",
+  "recommended_timing": "0.60s to 1.20s duration.",
+  "intensity_ranges": {
+    "speed_multiplier": "2.5x to 4.0x",
+    "motion_blur_shutter": "240 deg"
+  },
+  "recommended_color_palette": "Slight directional luma darkening (-5% gain) during peak velocity.",
+  "fusion_node_structure": "MediaIn1 -> Retime1 (Curve: Bezier Cubic Ease) -> DirectionalBlur1 (Angle: 0, Length: 0.05) -> MediaOut1",
+  "resolve_implementation_instructions": "Edit Page: Add Retime Speed Points at start and end of corridor. Set center section to 350%, smooth tangents with Bezier curves.",
+  "required_plugins": "Native DaVinci Resolve Built-in",
+  "free_studio_compatibility": "Free 21.0 & Studio",
+  "hardware_requirements": "Real-time 60 FPS playback on RX 5700 XT",
+  "reference_examples": [
+    "ssstik.io_1794490531192.mp4 @ 1.50s",
+    "ACE_FINAL_V3 @ 8.58s-9.48s"
+  ],
+  "confidence": "VERIFIED",
+  "qa_procedure": "Verify timeline duration matches audio beat grid; check that player gun snaps back to normal speed before trigger pull."
+}

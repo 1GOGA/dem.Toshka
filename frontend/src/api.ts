@@ -438,6 +438,55 @@ export const api = {
     const res = await fetch(`${BASE_URL}/cinematic/reference-lab/reference-cards/${encodeURIComponent(refId)}`)
     return handleResponse(res)
   },
+
+  // Phase 3.5 AI VFX Intelligence & Decision Engine APIs
+  async getVfxCatalog(category?: string): Promise<{ count: number; category_filter?: string; effects: any[] }> {
+    const url = `${BASE_URL}/cinematic/vfx/catalog${category ? `?category=${encodeURIComponent(category)}` : ''}`
+    const res = await fetch(url)
+    return handleResponse(res)
+  },
+
+  async decideVfx(payload: any): Promise<any> {
+    const res = await fetch(`${BASE_URL}/cinematic/vfx/decide`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    return handleResponse(res)
+  },
+
+  async compareVfxTiers(payload: any): Promise<{ clean: any; subtle: any; strong: any }> {
+    const res = await fetch(`${BASE_URL}/cinematic/vfx/compare`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    return handleResponse(res)
+  },
+
+  async getVfxPresets(): Promise<{ count: number; presets: any[] }> {
+    const res = await fetch(`${BASE_URL}/cinematic/vfx/presets`)
+    return handleResponse(res)
+  },
+
+  async getVfxValidationTests(): Promise<{ count: number; tests: any[] }> {
+    const res = await fetch(`${BASE_URL}/cinematic/vfx/tests`)
+    return handleResponse(res)
+  },
+
+  async submitVfxFeedback(effectId: string, vote: 'like' | 'dislike' | null, note?: string): Promise<any> {
+    const res = await fetch(`${BASE_URL}/cinematic/vfx/feedback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ effect_id: effectId, vote, note }),
+    })
+    return handleResponse(res)
+  },
+
+  async getVfxPluginResearch(): Promise<{ content: string; path: string }> {
+    const res = await fetch(`${BASE_URL}/cinematic/vfx/plugin-research`)
+    return handleResponse(res)
+  },
 }
 
 
