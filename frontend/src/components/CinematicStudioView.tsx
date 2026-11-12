@@ -128,7 +128,7 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
   // VFX Intelligence & Plugin Lab States (Phase 3.5)
   const [vfxCatalog, setVfxCatalog] = useState<any[]>([])
   const [vfxActiveCategory, setVfxActiveCategory] = useState<string>('all')
-  const [vfxSelectedScene, setVfxSelectedScene] = useState<string>('scene_climax')
+  const [vfxSelectedScene, setVfxSelectedScene] = useState<string>('ref_ssstik_60fps')
   const [vfxActiveTier, setVfxActiveTier] = useState<'SUBTLE' | 'CLEAN' | 'STRONG_CINEMATIC'>('SUBTLE')
   const [vfxDecision, setVfxDecision] = useState<any | null>(null)
   const [vfxComparisonTiers, setVfxComparisonTiers] = useState<{ clean: any; subtle: any; strong: any } | null>(null)
@@ -324,15 +324,15 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
     }
   }
 
-  // Phase 3.5 VFX Intelligence Handlers
+  // Phase 3.5 VFX Intelligence Handlers (Supporting Real Inbox User Videos)
   const getSceneContextPayload = (sceneKey: string) => {
-    if (sceneKey === 'scene_headshot') {
+    if (sceneKey === 'ref_ssstik_60fps') {
       return {
-        scene_id: 'scene_07_kill3_headshot',
+        scene_id: 'ref_ssstik_1794490531192',
         scene_category: 'ENGAGEMENT',
         camera_type: 'FIRST_PERSON',
         fps: 60.0,
-        time_seconds: 10.08,
+        time_seconds: 9.8,
         duration_seconds: 1.5,
         is_kill_event: true,
         is_headshot: true,
@@ -341,44 +341,80 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
         enemy_visible: true,
         weapon_visible: true,
         is_outdoor_sky_visible: false,
-        has_music_drop: false,
-        current_editing_intensity: 0.7,
+        has_music_drop: true,
+        current_editing_intensity: 0.85,
       }
-    } else if (sceneKey === 'scene_rapid') {
+    } else if (sceneKey === 'ref_mirage_a_tactical') {
       return {
-        scene_id: 'scene_08_kill4_rapid',
-        scene_category: 'MULTIKILL',
+        scene_id: 'ref_ssstik_1794490695954',
+        scene_category: 'ENGAGEMENT',
         camera_type: 'FIRST_PERSON',
-        fps: 60.0,
-        time_seconds: 10.89,
-        duration_seconds: 0.81,
+        fps: 30.0,
+        time_seconds: 10.5,
+        duration_seconds: 2.5,
         is_kill_event: true,
         is_headshot: false,
         is_ace_kill: false,
         player_visible: true,
         enemy_visible: true,
         weapon_visible: true,
-        rapid_kill_interval: 0.81,
+        is_outdoor_sky_visible: false,
         has_music_drop: false,
-        current_editing_intensity: 0.9,
+        current_editing_intensity: 0.6,
+      }
+    } else if (sceneKey === 'ref_mirage_palace_speedramp') {
+      return {
+        scene_id: 'ref_ssstik_1794490752764',
+        scene_category: 'MULTIKILL',
+        camera_type: 'FIRST_PERSON',
+        fps: 30.0,
+        time_seconds: 1.5,
+        duration_seconds: 2.5,
+        is_kill_event: false,
+        is_headshot: false,
+        is_ace_kill: false,
+        player_visible: true,
+        enemy_visible: false,
+        weapon_visible: true,
+        is_outdoor_sky_visible: true,
+        has_music_drop: false,
+        current_editing_intensity: 0.75,
+      }
+    } else if (sceneKey === 'ref_inferno_banana_beatsync') {
+      return {
+        scene_id: 'ref_друзей_не_меняют_на_бабло',
+        scene_category: 'MULTIKILL',
+        camera_type: 'FIRST_PERSON',
+        fps: 30.0,
+        time_seconds: 5.5,
+        duration_seconds: 0.75,
+        is_kill_event: true,
+        is_headshot: false,
+        is_ace_kill: false,
+        player_visible: true,
+        enemy_visible: true,
+        weapon_visible: true,
+        rapid_kill_interval: 0.72, // < 0.85s -> enforces "less is better" rejection
+        has_music_drop: true,
+        current_editing_intensity: 0.95,
       }
     } else {
       return {
-        scene_id: 'scene_09_ace_orbit',
-        scene_category: 'ACE_CLIMAX',
-        camera_type: 'ORBIT_CAMERA',
-        fps: 60.0,
-        time_seconds: 15.46,
-        duration_seconds: 3.0,
+        scene_id: 'ref_моя_голова_винтом',
+        scene_category: 'TENSION',
+        camera_type: 'FIRST_PERSON',
+        fps: 30.0,
+        time_seconds: 3.2,
+        duration_seconds: 2.25,
         is_kill_event: true,
         is_headshot: false,
-        is_ace_kill: true,
+        is_ace_kill: false,
         player_visible: true,
-        enemy_visible: false,
-        weapon_visible: false,
-        is_outdoor_sky_visible: true,
+        enemy_visible: true,
+        weapon_visible: true,
+        is_outdoor_sky_visible: false,
         has_music_drop: true,
-        current_editing_intensity: 0.85,
+        current_editing_intensity: 0.9,
       }
     }
   }
@@ -417,7 +453,7 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
       if (testsRes.tests && testsRes.tests.length > 0) {
         setVfxSelectedTest(testsRes.tests[0])
       }
-      await runVfxEvaluation('scene_climax', 'SUBTLE')
+      await runVfxEvaluation('ref_ssstik_60fps', 'SUBTLE')
     } catch (e) {
       console.warn('Failed to load VFX intelligence:', e)
     }
@@ -1766,34 +1802,52 @@ export const CinematicStudioView: React.FC<CinematicStudioViewProps> = ({
                 {/* SCENE CONTEXT & 3-TIER COMPARISON SWITCHER */}
                 <div className="vfx-controls-card">
                   <div className="vfx-scene-selector-row">
-                    <span className="vfx-control-label">{lang === 'ru' ? 'Тестовая сцена CS2:' : 'CS2 Scene Context:'}</span>
+                    <span className="vfx-control-label">{lang === 'ru' ? 'Референс-клип из Inbox:' : 'Inbox Reference Clip:'}</span>
                     <div className="vfx-scene-btns">
                       <button
-                        className={`vfx-scene-btn ${vfxSelectedScene === 'scene_headshot' ? 'active' : ''}`}
+                        className={`vfx-scene-btn ${vfxSelectedScene === 'ref_ssstik_60fps' ? 'active' : ''}`}
                         onClick={() => {
-                          setVfxSelectedScene('scene_headshot')
-                          runVfxEvaluation('scene_headshot', vfxActiveTier)
+                          setVfxSelectedScene('ref_ssstik_60fps')
+                          runVfxEvaluation('ref_ssstik_60fps', vfxActiveTier)
                         }}
                       >
-                        🎯 {lang === 'ru' ? 'Сцена 07: Хедшот Kill 3 (ProfyfGames)' : 'Scene 07: Headshot Kill 3 (ProfyfGames)'}
+                        ⚡ ssstik (720p 60fps Flick)
                       </button>
                       <button
-                        className={`vfx-scene-btn ${vfxSelectedScene === 'scene_rapid' ? 'active' : ''}`}
+                        className={`vfx-scene-btn ${vfxSelectedScene === 'ref_mirage_a_tactical' ? 'active' : ''}`}
                         onClick={() => {
-                          setVfxSelectedScene('scene_rapid')
-                          runVfxEvaluation('scene_rapid', vfxActiveTier)
+                          setVfxSelectedScene('ref_mirage_a_tactical')
+                          runVfxEvaluation('ref_mirage_a_tactical', vfxActiveTier)
                         }}
                       >
-                        ⚡ {lang === 'ru' ? 'Сцена 08: Рапид Мульти-килл Kill 4 (<0.85s)' : 'Scene 08: Rapid Multikill Kill 4 (<0.85s)'}
+                        🎯 Mirage A Site (Tactical POV)
                       </button>
                       <button
-                        className={`vfx-scene-btn ${vfxSelectedScene === 'scene_climax' ? 'active' : ''}`}
+                        className={`vfx-scene-btn ${vfxSelectedScene === 'ref_mirage_palace_speedramp' ? 'active' : ''}`}
                         onClick={() => {
-                          setVfxSelectedScene('scene_climax')
-                          runVfxEvaluation('scene_climax', vfxActiveTier)
+                          setVfxSelectedScene('ref_mirage_palace_speedramp')
+                          runVfxEvaluation('ref_mirage_palace_speedramp', vfxActiveTier)
                         }}
                       >
-                        🏆 {lang === 'ru' ? 'Сцена 09: ACE 5K Hero Orbit Climax' : 'Scene 09: ACE 5K Hero Orbit Climax'}
+                        🏃 Mirage Palace (Speed Ramp & AWP)
+                      </button>
+                      <button
+                        className={`vfx-scene-btn ${vfxSelectedScene === 'ref_inferno_banana_beatsync' ? 'active' : ''}`}
+                        onClick={() => {
+                          setVfxSelectedScene('ref_inferno_banana_beatsync')
+                          runVfxEvaluation('ref_inferno_banana_beatsync', vfxActiveTier)
+                        }}
+                      >
+                        💥 Друзей не меняют (Beat-Sync Kills)
+                      </button>
+                      <button
+                        className={`vfx-scene-btn ${vfxSelectedScene === 'ref_head_spin_rotations' ? 'active' : ''}`}
+                        onClick={() => {
+                          setVfxSelectedScene('ref_head_spin_rotations')
+                          runVfxEvaluation('ref_head_spin_rotations', vfxActiveTier)
+                        }}
+                      >
+                        🌀 Голова винтом (Viral Spin & Whip)
                       </button>
                     </div>
                   </div>
