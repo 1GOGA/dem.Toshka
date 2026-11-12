@@ -1126,6 +1126,85 @@ def get_package_manifests(package_id: str):
     return manifests
 
 
+@app.get("/api/cinematic/scene-analysis", tags=["cinematic"])
+def get_scene_analysis():
+    """Retrieve detailed scene analysis, kill timings, dynamic transitions, and HUD suppression policy."""
+    from backend.cinematic.scene_analyzer import CinematicSceneAnalyzer
+    analyzer = CinematicSceneAnalyzer()
+    report = analyzer.analyze_anubis_ace_production()
+    return report.to_dict()
+
+
+@app.get("/api/cinematic/production/overview", tags=["cinematic"])
+def get_cinematic_production_overview():
+    """Retrieve verified master releases, stem tracks, killfeed manifest, and scene intelligence."""
+    from backend.cinematic.scene_analyzer import CinematicSceneAnalyzer
+    v3_dir = pathlib.Path("renders/ACE_FINAL_V3_AUDIO_KILLFEED")
+    
+    analyzer = CinematicSceneAnalyzer()
+    scene_report = analyzer.analyze_anubis_ace_production().to_dict()
+    
+    manifest_path = v3_dir / "killfeed_event_manifest.json"
+    manifest_data = []
+    if manifest_path.exists():
+        try:
+            manifest_data = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+
+    return {
+        "production_id": "ACE_FINAL_V3_AUDIO_KILLFEED",
+        "title": "CS2 de_anubis Round 19 Ace Fragmovie Master",
+        "demo_name": "1-31bfc53c-127b-43f0-b786-107a5b32dc72-1-1.dem",
+        "map_name": "de_anubis",
+        "duration_seconds": 18.50,
+        "fps": 60,
+        "hero_player": "pytoshka_",
+        "releases": [
+            {
+                "id": "master_16x9",
+                "label": "16:9 Widescreen Master (1080p60)",
+                "url": "/renders/ACE_FINAL_V3_AUDIO_KILLFEED/ACE_FINAL_V3_MASTER.mp4",
+                "resolution": "1920x1080",
+                "bitrate_mbps": 24.09,
+                "size_mb": 53.13,
+                "watermark": False,
+            },
+            {
+                "id": "tiktok_9x16",
+                "label": "9:16 Vertical TikTok / Shorts (1080x1920)",
+                "url": "/renders/ACE_FINAL_V3_AUDIO_KILLFEED/ACE_FINAL_V3_TIKTOK.mp4",
+                "resolution": "1080x1920",
+                "bitrate_mbps": 20.16,
+                "size_mb": 44.46,
+                "watermark": False,
+            },
+            {
+                "id": "preview_16x9",
+                "label": "16:9 Fast Preview (8 Mbps)",
+                "url": "/renders/ACE_FINAL_V3_AUDIO_KILLFEED/ACE_FINAL_V3_PREVIEW.mp4",
+                "resolution": "1920x1080",
+                "bitrate_mbps": 8.12,
+                "size_mb": 17.91,
+                "watermark": False,
+            },
+        ],
+        "qa_contact_sheet_url": "/renders/ACE_FINAL_V3_AUDIO_KILLFEED/qa/qa_kill_sync_contact_sheet.png",
+        "audio_master_url": "/renders/ACE_FINAL_V3_AUDIO_KILLFEED/audio/audio_master_v3.wav",
+        "stems": [
+            {"id": "a1", "name": "A1: CS2 Gameplay (Segmented)", "url": "/renders/ACE_FINAL_V3_AUDIO_KILLFEED/audio/stem_a1_gameplay.wav"},
+            {"id": "a2", "name": "A2: Soundtrack 142 BPM (LOVELYDILLER)", "url": "/renders/ACE_FINAL_V3_AUDIO_KILLFEED/audio/stem_a2_music_142bpm.wav"},
+            {"id": "a3", "name": "A3: Real Cinematic Impacts (Sonniss)", "url": "/renders/ACE_FINAL_V3_AUDIO_KILLFEED/audio/stem_a3_cinematic_impacts.wav"},
+            {"id": "a4", "name": "A4: Transition Whooshes (Sonniss)", "url": "/renders/ACE_FINAL_V3_AUDIO_KILLFEED/audio/stem_a4_transition_whooshes.wav"},
+            {"id": "a5", "name": "A5: Tension Risers & Accents (Sonniss)", "url": "/renders/ACE_FINAL_V3_AUDIO_KILLFEED/audio/stem_a5_risers_accents.wav"},
+            {"id": "a6", "name": "A6: Atmospheric Dark Drone (Sonniss)", "url": "/renders/ACE_FINAL_V3_AUDIO_KILLFEED/audio/stem_a6_atmosphere.wav"},
+        ],
+        "scene_analysis": scene_report,
+        "killfeed_manifest": manifest_data,
+        "hud_policy": scene_report.get("hud_policy", {}),
+    }
+
+
 # ---------------------------------------------------------------------------
 # Mount Frontend Distribution for Standalone / Production Desktop Mode
 # ---------------------------------------------------------------------------

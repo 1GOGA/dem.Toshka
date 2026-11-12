@@ -319,6 +319,16 @@ export const api = {
   getPackageFcpxmlUrl(packageId: string): string {
     return `${BASE_URL}/cinematic/package/${packageId}/fcpxml`
   },
+
+  async getCinematicProductionOverview(): Promise<any> {
+    const res = await fetch(`${BASE_URL}/cinematic/production/overview`)
+    return handleResponse(res)
+  },
+
+  async getSceneAnalysis(): Promise<any> {
+    const res = await fetch(`${BASE_URL}/cinematic/scene-analysis`)
+    return handleResponse(res)
+  },
 }
 
 

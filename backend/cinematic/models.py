@@ -167,6 +167,11 @@ class CinematicShot:
     watermark: bool = False  # Strict default: no watermark for cinematic masters
     validation_status: str = "PLANNED"  # PLANNED, CAPTURED, VERIFIED, FAILED
     error_summary: Optional[str] = None
+    # V2 Planning & Quality fields
+    slow_motion_timescale: float = 1.0
+    quality_score: Optional[float] = None
+    clipping_risk: bool = False
+    quality_status: str = "VERIFIED"  # VERIFIED, EXPERIMENTAL, NEEDS_PREVIEW_REVIEW, REJECTED
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -197,6 +202,10 @@ class CinematicShot:
             "watermark": self.watermark,
             "validation_status": self.validation_status,
             "error_summary": self.error_summary,
+            "slow_motion_timescale": self.slow_motion_timescale,
+            "quality_score": self.quality_score,
+            "clipping_risk": self.clipping_risk,
+            "quality_status": self.quality_status,
         }
 
 

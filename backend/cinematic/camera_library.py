@@ -68,11 +68,19 @@ def generate_shoulder_cam_path(
     dist_right: float = 22.0,
     height_offset: float = 60.0,
     fov: float = 95.0,
+    conservative_fallback: bool = False,
+    fallback_dist_right: float = 10.0,
+    fallback_dist_back: float = 30.0,
 ) -> CameraPath:
     """Generate an over-the-shoulder dynamic camera path following a player's real coordinates.
     
     player_ticks format: list of dicts with 'tick', 'X', 'Y', 'Z', 'pitch', 'yaw'.
+    If conservative_fallback is True, reduces lateral and backward offset to prevent
+    camera clipping in narrow corridors and near geometry boundaries.
     """
+    if conservative_fallback:
+        dist_back = fallback_dist_back
+        dist_right = fallback_dist_right
     path = CameraPath(
         path_id="shoulder_cam",
         camera_type=CameraType.SHOULDER_CAM,

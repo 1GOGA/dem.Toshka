@@ -1,7 +1,8 @@
 """DaVinci Resolve Handoff & FCPXML / EDL Exporter.
 
 Generates multi-track FCPXML project files with timeline markers at exact kill events,
-separate tracks for POV, Cinematic B-Roll, Victim inserts, and Overlays.
+separate tracks for POV, Cinematic B-Roll, Victim inserts, Overlays, and Audio stems,
+as well as direct Python automation scripts for DaVinci Resolve API.
 """
 
 from __future__ import annotations
@@ -196,4 +197,131 @@ def generate_cmx3600_edl(
     if output_path:
         output_path.parent.mkdir(parents=True, exist_ok=True)
         output_path.write_text(content, encoding="utf-8")
+    return content
+
+
+def generate_davinci_resolve_python_script(
+    package: CinematicProductionPackage,
+    music_file: Optional[pathlib.Path] = None,
+    output_script_path: Optional[pathlib.Path] = None,
+    takes_directory: Optional[pathlib.Path] = None,
+) -> str:
+    """Generate an executable standalone Python script driving DaVinci Resolve Studio / Free API.
+    
+    Creates:
+    - 4 Video Tracks: V1 Hero POV, V2 Cinematic B-Roll, V3 Victim Reaction, V4 Overlays
+    - 4 Audio Tracks: A1 Game Audio, A2 Music (128 BPM), A3 Impacts, A4 Transitions
+    - Media Pool imports
+    - Synchronized colored kill markers
+    """
+    proj_name = package.resolve_project_name or f"CS2_{package.map_name}_Production"
+
+    takes_dir = takes_directory or pathlib.Path("renders/cinematic_studio_phase3/takes")
+    clip_paths = []
+    for s in package.shots:
+        fn = s.output_filename or f"{s.shot_id}.mp4"
+        candidate = takes_dir / fn
+        if not candidate.exists():
+            candidate = pathlib.Path(fn)
+        clip_paths.append(str(candidate.resolve()).replace("\\", "/"))
+
+    music_str = str(music_file.resolve()).replace("\\", "/") if music_file and music_file.exists() else ""
+
+    script_lines = [
+        "#!/usr/bin/env python",
+        "# Auto-generated DaVinci Resolve Production Script by dem.Toshka Cinematic Studio",
+        "import sys, os",
+        "",
+        "# 1. Resolve Script API Setup",
+        "script_api = r'C:\\ProgramData\\Blackmagic Design\\DaVinci Resolve\\Support\\Developer\\Scripting'",
+        "script_lib = r'C:\\Program Files\\Blackmagic Design\\DaVinci Resolve\\fusionscript.dll'",
+        "os.environ['RESOLVE_SCRIPT_API'] = script_api",
+        "os.environ['RESOLVE_SCRIPT_LIB'] = script_lib",
+        "sys.path.append(os.path.join(script_api, 'Modules'))",
+        "",
+        "try:",
+        "    import DaVinciResolveScript as dvr",
+        "    resolve = dvr.scriptapp('Resolve')",
+        "    if not resolve:",
+        "        print('ERROR: DaVinci Resolve is not running or scripting is disabled.')",
+        "        sys.exit(1)",
+        "except Exception as e:",
+        "    print(f'ERROR loading DaVinci Resolve API: {e}')",
+        "    sys.exit(1)",
+        "",
+        "pm = resolve.GetProjectManager()",
+        f"proj = pm.CreateProject('{proj_name}') or pm.LoadProject('{proj_name}')",
+        "if not proj:",
+        "    print('Could not create or load project.')",
+        "    sys.exit(1)",
+        "",
+        "# Set project frame rate to 60 fps",
+        "proj.SetSetting('timelineFrameRate', '60')",
+        "proj.SetSetting('timelineResolutionWidth', '1920')",
+        "proj.SetSetting('timelineResolutionHeight', '1080')",
+        "",
+        "mp = proj.GetMediaPool()",
+        "root_folder = mp.GetRootFolder()",
+        "",
+        "# Import media files",
+        f"clips_to_import = {clip_paths!r}",
+        f"music_path = {music_str!r}",
+        "if music_path:",
+        "    clips_to_import.append(music_path)",
+        "",
+        "imported_items = mp.ImportMedia(clips_to_import)",
+        "print(f'Imported {len(imported_items)} media items into DaVinci Media Pool.')",
+        "",
+        "# Create 4-Video / 4-Audio Timeline",
+        f"timeline = mp.CreateEmptyTimeline('CS2_Cinematic_Director_Cut')",
+        "if not timeline:",
+        "    print('Timeline already exists or could not be created; fetching current timeline.')",
+        "    timeline = proj.GetCurrentTimeline()",
+        "",
+        "if timeline:",
+        "    # Configure 4 Video Tracks",
+        "    while timeline.GetTrackCount('video') < 4:",
+        "        timeline.AddTrack('video')",
+        "    timeline.SetTrackName('video', 1, 'Hero POV (Master)')",
+        "    timeline.SetTrackName('video', 2, 'Cinematic B-Roll')",
+        "    timeline.SetTrackName('video', 3, 'Victim Reaction')",
+        "    timeline.SetTrackName('video', 4, 'Overlays & Killfeed')",
+        "",
+        "    # Configure 4 Audio Tracks",
+        "    while timeline.GetTrackCount('audio') < 4:",
+        "        timeline.AddTrack('audio')",
+        "    timeline.SetTrackName('audio', 1, 'Game Audio')",
+        "    timeline.SetTrackName('audio', 2, 'Music (128 BPM)')",
+        "    timeline.SetTrackName('audio', 3, 'Kill Impacts')",
+        "    timeline.SetTrackName('audio', 4, 'Transitions & FX')",
+        "",
+        "    # Append media clips to timeline",
+        "    clips_in_pool = [c for c in root_folder.GetClipList() if 'шкала' not in c.GetClipProperty('Type').lower() and 'timeline' not in c.GetClipProperty('Type').lower()]",
+        "    mp.AppendToTimeline(clips_in_pool)",
+        "",
+        "    # Add Kill Event Markers offset by timeline base start frame",
+        "    base_frame = timeline.GetStartFrame() if hasattr(timeline, 'GetStartFrame') else 0",
+    ]
+
+    for ev in package.overlay_events:
+        frame_idx = int(round(ev.time_seconds * 60))
+        color = "Yellow" if ev.is_ace else ("Green" if ev.headshot else "Cyan")
+        note = f"KILL #{ev.kill_number_in_round}: {ev.killer_name} [{ev.weapon}] {ev.victim_name}"
+        script_lines.append(
+            f"    timeline.AddMarker(base_frame + {frame_idx}, '{color}', 'Kill Event', '{note}', 1, '')"
+        )
+
+    script_lines.extend([
+        "",
+        "    print('Successfully built 4-Video / 4-Audio production timeline with synchronized kill markers.')",
+        "    pm.SaveProject()",
+        "else:",
+        "    print('Could not initialize timeline in project.')",
+    ])
+
+    content = "\n".join(script_lines)
+    if output_script_path:
+        output_script_path.parent.mkdir(parents=True, exist_ok=True)
+        output_script_path.write_text(content, encoding="utf-8")
+
     return content
