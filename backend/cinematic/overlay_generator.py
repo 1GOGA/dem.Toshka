@@ -16,6 +16,7 @@ from typing import Any, Optional
 from PIL import Image, ImageDraw, ImageFont
 
 from backend.cinematic.models import OverlayKillEvent
+from backend.cinematic.production_models import EventTimelineMapping, TimelineLockState
 
 
 def generate_svg_killfeed_badge(event: OverlayKillEvent, style: str = "cinematic") -> str:
@@ -239,3 +240,72 @@ def render_killfeed_png_badge(
 
     img.save(str(output_path), "PNG")
     return output_path
+
+
+def check_timeline_lock_status(lock_state: TimelineLockState) -> tuple[bool, str]:
+    """Enforce strict Phase B ordering:
+    Kill feed remains PENDING_TIMELINE_LOCK until final timeline structure is established.
+    """
+    if lock_state == TimelineLockState.LOCKED:
+        return True, "Timeline locked: Killfeed generation permitted."
+    elif lock_state == TimelineLockState.PENDING_TIMELINE_LOCK:
+        return False, "BLOCKED: Timeline structure not yet locked (PENDING_TIMELINE_LOCK)."
+    elif lock_state == TimelineLockState.INVALIDATED:
+        return False, "INVALIDATED: Timeline modified after previous lock. Requires re-lock."
+    return False, f"BLOCKED: Timeline in state {lock_state.value}. Lock timeline first."
+
+
+def generate_event_mapped_killfeed(
+    mappings: list[EventTimelineMapping],
+    lock_state: TimelineLockState,
+    output_dir: pathlib.Path,
+    style: str = "cinematic",
+) -> dict[str, Any]:
+    """Generates killfeed badges strictly when timeline is LOCKED."""
+    can_generate, msg = check_timeline_lock_status(lock_state)
+    if not can_generate:
+        return {
+            "success": False,
+            "status": lock_state.value,
+            "message": msg,
+            "generated_badges": [],
+        }
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    generated = []
+    
+    for idx, mapping in enumerate(mappings):
+        event = OverlayKillEvent(
+            tick=mapping.demo_tick,
+            time_seconds=mapping.final_timeline_timestamp,
+            round_number=19,
+            killer_name=mapping.attacker_name,
+            killer_steam_id="76561198000000001",
+            victim_name=mapping.victim_name,
+            victim_steam_id="76561198000000002",
+            weapon=mapping.weapon,
+            headshot=mapping.is_headshot,
+            wallbang=mapping.is_wallbang,
+            noscope=mapping.is_noscope,
+            thrusmoke=mapping.is_through_smoke,
+            attackerblind=mapping.is_blind,
+            kill_number_in_round=idx + 1,
+            is_ace=(idx + 1 >= 5),
+            is_clutch=False,
+        )
+        badge_path = output_dir / f"badge_kill_{idx+1}_{mapping.attacker_name}_vs_{mapping.victim_name}.png"
+        render_killfeed_png_badge(event, badge_path, style=style)
+        generated.append({
+            "event_id": mapping.event_id,
+            "timeline_frame": mapping.final_timeline_frame,
+            "timeline_timestamp": mapping.final_timeline_timestamp,
+            "badge_path": str(badge_path),
+        })
+
+    return {
+        "success": True,
+        "status": "GENERATED",
+        "message": f"Successfully generated {len(generated)} killfeed overlays locked to final timeline frames.",
+        "generated_badges": generated,
+    }
+

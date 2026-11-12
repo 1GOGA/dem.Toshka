@@ -329,6 +329,45 @@ export const api = {
     const res = await fetch(`${BASE_URL}/cinematic/scene-analysis`)
     return handleResponse(res)
   },
+
+  // Phase 3.3 Production Workbench & Asset Library APIs
+  async getSoundLibrary(params?: { category?: string; search?: string }): Promise<any> {
+    const query = new URLSearchParams()
+    if (params?.category) query.append('category', params.category)
+    if (params?.search) query.append('search', params.search)
+    const url = `${BASE_URL}/cinematic/sound-library${query.toString() ? `?${query.toString()}` : ''}`
+    const res = await fetch(url)
+    return handleResponse(res)
+  },
+
+  async getProductionWorkflowState(): Promise<any> {
+    const res = await fetch(`${BASE_URL}/cinematic/production/workflow-state`)
+    return handleResponse(res)
+  },
+
+  async setTimelineLock(action: 'lock' | 'unlock' | 'invalidate'): Promise<any> {
+    const res = await fetch(`${BASE_URL}/cinematic/production/lock-timeline`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action }),
+    })
+    return handleResponse(res)
+  },
+
+  async setHudProfile(activeProfile?: string, hudToggles?: Record<string, boolean>): Promise<any> {
+    const res = await fetch(`${BASE_URL}/cinematic/production/hud-profiles`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ active_profile: activeProfile, hud_toggles: hudToggles }),
+    })
+    return handleResponse(res)
+  },
+
+  async getTransitionsCatalog(): Promise<any> {
+    const res = await fetch(`${BASE_URL}/cinematic/production/transitions`)
+    return handleResponse(res)
+  },
 }
+
 
 

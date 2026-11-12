@@ -1206,6 +1206,159 @@ def get_cinematic_production_overview():
 
 
 # ---------------------------------------------------------------------------
+# Phase 3.3 Cinematic Production Workbench & Asset Library Endpoints
+# ---------------------------------------------------------------------------
+from backend.cinematic.production_models import (
+    EventTimelineMapping,
+    HudCaptureProfile,
+    HudElementToggles,
+    TimelineLockState,
+    TRANSITION_REGISTRY,
+)
+from backend.cinematic.sound_library_manager import SoundLibraryManager
+
+_sound_manager = SoundLibraryManager()
+_cinematic_lock_state = TimelineLockState.LOCKED
+_cinematic_hud_profile = HudCaptureProfile.CUSTOM_KILLFEED
+_cinematic_hud_toggles = HudElementToggles(
+    native_killfeed=False,
+    custom_killfeed=True,
+    crosshair=True,
+    radar=False,
+    player_hud=False,
+    weapon_viewmodel=True,
+    xray=False,
+    observer_controls=False,
+    watermark=False,
+)
+
+
+@app.get("/api/cinematic/sound-library", tags=["cinematic"])
+def get_sound_library(category: Optional[str] = None, search: Optional[str] = None) -> dict[str, Any]:
+    """Retrieve indexed Sonniss GDC 2026 sound library assets with real metadata."""
+    overview = _sound_manager.get_overview()
+    assets = _sound_manager.list_assets(category=category, search=search)
+    return {
+        "overview": overview,
+        "selected_category": category,
+        "search_query": search,
+        "count": len(assets),
+        "assets": [a.to_dict() for a in assets],
+    }
+
+
+@app.get("/api/cinematic/sound-library/audio/{category}/{filename}", tags=["cinematic"])
+def audition_sound_library_audio(category: str, filename: str):
+    """Stream genuine audio asset for in-browser sound auditioning."""
+    file_path = _sound_manager.get_audio_file_path(category, filename)
+    if not file_path or not pathlib.Path(file_path).exists():
+        raise HTTPException(status_code=404, detail=f"Sound asset {category}/{filename} not found.")
+    return FileResponse(file_path, media_type="audio/wav")
+
+
+@app.get("/api/cinematic/production/workflow-state", tags=["cinematic"])
+def get_production_workflow_state() -> dict[str, Any]:
+    """Retrieve full workbench state including timeline lock and event-to-timeline mappings."""
+    from backend.cinematic.scene_analyzer import CinematicSceneAnalyzer
+    analyzer = CinematicSceneAnalyzer()
+    report = analyzer.analyze_anubis_ace_production()
+
+    convars = _cinematic_hud_toggles.to_convars(_cinematic_hud_profile)
+
+    return {
+        "project_id": "demToshka_Anubis_Ace_Production",
+        "project_name": "CS2 de_anubis Round 19 ACE Production",
+        "demo_file": "1-31bfc53c-127b-43f0-b786-107a5b32dc72-1-1.dem",
+        "highlight_id": "anubis_ace_r19",
+        "timeline_lock_state": _cinematic_lock_state.value,
+        "active_hud_profile": _cinematic_hud_profile.value,
+        "hud_toggles": _cinematic_hud_toggles.to_dict(),
+        "active_convars": convars,
+        "storyboard_scenes": [s.to_dict() for s in report.storyboard],
+        "event_mappings": [m.to_dict() for m in report.event_mappings],
+        "active_soundtrack_name": "LOVELYDILLER — МАЛЫШКА РЕВНУЕТ",
+        "soundtrack_bpm": 142.0,
+        "soundtrack_drop_time": 7.711,
+        "total_timeline_duration": 18.50,
+        "timeline_fps": 60,
+        "transitions": [t.to_dict() for t in TRANSITION_REGISTRY],
+    }
+
+
+@app.post("/api/cinematic/production/lock-timeline", tags=["cinematic"])
+async def set_timeline_lock(request: Request) -> dict[str, Any]:
+    """Lock or unlock timeline structure (enforces Phase B event-first ordering)."""
+    global _cinematic_lock_state
+    body = await request.json()
+    action = body.get("action", "").lower()
+
+    if action == "lock":
+        _cinematic_lock_state = TimelineLockState.LOCKED
+        msg = "Timeline structure locked. Event-to-timeline frame mapping verified."
+    elif action == "unlock":
+        _cinematic_lock_state = TimelineLockState.PENDING_TIMELINE_LOCK
+        msg = "Timeline unlocked. Overlays set to PENDING_TIMELINE_LOCK."
+    elif action == "invalidate":
+        _cinematic_lock_state = TimelineLockState.INVALIDATED
+        msg = "Timeline invalidated. Overlays must be recalculated before render."
+    else:
+        raise HTTPException(status_code=400, detail="Invalid action. Use 'lock', 'unlock', or 'invalidate'.")
+
+    return {
+        "status": "success",
+        "timeline_lock_state": _cinematic_lock_state.value,
+        "message": msg,
+    }
+
+
+@app.post("/api/cinematic/production/hud-profiles", tags=["cinematic"])
+async def set_hud_profile(request: Request) -> dict[str, Any]:
+    """Configure CS2 HUD capture profile and individual element toggles."""
+    global _cinematic_hud_profile, _cinematic_hud_toggles
+    body = await request.json()
+
+    profile_name = body.get("active_profile")
+    if profile_name:
+        try:
+            _cinematic_hud_profile = HudCaptureProfile(profile_name)
+        except ValueError:
+            raise HTTPException(status_code=400, detail=f"Unknown profile: {profile_name}")
+
+    toggles_data = body.get("hud_toggles")
+    if isinstance(toggles_data, dict):
+        _cinematic_hud_toggles = HudElementToggles(
+            native_killfeed=bool(toggles_data.get("native_killfeed", _cinematic_hud_toggles.native_killfeed)),
+            custom_killfeed=bool(toggles_data.get("custom_killfeed", _cinematic_hud_toggles.custom_killfeed)),
+            crosshair=bool(toggles_data.get("crosshair", _cinematic_hud_toggles.crosshair)),
+            radar=bool(toggles_data.get("radar", _cinematic_hud_toggles.radar)),
+            player_hud=bool(toggles_data.get("player_hud", _cinematic_hud_toggles.player_hud)),
+            weapon_viewmodel=bool(toggles_data.get("weapon_viewmodel", _cinematic_hud_toggles.weapon_viewmodel)),
+            xray=bool(toggles_data.get("xray", _cinematic_hud_toggles.xray)),
+            observer_controls=bool(toggles_data.get("observer_controls", _cinematic_hud_toggles.observer_controls)),
+            watermark=bool(toggles_data.get("watermark", _cinematic_hud_toggles.watermark)),
+        )
+
+    convars = _cinematic_hud_toggles.to_convars(_cinematic_hud_profile)
+
+    return {
+        "status": "success",
+        "active_profile": _cinematic_hud_profile.value,
+        "hud_toggles": _cinematic_hud_toggles.to_dict(),
+        "active_convars": convars,
+    }
+
+
+@app.get("/api/cinematic/production/transitions", tags=["cinematic"])
+def get_transitions_catalog() -> dict[str, Any]:
+    """Retrieve catalog of reusable Fusion dynamic transitions and visual effects."""
+    return {
+        "count": len(TRANSITION_REGISTRY),
+        "transitions": [t.to_dict() for t in TRANSITION_REGISTRY],
+    }
+
+
+
+# ---------------------------------------------------------------------------
 # Mount Frontend Distribution for Standalone / Production Desktop Mode
 # ---------------------------------------------------------------------------
 _meipass_base = getattr(sys, "_MEIPASS", None)
