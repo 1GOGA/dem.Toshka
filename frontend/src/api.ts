@@ -487,6 +487,63 @@ export const api = {
     const res = await fetch(`${BASE_URL}/cinematic/vfx/plugin-research`)
     return handleResponse(res)
   },
+
+  async getStudioStatus(): Promise<{
+    available: boolean
+    version?: string
+    engine?: string
+    supported_profiles: string[]
+    manifest_schema: string
+  }> {
+    const res = await fetch(`${BASE_URL}/studio/status`)
+    return handleResponse(res)
+  },
+
+  async createStudioJob(payload: {
+    demo_id: number
+    highlight_id: string
+    profile?: string
+    resolution?: string
+    fps?: number
+    hud_mode?: string
+    user_notes?: string
+  }): Promise<{
+    job_id: string
+    manifest_path: string
+    status: string
+    created_at: string
+  }> {
+    const res = await fetch(`${BASE_URL}/studio/jobs`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    return handleResponse(res)
+  },
+
+  async getStudioJobStatus(jobId: string): Promise<any> {
+    const res = await fetch(`${BASE_URL}/studio/jobs/${jobId}`)
+    return handleResponse(res)
+  },
+
+  async createSocialDraft(payload: {
+    player_name: string
+    map_name: string
+    highlight_type: string
+    primary_weapon?: string
+    round_num?: number
+    kill_count?: number
+    score?: number
+    duration_sec?: number
+    platform: 'telegram' | 'youtube_shorts' | 'tiktok'
+  }): Promise<{ platform: string; text: string }> {
+    const res = await fetch(`${BASE_URL}/social-drafts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    return handleResponse(res)
+  },
 }
 
 

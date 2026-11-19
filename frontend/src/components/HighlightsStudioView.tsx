@@ -6,6 +6,7 @@ import { api } from '../api'
 import { VideoPlayerModal } from './VideoPlayerModal'
 import { PlayerAnalyticsModal } from './PlayerAnalyticsModal'
 import { InteractiveCrosshairPreview } from './InteractiveCrosshairPreview'
+import { SocialDraftModal } from './SocialDraftModal'
 import {
   FolderIcon,
   VolumeIcon,
@@ -114,6 +115,43 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
   const [replayShowGrenades, setReplayShowGrenades] = useState<boolean>(true)
   const [replayLevel, setReplayLevel] = useState<'upper' | 'lower'>('upper')
   const replayTimerRef = useRef<number | null>(null)
+
+  // Studio Bridge & Social Drafts state
+  const [socialDraftHighlight, setSocialDraftHighlight] = useState<HighlightItem | null>(null)
+  const [studioFeedbackToast, setStudioFeedbackToast] = useState<{ message: string; jobId?: string } | null>(null)
+  const [isSendingToStudio, setIsSendingToStudio] = useState<string | null>(null)
+
+  const handleSendToStudio = async (h: HighlightItem, e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (!activeDemo) return
+    setIsSendingToStudio(h.id)
+    try {
+      const res = await api.createStudioJob({
+        demo_id: activeDemo.id,
+        highlight_id: h.id,
+        profile: 'clean_cinematic',
+        hud_mode: 'killfeed_only',
+        user_notes: `Exported from dem.Toshka Highlights Studio: Round ${h.round_num} ${h.highlight_type}`,
+      })
+      setStudioFeedbackToast({
+        message: lang === 'ru' 
+          ? `Задание передано в Cinematic Studio! Манифест: ${res.job_id}`
+          : `Job sent to Cinematic Studio! Manifest: ${res.job_id}`,
+        jobId: res.job_id,
+      })
+      setTimeout(() => setStudioFeedbackToast(null), 5000)
+    } catch (err: any) {
+      console.error('Failed to send to studio:', err)
+      setStudioFeedbackToast({
+        message: lang === 'ru'
+          ? `Ошибка передачи в Studio: ${err?.message || 'Студия недоступна'}`
+          : `Failed to send to Studio: ${err?.message || 'Studio unavailable'}`,
+      })
+      setTimeout(() => setStudioFeedbackToast(null), 5000)
+    } finally {
+      setIsSendingToStudio(null)
+    }
+  }
 
   // Synchronize replay round if rounds list changes
   useEffect(() => {
@@ -2007,8 +2045,42 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         </span>
                       </div>
 
-                      {/* Highlight Type Pill & Quick Render */}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      {/* Highlight Type Pill, Score, Social Post & Quick Actions */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                        {/* Explainable Score Badge */}
+                        <div
+                          title={
+                            h.detection_reason
+                              ? `${lang === 'ru' ? 'Обоснование скоринга' : 'Scoring Breakdown'}: ${h.detection_reason}`
+                              : `${lang === 'ru' ? 'Рейтинг зрелищности' : 'Impact Score'}: ${Math.min(100, Math.round(h.kill_count * 20.0 + (h.highlight_type === 'ace' ? 15 : 0)))}/100`
+                          }
+                          style={{
+                            fontSize: '11px',
+                            fontWeight: 800,
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            backgroundColor: h.highlight_type === 'ace' || h.kill_count >= 5
+                              ? 'rgba(234, 179, 8, 0.15)'
+                              : h.kill_count >= 3
+                              ? 'rgba(168, 85, 247, 0.15)'
+                              : 'rgba(56, 189, 248, 0.15)',
+                            color: h.highlight_type === 'ace' || h.kill_count >= 5
+                              ? '#eab308'
+                              : h.kill_count >= 3
+                              ? '#c084fc'
+                              : '#38bdf8',
+                            border: '1px solid currentColor',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '3px',
+                            cursor: 'help',
+                          }}
+                        >
+                          <span>⭐</span>
+                          <span>{Math.min(100, Math.round(h.kill_count * 20.0 + (h.highlight_type === 'ace' ? 15 : 0)))}</span>
+                        </div>
+
+                        {/* Highlight Category Pill */}
                         <span
                           style={{
                             fontSize: '10px',
@@ -2022,6 +2094,60 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                         >
                           {h.highlight_type.replace('multikill_', '').toUpperCase()}
                         </span>
+
+                        {/* Social Media Content Producer Button */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSocialDraftHighlight(h)
+                          }}
+                          title={lang === 'ru' ? 'Сгенерировать готовый пост для Telegram / YouTube Shorts / TikTok' : 'Generate social media post copy for Telegram / Shorts / TikTok'}
+                          style={{
+                            padding: '3px 8px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            borderRadius: '4px',
+                            backgroundColor: '#182030',
+                            border: '1px solid #2d3b55',
+                            color: '#38bdf8',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          <span>📱</span>
+                          <span>{lang === 'ru' ? 'Пост' : 'Social'}</span>
+                        </button>
+
+                        {/* Cinematic Studio Bridge Handoff */}
+                        <button
+                          type="button"
+                          onClick={(e) => handleSendToStudio(h, e)}
+                          disabled={isSendingToStudio === h.id}
+                          title={lang === 'ru' ? 'Отправить задание в Cinematic Studio (сформировать StudioJobManifest v1.0)' : 'Send production request to Cinematic Studio (generate StudioJobManifest v1.0)'}
+                          style={{
+                            padding: '3px 8px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            borderRadius: '4px',
+                            backgroundColor: isSendingToStudio === h.id ? '#1e293b' : 'rgba(245, 158, 11, 0.12)',
+                            border: '1px solid #f59e0b',
+                            color: '#f59e0b',
+                            cursor: isSendingToStudio === h.id ? 'wait' : 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transition: 'all 0.15s ease',
+                          }}
+                        >
+                          <span>{isSendingToStudio === h.id ? '⏳' : '🎬'}</span>
+                          <span>{lang === 'ru' ? 'В Studio' : 'To Studio'}</span>
+                        </button>
+
+                        {/* Local Quick Render Button */}
                         <button
                           type="button"
                           className="btn btn-secondary card-interactive"
@@ -3221,6 +3347,55 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
             setCurrentStep(3)
           }}
         />
+      )}
+
+      {/* Social Media Content Producer Modal */}
+      {socialDraftHighlight && (
+        <SocialDraftModal
+          highlight={socialDraftHighlight}
+          mapName={activeDemo?.map_name}
+          onClose={() => setSocialDraftHighlight(null)}
+        />
+      )}
+
+      {/* Floating Feedback Toast for Studio Bridge */}
+      {studioFeedbackToast && (
+        <div
+          style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            backgroundColor: '#0f172a',
+            border: '1px solid #f59e0b',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.5), 0 0 15px rgba(245, 158, 11, 0.25)',
+            borderRadius: '10px',
+            padding: '12px 18px',
+            color: '#f8fafc',
+            fontSize: '13px',
+            fontWeight: 700,
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            animation: 'fadeIn 0.2s ease',
+          }}
+        >
+          <span style={{ fontSize: '16px' }}>🎬</span>
+          <span>{studioFeedbackToast.message}</span>
+          <button
+            onClick={() => setStudioFeedbackToast(null)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#94a3b8',
+              cursor: 'pointer',
+              marginLeft: '8px',
+              fontSize: '14px',
+            }}
+          >
+            ✕
+          </button>
+        </div>
       )}
     </div>
   )

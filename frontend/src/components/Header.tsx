@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import type { DemoSummary } from '../types'
 import { useTranslation } from '../i18n'
+import { api } from '../api'
 import {
   SparkleIcon,
   FolderIcon,
@@ -33,6 +34,14 @@ export const Header: React.FC<HeaderProps> = ({
   currentDemo,
 }) => {
   const { t, lang } = useTranslation()
+  const [studioReady, setStudioReady] = useState<boolean | null>(null)
+
+  useEffect(() => {
+    api
+      .getStudioStatus()
+      .then((st) => setStudioReady(st.available))
+      .catch(() => setStudioReady(false))
+  }, [])
 
   return (
     <header className="app-header">
@@ -244,6 +253,31 @@ export const Header: React.FC<HeaderProps> = ({
           <span className="header-feedback-icon">💡</span>
           <span>{lang === 'ru' ? 'Идеи / Баги' : 'Feedback'}</span>
         </a>
+
+        {/* Studio Bridge Status Indicator */}
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '5px',
+            padding: '4px 8px',
+            borderRadius: '6px',
+            backgroundColor: studioReady ? 'rgba(245, 158, 11, 0.12)' : 'rgba(100, 116, 139, 0.12)',
+            border: studioReady ? '1px solid rgba(245, 158, 11, 0.4)' : '1px solid #334155',
+            fontSize: '11px',
+            fontWeight: 700,
+            color: studioReady ? '#f59e0b' : '#94a3b8',
+            cursor: 'default',
+          }}
+          title={
+            studioReady
+              ? (lang === 'ru' ? 'Cinematic Studio Bridge активен (v1.0.0)' : 'Cinematic Studio Bridge Active (v1.0.0)')
+              : (lang === 'ru' ? 'Cinematic Studio не обнаружена (автономный режим)' : 'Cinematic Studio Offline (Standalone mode)')
+          }
+        >
+          <span style={{ fontSize: '11px' }}>🎬</span>
+          <span>{studioReady ? 'Studio ON' : 'Standalone'}</span>
+        </div>
 
         {/* Parameters Modal Trigger */}
         {onOpenSettings && (
