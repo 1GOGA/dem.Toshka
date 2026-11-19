@@ -33,6 +33,14 @@
   - `POST /api/studio/jobs`: Формирование и отправка `StudioJobManifest` v1.0 по ID демки и хайлайта.
   - `GET /api/studio/jobs/{job_id}`: Проверка статуса выполнения задания рендера.
   - `POST /api/social-drafts`: Генерация готовых текстов постов для соцсетей.
+- **Интерфейс пользователя (Frontend UI):**
+  - `frontend/src/components/SocialDraftModal.tsx`: Интерактивное модальное окно генерации описаний для Telegram, YouTube Shorts и TikTok со счётчиком символов и копированием в буфер.
+  - `frontend/src/components/HighlightsStudioView.tsx`:
+    - Кнопка **«📱 Пост»** для мгновенной генерации анонса хайлайта в соцсети.
+    - Кнопка **«🎬 В Studio»** для прямой отправки клип-заявки `StudioJobManifest` v1.0.0 в Cinematic Studio с индикатором статуса и уведомлением.
+    - Интерактивный бейдж рейтинга зрелищности (`⭐ <Score>`) с подсказкой факторов скоринга.
+  - `frontend/src/components/Header.tsx`: Индикатор доступности Cinematic Studio (`🎬 Studio ON` / `Standalone`).
+  - `frontend/src/api.ts`: Клиентские методы `getStudioStatus`, `createStudioJob`, `getStudioJobStatus`, `createSocialDraft`.
 - **Тестовый пакет:**
   - `tests/unit/test_studio_bridge.py`: 4 юнит-теста сериализации, очереди и генерации текстов.
   - `tests/unit/test_api_studio.py`: 3 юнит-теста эндпоинтов статуса студии, создания заданий и черновиков постов.
