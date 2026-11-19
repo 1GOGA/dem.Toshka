@@ -187,6 +187,27 @@ def world_to_radar_percent(
     return round(pct_x, 2), round(pct_y, 2)
 
 
+def radar_percent_to_world(
+    pct_x: float,
+    pct_y: float,
+    map_name: str = "de_nuke",
+    default_z: float = 64.0,
+) -> tuple[float, float, float]:
+    """Convert radar percentage (0%..100%) back into CS2 world coordinates (X, Y, Z)."""
+    cal = get_map_calibration(map_name)
+    pos_x = cal["pos_x"]
+    pos_y = cal["pos_y"]
+    scale = cal["scale"]
+
+    pixel_x = (pct_x / 100.0) * 1024.0
+    pixel_y = (pct_y / 100.0) * 1024.0
+
+    world_x = pixel_x * scale + pos_x
+    world_y = pos_y - (pixel_y * scale)
+    return round(world_x, 2), round(world_y, 2), default_z
+
+
+
 def extract_round_replay_data(
     demo_path: pathlib.Path,
     round_num: int,

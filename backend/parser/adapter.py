@@ -22,6 +22,8 @@ import logging
 from pathlib import Path
 from typing import Optional
 
+from backend.parser.parser_interface import DemoParserInterface
+
 logger = logging.getLogger(__name__)
 
 
@@ -183,3 +185,14 @@ def parse_demo(path: Path) -> "ParsedDemo":  # noqa: F821 — imported below
         kills=kills,
         _raw_header=header,
     )
+
+
+class AwpyDemoParser(DemoParserInterface):
+    """Awpy 2.0.2 demo parser backend satisfying DemoParserInterface."""
+
+    def parse_demo(self, path: Path) -> ParsedDemo:
+        return parse_demo(path)
+
+    def get_backend_name(self) -> str:
+        return "awpy"
+

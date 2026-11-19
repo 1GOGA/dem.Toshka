@@ -21,6 +21,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from backend.api.schemas import (
+    CreateStudioJobRequest,
     DemoSummary,
     HighlightDTO,
     KillDTO,
@@ -33,8 +34,23 @@ from backend.api.schemas import (
     RenderJobCreateRequest,
     RenderJobDTO,
     RoundDTO,
+    SocialDraftRequest,
+    SocialDraftResponse,
+    StudioJobResponse,
+    StudioStatusResponse,
 )
 from backend.api.services import DemoService
+from backend.integration.studio_bridge import (
+    ClipSpecificationManifest,
+    DemoMetadataManifest,
+    EventItemManifest,
+    ProductionRequestManifest,
+    SocialPostDraftGenerator,
+    StudioAvailabilityDetector,
+    StudioJobLauncher,
+    StudioJobManifest,
+    StudioJobStatusProvider,
+)
 from backend.parser.errors import DemoParseError, InvalidDemoPathError
 from backend.parser.models import SCHEMA_VERSION
 from backend.parser.replay import extract_round_replay_data
@@ -1757,6 +1773,142 @@ def get_vfx_plugin_research() -> dict[str, Any]:
     with open(res_path, "r", encoding="utf-8") as f:
         content = f.read()
     return {"content": content, "path": str(res_path.resolve())}
+
+
+# ---------------------------------------------------------------------------
+# Cinematic Studio Integration Contract & Social Producer Routes
+# ---------------------------------------------------------------------------
+@app.get("/api/studio/status", response_model=StudioStatusResponse, tags=["studio"])
+def get_studio_status() -> StudioStatusResponse:
+    """Check whether dem.Toshka Cinematic Studio is installed and active."""
+    st = StudioAvailabilityDetector.get_studio_status()
+    return StudioStatusResponse(**st)
+
+
+@app.post("/api/studio/jobs", response_model=StudioJobResponse, tags=["studio"])
+def create_studio_job(req: CreateStudioJobRequest, db: Session = Depends(get_db)) -> StudioJobResponse:
+    """Generate and submit a versioned StudioJobManifest (v1.0.0) for Cinematic Studio."""
+    import datetime
+    repo = DemoRepository(db)
+    demo = repo.get_by_id(req.demo_id)
+    if not demo:
+        raise HTTPException(status_code=404, detail="Demo not found.")
+
+    hl = repo.get_highlight_by_id(req.highlight_id)
+    if not hl or hl.demo_id != demo.id:
+        raise HTTPException(status_code=404, detail="Highlight not found in this demo.")
+
+    job_id = f"job_{datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%d_%H%M%S')}_{hl.highlight_type}_{uuid.uuid4().hex[:6]}"
+    created_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+    demo_meta = DemoMetadataManifest(
+        identifier=f"demo_{demo.id}",
+        file_path=demo.file_path,
+        checksum_sha256=demo.fingerprint,
+        map=demo.map_name or "unknown",
+        tickrate=demo.tickrate or 128,
+        match_date=demo.created_at.isoformat() if demo.created_at else None,
+    )
+
+    parsed_tags = []
+    if getattr(hl, "tags_json", None):
+        try:
+            parsed_tags = json.loads(hl.tags_json)
+        except Exception:
+            parsed_tags = []
+
+    clip_spec = ClipSpecificationManifest(
+        round_num=hl.round_num,
+        start_tick=hl.clip_start_tick,
+        end_tick=hl.clip_end_tick,
+        highlight_type=hl.highlight_type,
+        highlight_score=float(hl.kill_count * 20.0),
+        score_explanation=hl.detection_reason or f"{hl.kill_count} kills sequence",
+        tags=parsed_tags,
+    )
+
+    actors = {
+        "primary_player": {
+            "steam_id": hl.pov_steam_id,
+            "name": hl.pov_name or "Player",
+            "pov_preference": "first_person",
+        }
+    }
+
+    # Gather kills in clip range
+    kills = repo.get_kills(demo.id)
+    clip_kills = [
+        k for k in kills
+        if hl.clip_start_tick <= k.tick <= hl.clip_end_tick
+    ]
+
+    event_items = []
+    for idx, k in enumerate(clip_kills, 1):
+        event_items.append(
+            EventItemManifest(
+                tick=k.tick,
+                event_type="kill",
+                attacker_steam_id=k.attacker_steam_id,
+                victim_steam_id=k.victim_steam_id,
+                weapon=k.weapon,
+                headshot=bool(k.headshot),
+                wallbang=bool(k.wallbang),
+                kill_number_in_sequence=idx,
+            )
+        )
+
+    prod = ProductionRequestManifest(
+        profile=req.profile,
+        resolution=req.resolution,
+        fps=req.fps,
+        hud_mode=req.hud_mode,
+        user_notes=req.user_notes,
+    )
+
+    manifest = StudioJobManifest(
+        version="1.0.0",
+        job_id=job_id,
+        created_at=created_at,
+        demo=demo_meta,
+        clip=clip_spec,
+        actors=actors,
+        events=event_items,
+        production_request=prod,
+    )
+
+    launcher = StudioJobLauncher()
+    saved_path = launcher.submit_job(manifest)
+
+    return StudioJobResponse(
+        job_id=job_id,
+        manifest_path=str(saved_path),
+        status="pending",
+        created_at=created_at,
+    )
+
+
+@app.get("/api/studio/jobs/{job_id}", tags=["studio"])
+def get_studio_job_status(job_id: str) -> dict[str, Any]:
+    """Retrieve execution status of a submitted StudioJobManifest."""
+    provider = StudioJobStatusProvider()
+    return provider.get_status(job_id)
+
+
+@app.post("/api/social-drafts", response_model=SocialDraftResponse, tags=["content"])
+def create_social_draft(req: SocialDraftRequest) -> SocialDraftResponse:
+    """Generate social media post copy and tags for YouTube Shorts, TikTok, or Telegram."""
+    text = SocialPostDraftGenerator.generate_draft(
+        player_name=req.player_name,
+        map_name=req.map_name,
+        highlight_type=req.highlight_type,
+        primary_weapon=req.primary_weapon,
+        round_num=req.round_num,
+        kill_count=req.kill_count,
+        score=req.score,
+        duration_sec=req.duration_sec,
+        platform=req.platform,
+    )
+    return SocialDraftResponse(platform=req.platform, text=text)
 
 
 

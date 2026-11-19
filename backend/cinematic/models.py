@@ -18,16 +18,24 @@ from typing import Any, Optional
 
 
 class CameraType(str, Enum):
-    """The 8 core cinematic camera presets supported by Cinematic Studio."""
+    """The 12 cinematic camera modes supported by Cinematic Studio."""
 
     FIRST_PERSON = "FIRST_PERSON"
     VICTIM_POV = "VICTIM_POV"
+    THIRD_PERSON = "THIRD_PERSON"
     THIRD_PERSON_CHASE = "THIRD_PERSON_CHASE"
-    SHOULDER_CAM = "SHOULDER_CAM"
-    FREECAM_FLYBY = "FREECAM_FLYBY"
+    CHASE_CAMERA = "CHASE_CAMERA"
+    FREE_CAMERA = "FREE_CAMERA"
     ORBIT_CAMERA = "ORBIT_CAMERA"
+    SHOULDER_CAM = "SHOULDER_CAM"
+    SHOULDER_CAMERA = "SHOULDER_CAMERA"
+    FOLLOW_TARGET = "FOLLOW_TARGET"
+    FIXED_CAMERA = "FIXED_CAMERA"
     ESTABLISHING_SHOT = "ESTABLISHING_SHOT"
+    FREECAM_FLYBY = "FREECAM_FLYBY"
+    CINEMATIC_FLYBY = "CINEMATIC_FLYBY"
     TOP_DOWN = "TOP_DOWN"
+    CUSTOM_PATH = "CUSTOM_PATH"
 
 
 class InterpolationMode(str, Enum):

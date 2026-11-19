@@ -222,4 +222,49 @@ class PlayerAnalyticsDTO(BaseModel):
     fun_badges: list[dict[str, str]] = Field(default_factory=list)
 
 
+# --- Cinematic Studio Integration Bridge DTOs ---
+
+class StudioStatusResponse(BaseModel):
+    available: bool
+    version: Optional[str] = None
+    engine: Optional[str] = None
+    supported_profiles: list[str] = Field(default_factory=list)
+    manifest_schema: str = "1.0.0"
+
+
+class CreateStudioJobRequest(BaseModel):
+    demo_id: int
+    highlight_id: str
+    profile: str = "clean_cinematic"
+    resolution: str = "1920x1080"
+    fps: int = 60
+    hud_mode: str = "killfeed_only"
+    user_notes: str = ""
+
+
+class StudioJobResponse(BaseModel):
+    job_id: str
+    manifest_path: str
+    status: str
+    created_at: str
+
+
+class SocialDraftRequest(BaseModel):
+    player_name: str
+    map_name: str
+    highlight_type: str
+    primary_weapon: str = ""
+    round_num: int = 1
+    kill_count: int = 1
+    score: float = 85.0
+    duration_sec: float = 10.0
+    platform: str = "telegram"
+
+
+class SocialDraftResponse(BaseModel):
+    platform: str
+    text: str
+
+
+
 
