@@ -47,6 +47,9 @@ if (-not $node -or -not $npm) {
 Write-Host "  ✓ Python 3.12 (.venv) найден" -ForegroundColor Green
 Write-Host "  ✓ Node.js ($($node.Version)) и npm найдены" -ForegroundColor Green
 
+# Ensure user CS2 configs have full write permissions
+& $pythonExe -c "from backend.render.cfg_backup import unlock_all_cs2_user_configs; unlock_all_cs2_user_configs()" 2>$null
+
 # 2. Check and clean conflicting ports
 Write-Host "`n[2/4] " -NoNewline -ForegroundColor DarkGray
 Write-Host "Проверка портов 8000 (Backend) и 5173 (Frontend)..." -ForegroundColor Yellow

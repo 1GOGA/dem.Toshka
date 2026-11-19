@@ -74,6 +74,30 @@ def detect_csgo_cfg_dir() -> pathlib.Path:
     return DEFAULT_CSGO_CFG_DIR
 
 
+def unlock_all_cs2_user_configs(userdata_dir: Optional[pathlib.Path] = None) -> int:
+    """Ensure all CS2 config files in Steam userdata are writable (remove Read-Only attributes).
+
+    Prevents settings resetting across CS2 restarts caused by stale Read-Only attributes.
+    """
+    target_dir = userdata_dir or detect_steam_userdata_dir()
+    unlocked = 0
+    if target_dir.exists():
+        for root, dirs, files in os.walk(target_dir):
+            for f in files:
+                p = pathlib.Path(root) / f
+                if p.suffix in (".vcfg", ".txt", ".cfg"):
+                    try:
+                        st = p.stat()
+                        if bool(st.st_mode & stat.S_IREAD and not (st.st_mode & stat.S_IWRITE)):
+                            os.chmod(p, stat.S_IWRITE | stat.S_IREAD)
+                            unlocked += 1
+                    except Exception:
+                        pass
+    if unlocked > 0:
+        logger.info("Auto-unlocked %d read-only CS2 config file(s) in %s", unlocked, target_dir)
+    return unlocked
+
+
 class ConfigBackupManager:
     """Manages snapshotting, write-protection and restoring CS2 user configuration files."""
 
@@ -96,6 +120,9 @@ class ConfigBackupManager:
 
         Returns the number of backed up files.
         """
+        # Always clear any stale read-only locks from previous sessions before backup
+        unlock_all_cs2_user_configs(self.userdata_dir)
+
         self._backup_dir = pathlib.Path(tempfile.mkdtemp(prefix="demtoshka_cfg_backup_"))
         self._tracked_files.clear()
         self._locked_files.clear()
@@ -112,8 +139,10 @@ class ConfigBackupManager:
                     for cfg_file in cs2_local_cfg.glob("*.vcfg"):
                         if cfg_file.is_file():
                             self._track_and_copy(user_dir.name, "local_cfg", cfg_file)
+                    # Note: We NEVER track or lock cs2_video.txt as read-only, so user video modes
+                    # (such as Borderless Fullscreen) and monitor resolutions are always preserved.
                     for txt_file in cs2_local_cfg.glob("*.txt"):
-                        if txt_file.is_file():
+                        if txt_file.is_file() and not txt_file.name.lower().startswith("cs2_video"):
                             self._track_and_copy(user_dir.name, "local_cfg", txt_file)
 
                 # 1b. remote/
@@ -125,7 +154,7 @@ class ConfigBackupManager:
                     remote_cfg = cs2_remote / "cfg"
                     if remote_cfg.is_dir():
                         for cfg_file in remote_cfg.glob("*.txt"):
-                            if cfg_file.is_file():
+                            if cfg_file.is_file() and not cfg_file.name.lower().startswith("cs2_video"):
                                 self._track_and_copy(user_dir.name, "remote_cfg", cfg_file)
 
         # 2. Backup autoexec.cfg and restore_user.cfg in game/csgo/cfg/ if present
@@ -167,9 +196,10 @@ class ConfigBackupManager:
 
         When CS2 exits, Windows will reject all write operations with ERROR_ACCESS_DENIED,
         preventing in-engine session convars from polluting disk.
+        Video configurations (cs2_video.txt) are strictly excluded from locking.
         """
         for original_file, _ in self._tracked_files:
-            if original_file.is_file():
+            if original_file.is_file() and "video" not in original_file.name.lower():
                 try:
                     # Windows read-only flag
                     os.chmod(original_file, stat.S_IREAD)
@@ -223,6 +253,11 @@ class ConfigBackupManager:
                         except Exception:
                             pass
                     shutil.copy2(backup_file, original_file)
+                    # CRITICAL: Always ensure write permissions AFTER copy2 because copy2 copies attributes!
+                    try:
+                        os.chmod(original_file, stat.S_IWRITE | stat.S_IREAD)
+                    except Exception:
+                        pass
                     # Bump mtime so Steam Cloud recognizes local changes as freshest
                     try:
                         os.utime(original_file, (future_time, future_time))
@@ -389,6 +424,9 @@ def restore_user_gameplay_config() -> dict[str, int | str | bool]:
 
     future_time = time.time() + 5.0
 
+    # Ensure all user config files are writable first
+    unlock_all_cs2_user_configs(userdata_dir)
+
     if userdata_dir.exists():
         for user_dir in userdata_dir.iterdir():
             if not user_dir.is_dir() or not user_dir.name.isdigit():
@@ -406,7 +444,7 @@ def restore_user_gameplay_config() -> dict[str, int | str | bool]:
                     except Exception as e:
                         logger.warning("Could not rewrite %s: %s", key_file, e)
 
-                # Reset radar in cs2_machine_convars.vcfg
+                # Reset radar & xray in cs2_machine_convars.vcfg
                 machine_cfg = local_cfg / "cs2_machine_convars.vcfg"
                 if machine_cfg.is_file():
                     try:
@@ -427,12 +465,38 @@ def restore_user_gameplay_config() -> dict[str, int | str | bool]:
                             '"cl_radar_square_with_scoreboard"\t\t"false"',
                             '"cl_radar_square_with_scoreboard"\t\t"true"',
                         )
+                        content = content.replace(
+                            '"cl_radar_square_when_spectating"\t\t"true"',
+                            '"cl_radar_square_when_spectating"\t\t"false"',
+                        )
+                        content = content.replace(
+                            '"spec_show_xray"\t\t"1"',
+                            '"spec_show_xray"\t\t"0"',
+                        )
                         os.chmod(machine_cfg, stat.S_IWRITE | stat.S_IREAD)
                         machine_cfg.write_text(content, encoding="utf-8")
                         os.utime(machine_cfg, (future_time, future_time))
                         restored_files += 1
                     except Exception as e:
                         logger.warning("Could not patch %s: %s", machine_cfg, e)
+
+                # Ensure cs2_video.txt is in Fullscreen Windowed 1920x1080 (borderless)
+                video_cfg = local_cfg / "cs2_video.txt"
+                if video_cfg.is_file():
+                    try:
+                        os.chmod(video_cfg, stat.S_IWRITE | stat.S_IREAD)
+                        v_content = video_cfg.read_text(encoding="utf-8")
+                        v_content = v_content.replace('"setting.fullscreen"\t\t"1"', '"setting.fullscreen"\t\t"0"')
+                        v_content = v_content.replace('"setting.coop_fullscreen"\t\t"0"', '"setting.coop_fullscreen"\t\t"1"')
+                        v_content = v_content.replace('"setting.nowindowborder"\t\t"0"', '"setting.nowindowborder"\t\t"1"')
+                        v_content = v_content.replace('"setting.defaultres"\t\t"1152"', '"setting.defaultres"\t\t"1920"')
+                        v_content = v_content.replace('"setting.defaultresheight"\t\t"864"', '"setting.defaultresheight"\t\t"1080"')
+                        v_content = v_content.replace('"setting.aspectratiomode"\t\t"0"', '"setting.aspectratiomode"\t\t"1"')
+                        video_cfg.write_text(v_content, encoding="utf-8")
+                        os.utime(video_cfg, (future_time, future_time))
+                        restored_files += 1
+                    except Exception as e:
+                        logger.warning("Could not patch %s: %s", video_cfg, e)
 
             # Clean keys in remote/
             remote_dir = user_dir / "730" / "remote"
@@ -464,3 +528,11 @@ def restore_user_gameplay_config() -> dict[str, int | str | bool]:
         "restored_files_count": restored_files,
         "message": f"Конфиг CS2 успешно восстановлен ({restored_files} файлов). Radar, Binds и Audio приведены в боевой режим. Доступна команда 'exec restore_user' в консоли.",
     }
+
+
+# Auto-heal on module load: ensure all CS2 files in Steam userdata are writable
+try:
+    unlock_all_cs2_user_configs()
+except Exception:
+    pass
+

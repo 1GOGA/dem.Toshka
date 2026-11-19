@@ -151,3 +151,29 @@ class TestConfigBackupManager:
         assert (fake_game_cfg / "autoexec.cfg").is_file()
         assert (fake_game_cfg / "restore_user.cfg").is_file()
 
+    def test_video_cfg_never_locked_readonly(self, tmp_path):
+        """Verifies that cs2_video.txt is never locked as read-only during backup."""
+        userdata_dir = tmp_path / "userdata"
+        user1 = userdata_dir / "123456" / "730" / "local" / "cfg"
+        user1.mkdir(parents=True)
+        video_cfg = user1 / "cs2_video.txt"
+        video_cfg.write_text('"video.cfg" { "setting.fullscreen" "0" }', encoding="utf-8")
+        keys_cfg = user1 / "cs2_user_keys_0_slot0.vcfg"
+        keys_cfg.write_text('"config" { "bind" "space" "+jump" }', encoding="utf-8")
+
+        manager = ConfigBackupManager(
+            userdata_dir=userdata_dir,
+            csgo_cfg_dir=tmp_path,
+            enable_readonly_lock=True,
+        )
+        manager.backup()
+
+        # Keys must be locked as read-only
+        assert bool(keys_cfg.stat().st_mode & stat.S_IREAD and not (keys_cfg.stat().st_mode & stat.S_IWRITE))
+        # Video config must remain writable
+        assert not bool(video_cfg.stat().st_mode & stat.S_IREAD and not (video_cfg.stat().st_mode & stat.S_IWRITE))
+
+        manager.restore()
+        assert not bool(keys_cfg.stat().st_mode & stat.S_IREAD and not (keys_cfg.stat().st_mode & stat.S_IWRITE))
+
+
