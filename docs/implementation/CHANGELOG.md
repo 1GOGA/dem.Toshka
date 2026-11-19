@@ -1,41 +1,46 @@
-# Журнал изменений (Changelog) — dem.Toshka Overhaul
+# Журнал изменений dem.Toshka (Changelog)
 
-Все значимые изменения в проекте документируются в данном файле.
+Все заметные изменения основного приложения dem.Toshka документируются в этом файле.
 
 ---
 
-## [0.4.0-takeover] — 2026-11-19
+## [Unreleased / Phase 0 Overhaul] — 2026-11-19
 
 ### Добавлено (Added)
-- **Пакет `backend/hlae/`**:
-  - `HLAEVersionDetector`: PE-инспекция бинарников HLAE и AfxHookSource2 с верификацией совместимости CS2.
-  - `HLAECommandBuilder`: типизированный генератор скриптов с поддержкой тикового планирования `mirv_cmd addAtTick`, настройкой чистого HUD и привязкой спектатора.
-  - `HLAECampathManager`: модуль сплайновой интерполяции Catmull-Rom $C^1$, вычисление углов наведения `calculate_look_at`, генераторы кругового облета (Orbit) и пролета (Flyby), экспорт и импорт XML `mirv_campath`.
-  - `HLAEStreamManager`: профили потоков `Clean Cinematic`, `Broadcast Esports`, `VFX Multi-Pass` с экранированием `{{ ... }}` для AfxHookSource2 0.42.0+.
-  - `HLAEController`: супервизор процессов HLAE/CS2 с мониторингом таймаутов и безопасным завершением процессов.
-- **Унифицированный парсер демок (`backend/parser/`)**:
-  - `DemoParserInterface`: абстрактный контракт для сменных движков парсинга.
-  - `AwpyDemoParser`: реализация адаптера для библиотеки Awpy 2.0.2.
-  - `EventNormalizer`: фильтрация падений `world`, суицидов, тимкиллов, очистка названий оружия.
-  - `TickIndex`: быстрый бинарный поиск раундов и киллов по тикам за время $O(\log N)$.
-  - `radar_percent_to_world`: обратный пересчет процентов радара в трехмерные мировые координаты CS2.
-- **Кинематографический движок камер (`backend/cinematic/camera_engine.py`)**:
-  - Поддержка 12 режимов съемки (POV, Victim, Third-Person, Chase, Free, Orbit, Shoulder, Follow Target, Fixed, Flyby, Top-Down, Custom Spline).
-- **Объяснимый скоринг хайлайтов (`backend/detector/highlight_scorer.py`)**:
-  - `SmartHighlightScorer`: расчет составного рейтинга зрелищности (ACE, 4K, 3K, хедшоты, волбанги, ноускопы, прострелы через дым, престиж оружия, темп, 1vX клатчи) с детализацией факторов и значками.
-- **Исследования и архитектурная документация**:
-  - `docs/audit/BASELINE_AUDIT.md`: аудит базового состояния проекта.
-  - `docs/research/COMPETITIVE_LANDSCAPE.md`: сравнительный анализ 10 решений на рынке.
-  - `docs/research/FEATURE_TAKEOVER_MATRIX.md`: матрица захвата 11 ключевых возможностей.
-  - `docs/architecture/ARCHITECTURE_REVIEW.md`: целевая архитектура с диаграммой Mermaid.
-  - `docs/architecture/DECISIONS.md`: архитектурные решения ADR-011 – ADR-015.
-  - `docs/compatibility/CS2_COMPATIBILITY_MATRIX.md`: матрица совместимости билдов CS2 и тулинга.
-  - `docs/qa/REGRESSION_TEST_PLAN.md` и `docs/qa/TEST_RESULTS.md`: план регрессионного тестирования и отчет о 348 успешных тестах.
+- **Комплексная архитектурная документация и аудит (в `docs/`):**
+  - `docs/audit/BASELINE_AUDIT.md`: Полный базовый аудит кодовой базы основного приложения с инвентаризацией компонентов, анализом техдолга и производительности.
+  - `docs/research/COMPETITIVE_LANDSCAPE.md`: Анализ конкурентов (Scope.gg, Leetify, CS Demo Manager, awpy, demoparser2, demoinfocs-golang) по 10 обязательным критериям.
+  - `docs/research/FEATURE_TAKEOVER_MATRIX.md`: Матрица приобретения функций категорий A (Must Have), B (Advantage), C (Differentiators).
+  - `docs/research/COMPETITOR_UX_ANALYSIS.md`: Анализ дизайн-системы, визуальной иерархии и эргономики темной темы.
+  - `docs/architecture/ARCHITECTURE_REVIEW.md`: Полный системный обзор архитектуры основного приложения.
+  - `docs/architecture/DATA_MODEL.md`: Спецификация схемы данных SQLite и ER-диаграмма сущностей.
+  - `docs/architecture/DECISIONS.md`: Реестр архитектурных решений (ADR-001 .. ADR-006).
+  - `docs/compatibility/CORE_COMPATIBILITY_MATRIX.md`: Матрица совместимости с версиями CS2 и картами.
+  - `docs/integration/CINEMATIC_STUDIO_CONTRACT.md`: Контракт манифеста `StudioJobManifest` v1.0 для взаимодействия с Cinematic Studio.
+  - `docs/qa/REGRESSION_TEST_PLAN.md`: Протокол тестирования компонентов.
+  - `docs/qa/TEST_RESULTS.md`: Фактический отчет о прохождении 351 unit-теста и сборки фронтенда.
+  - `docs/implementation/IMPLEMENTATION_REPORT.md`: Сводный отчет о реализации.
+- **Интеграционный слой Cinematic Studio Bridge:**
+  - `backend/integration/studio_bridge.py`:
+    - Модели данных `StudioJobManifest`, `DemoMetadataManifest`, `ClipSpecificationManifest`, `EventItemManifest`, `ProductionRequestManifest`.
+    - Сервис `StudioAvailabilityDetector` для безопасного определения наличия установленного расширения студии.
+    - Сервис `StudioJobLauncher` для отправки заданий в очередь `manifests/jobs/`.
+    - Сервис `StudioJobStatusProvider` для отслеживания хода рендера.
+    - Генератор описаний публикаций `SocialPostDraftGenerator` для Telegram, YouTube Shorts и TikTok.
+  - `backend/integration/__init__.py`: Публичный интерфейс интеграционного слоя.
+- **API Эндпоинты:**
+  - `GET /api/studio/status`: Проверка доступности Cinematic Studio и поддерживаемых профилей.
+  - `POST /api/studio/jobs`: Формирование и отправка `StudioJobManifest` v1.0 по ID демки и хайлайта.
+  - `GET /api/studio/jobs/{job_id}`: Проверка статуса выполнения задания рендера.
+  - `POST /api/social-drafts`: Генерация готовых текстов постов для соцсетей.
+- **Тестовый пакет:**
+  - `tests/unit/test_studio_bridge.py`: 4 юнит-теста сериализации, очереди и генерации текстов.
+  - `tests/unit/test_api_studio.py`: 3 юнит-теста эндпоинтов статуса студии, создания заданий и черновиков постов.
 
 ### Изменено (Changed)
-- `backend/render/cfg_backup.py`: добавлена автоматическая разблокировка атрибута "Read-Only" для пользовательских файлов конфигурации в папках Steam userdata, исключена блокировка системного файла видео `cs2_video.txt`.
-- Расширен перечень перечислений `CameraType` в `backend/cinematic/models.py`.
+- `backend/api/schemas.py`: Добавлены DTO-классы `StudioStatusResponse`, `CreateStudioJobRequest`, `StudioJobResponse`, `SocialDraftRequest`, `SocialDraftResponse`.
+- `backend/api/main.py`: Подключены новые эндпоинты управления манифестами заданий и генератора контента.
 
 ### Исправлено (Fixed)
-- Предотвращен сброс настроек клавиатуры и мыши CS2 при перезапуске игры после записи хайлайтов.
-- Исключены ошибки генерации путей `mirv_campath` с нулевыми отступами в узких коридорах.
+- Разделены контексты основного приложения dem.Toshka и отдельного модуля Cinematic Studio: основное приложение не загружает зависимости HLAE и не требует их для анализа матчей.
+- Устранена путаница между полями `tags` и `tags_json` при формировании спецификаций клипов.

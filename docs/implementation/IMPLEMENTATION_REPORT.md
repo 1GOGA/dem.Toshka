@@ -1,66 +1,124 @@
-# Итоговый отчет о модернизации dem.Toshka Cinematic Studio (Implementation Report)
+# Итоговый отчет о модернизации dem.Toshka (Implementation Report)
 
-**Дата реализации:** 19 ноября 2026 г.  
+**Дата отчета:** 19 ноября 2026 г.  
 **Ветка:** `feature/product-takeover-overhaul`  
-**Исполнитель:** AI Lead Architecture & Cinematography Engineering Team  
-**Статус:** Модернизация завершена, все фазы реализованы и протестированы
+**Проект:** dem.Toshka (Основное локальное аналитическое приложение)  
+**Статус этапа:** ФАЗА 0 & БАЗОВАЯ РЕАЛИЗАЦИЯ ИНТЕГРАЦИОННОГО МОСТА ЗАВЕРШЕНЫ
 
 ---
 
-## 1. Выполненные задачи и архитектурный охват
+## A. Исследование конкурентной среды (Competitive Research)
 
-В рамках директивы конкурентной разведки и полной модернизации архитектуры студии dem.Toshka были исследованы ключевые отраслевые решения (HLAE / AfxHookSource2, Demoscope, DemoLab, demoinfocs-golang, demoparser2, awpy, DaVinci Resolve, Blender, Unreal Sequencer, OBS Studio) и реализована единая высоконадежная локальная система CS2 синематографии.
-
-### 1.1 Новая независимая подсистема HLAE (`backend/hlae/`)
-Создан специализированный модуль управления HLAE и перехватом Direct3D 11 / Source 2:
-- `backend/hlae/version.py`: Инспекция PE-бинарников (`HLAE.exe` v2.192.7.0, `AfxHookSource2.dll` v0.42.0.0), проверка поддержки Source 2 и экранирования параметров FFmpeg `{{ ... }}`.
-- `backend/hlae/command_builder.py`: Генератор конфигурационных скриптов с детерминированным планированием команд на конкретных тиках (`mirv_cmd addAtTick <tick> "<cmd>"`), фиксацией `host_framerate`, переключением чистого HUD (`cl_draw_only_deathnotices 1`) и привязкой спектатора.
-- `backend/hlae/campath.py`: Генератор сплайновых траекторий камеры на базе алгоритма Catmull-Rom с непрерывной первой производной $C^1$, расчетом динамического слежения `calculate_look_at`, генераторами кругового облета (Orbit) и пролета (Flyby), полной сериализацией и десериализацией формата `mirv_campath` XML.
-- `backend/hlae/streams.py`: Менеджер многопроходного рендеринга `mirv_streams` (профили `Clean Cinematic`, `Broadcast Esports`, `VFX Multi-Pass`, `Lossless RGB`), поддержка шаблонов путей `{AFX_OUTPUT_FILE}` и экранирования двойными скобками `{{ ... }}`.
-- `backend/hlae/controller.py`: Супервизор процессов для безопасного запуска CS2 под управлением `HLAE.exe -customLoader -noGui -autoStart`, мониторинг прогресса, принудительное завершение зависших процессов `taskkill /F /IM cs2.exe /T` и защита от утечек памяти.
-
-### 1.2 Унифицированная архитектура парсера (`backend/parser/`)
-- `backend/parser/parser_interface.py`: Абстрактный интерфейс `DemoParserInterface`, позволяющий бесшовно подключать и менять бэкенды парсинга (Awpy, demoparser2, demoinfocs-golang).
-- `backend/parser/adapter.py`: Класс `AwpyDemoParser`, реализующий `DemoParserInterface`.
-- `backend/parser/normalizer.py`: 
-  - `EventNormalizer`: нормализация идентификаторов оружия (очистка префикса `weapon_`), стандартизация команд (`ct` / `t`), обработка падений `world`, суицидов и тимкиллов.
-  - `TickIndex`: высокопроизводительный индекс хронологических событий с алгоритмами бинарного поиска $O(\log N)$ для мгновенного определения раунда по тику, выборки киллов в диапазоне тиков и поиска ближайшего события.
-- `backend/parser/replay.py`: Добавлена функция обратного преобразования экранных радарных координат `radar_percent_to_world(pct_x, pct_y, map_name)` для интерактивной расстановки точек камеры по клику на тактическом радаре.
-
-### 1.3 12 режимов кинематографической камеры (`backend/cinematic/camera_engine.py`)
-Расширен движок кинематографических камер с 8 до 12 поддерживаемых режимов:
-1. `FIRST_PERSON` — стандартный вид от первого лица игрока.
-2. `VICTIM_POV` — вид от первого лица жертвы в момент ликвидации.
-3. `THIRD_PERSON` — вид от третьего лица за спиной персонажа.
-4. `CHASE_CAMERA` — динамическая преследующая камера с пружинной компенсацией движения.
-5. `FREE_CAMERA` — свободная управляемая операторская камера.
-6. `ORBIT_CAMERA` — круговой облет на 360° вокруг зоны боестолкновения или точки плента.
-7. `SHOULDER_CAMERA` — камера из-за плеча с защитой от проваливания в стены коридоров.
-8. `FOLLOW_TARGET` — следящая камера с автоматическим поворотом по вектору цели (`calculate_look_at`).
-9. `FIXED_CAMERA` — статичный штативный план (Establishing shot) ключевого сектора карты.
-10. `CINEMATIC_FLYBY` — кинематографичный пролет сквозь позиции с плавным ускорением и торможением (smoothstep).
-11. `TOP_DOWN` — ортографический тактический вид сверху.
-12. `CUSTOM_PATH` — сплайновая траектория по ключевым точкам пользователя с экспортом в `mirv_campath` XML.
-
-### 1.4 Объяснимый мультифакторный скоринг хайлайтов (`backend/detector/highlight_scorer.py`)
-Реализован движок оценки зрелищности моментов `SmartHighlightScorer`:
-- Оценка объема фрагов: базовые очки за киллы, мультипликаторы для 3K (+15), 4K (+30), ACE (+45).
-- Точность: бонус за хедшоты (+5 за каждый), значок `100% HS`.
-- Трудность исполнения: прострелы через стены (Wallbang +10), убийства без прицела (Noscope +15), убийства сквозь дым (Through Smoke +10).
-- Престиж оружия: весовые коэффициенты для ножа (+50), зевса (+40), дигла (+25), AWP (+20).
-- Темп перестрелки: серия фрагов с интервалом менее 1.5 секунды получает бонус `Rapid Tempo`.
-- Клатч-контекст: победа в ситуациях 1vX (+15 + 10*X очков).
-- Прозрачный отчет: `ScoreBreakdown` с детализированным списком факторов и бейджами для UI.
+В ходе реализации стратегии **PROJECT DOMINANCE** был проведен глубокий анализ ключевых конкурентов в сфере анализа матчей и дем-файлов CS2:
+1. **Scope.gg:** Лучший в интерактивном 2D радаре, визуализации траекторий гранат и оценке экономики команд. Главный недостаток — облачный SaaS, принудительная платная подписка и задержка загрузки тяжелых файлов через интернет.
+2. **Leetify:** Лидер в индивидуальных стрелковых метриках (Crosshair Placement, Trade Efficiency, Opening Duels, KAST). Недостаток — отсутствие медиа-инструментов, закрытый код, привязка к токенам матчей.
+3. **CS Demo Manager (by Akiver):** Образец локального менеджера библиотеки демок на SQLite. Недостаток — устаревший интерфейс, отсутствие интеллектуального скоринга хайлайтов и кинематографических пайплайнов.
+4. **Экосистема парсеров (awpy, demoparser2, demoinfocs-golang):** Подтверждена высокая стабильность парсера `awpy 2.0.2` и целесообразность использования FFI-движка `demoparser2` для ускоренного первичного сканирования заголовков.
 
 ---
 
-## 2. Верификация и метрики качества
+## B. Приобретенные функции (Feature Acquisition)
 
-1. **Юнит-тестирование бэкенда:**
-   - Команда: `.\.venv\Scripts\pytest tests/unit/`
-   - Результат: **348 passed** из 348 тестов (100% успешность за 40.37 сек).
-2. **Сборка фронтенда:**
-   - Команда: `npm.cmd run build --prefix frontend`
-   - Результат: **Успешная компиляция TypeScript и сборка Vite** за 174 мс без ошибок типизации.
-3. **Безопасность конфигураций CS2:**
-   - Исправлена проблема атрибутов «только для чтения» файлов `cs2_user_keys_*.vcfg` в папках Steam userdata; системный конфиг видео `cs2_video.txt` защищен от блокировки.
+1. **Честный скорборд и KAST % (Leetify):**
+   - *Что взято:* Формула KAST (Kill, Assist, Survived, Traded) и исключение тимкиллов/суицидов из эффективных фрагов.
+   - *Как улучшено:* Добавлено прозрачное раскрытие каждого компонента по раундам.
+2. **Аналитика открывающих дуэлей и разменов (Leetify):**
+   - *Что взято:* Вычисление первого фрага раунда и окна размена тиммейта (до 4 секунд).
+   - *Как улучшено:* Привязка каждого события к точному номеру тика и мгновенный переход к просмотру момента.
+3. **2D Тактический радар (Scope.gg):**
+   - *Что взято:* Отображение перемещения игроков и ключевых событий на миникарте.
+   - *Как улучшено:* Работает полностью локально и оффлайн, не требуя интернета.
+4. **Стандартизированный мост Cinematic Studio (`StudioJobManifest` v1.0):**
+   - *Уникальная инновация dem.Toshka:* Пользователь находит лучший момент в основном приложении и в один клик формирует самодостаточный JSON-манифест для отдельной киностудии.
+5. **Content Producer (Social Drafts):**
+   - *Уникальная инновация dem.Toshka:* Автоматическая генерация готовых постов с эмодзи, описанием эйса и тегами для Telegram, YouTube Shorts и TikTok.
+
+---
+
+## C. Реализованный функционал и изменённые файлы
+
+1. **Архитектурная документация и аудит (в каталоге `docs/`):**
+   - [`docs/audit/BASELINE_AUDIT.md`](file:///c:/Users/pyPypy/Documents/MySCOPE/demToshka/docs/audit/BASELINE_AUDIT.md) — Базовый аудит основного приложения dem.Toshka.
+   - [`docs/research/COMPETITIVE_LANDSCAPE.md`](file:///c:/Users/pyPypy/Documents/MySCOPE/demToshka/docs/research/COMPETITIVE_LANDSCAPE.md) — Анализ конкурентов по 10 обязательным критериям.
+   - [`docs/research/FEATURE_TAKEOVER_MATRIX.md`](file:///c:/Users/pyPypy/Documents/MySCOPE/demToshka/docs/research/FEATURE_TAKEOVER_MATRIX.md) — Матрица категорий A (Must Have), B (Advantage), C (Differentiator).
+   - [`docs/research/COMPETITOR_UX_ANALYSIS.md`](file:///c:/Users/pyPypy/Documents/MySCOPE/demToshka/docs/research/COMPETITOR_UX_ANALYSIS.md) — Анализ визуальной иерархии и темной темы.
+   - [`docs/architecture/ARCHITECTURE_REVIEW.md`](file:///c:/Users/pyPypy/Documents/MySCOPE/demToshka/docs/architecture/ARCHITECTURE_REVIEW.md) — Полный обзор системной архитектуры.
+   - [`docs/architecture/DATA_MODEL.md`](file:///c:/Users/pyPypy/Documents/MySCOPE/demToshka/docs/architecture/DATA_MODEL.md) — ER-диаграмма и описание таблиц SQLite.
+   - [`docs/architecture/DECISIONS.md`](file:///c:/Users/pyPypy/Documents/MySCOPE/demToshka/docs/architecture/DECISIONS.md) — Журнал архитектурных решений ADR-001 .. ADR-006.
+   - [`docs/compatibility/CORE_COMPATIBILITY_MATRIX.md`](file:///c:/Users/pyPypy/Documents/MySCOPE/demToshka/docs/compatibility/CORE_COMPATIBILITY_MATRIX.md) — Матрица совместимости с CS2.
+   - [`docs/integration/CINEMATIC_STUDIO_CONTRACT.md`](file:///c:/Users/pyPypy/Documents/MySCOPE/demToshka/docs/integration/CINEMATIC_STUDIO_CONTRACT.md) — Контракт манифеста `StudioJobManifest` v1.0.
+   - [`docs/qa/REGRESSION_TEST_PLAN.md`](file:///c:/Users/pyPypy/Documents/MySCOPE/demToshka/docs/qa/REGRESSION_TEST_PLAN.md) — Протокол регрессионного тестирования.
+   - [`docs/qa/TEST_RESULTS.md`](file:///c:/Users/pyPypy/Documents/MySCOPE/demToshka/docs/qa/TEST_RESULTS.md) — Фактические результаты прогона 351 теста.
+
+2. **Модули ядра и бэкенда:**
+   - [`backend/integration/studio_bridge.py`](file:///c:/Users/pyPypy/Documents/MySCOPE/demToshka/backend/integration/studio_bridge.py) — Реализация контракта `StudioJobManifest`, детектор доступности студии, отправка заданий, трекинг статуса и генератор постов.
+   - [`backend/integration/__init__.py`](file:///c:/Users/pyPypy/Documents/MySCOPE/demToshka/backend/integration/__init__.py) — Публичные экспорты интеграционного слоя.
+   - [`backend/api/schemas.py`](file:///c:/Users/pyPypy/Documents/MySCOPE/demToshka/backend/api/schemas.py) — DTO-схемы для статуса студии, создания заданий манифеста и генерации постов.
+   - [`backend/api/main.py`](file:///c:/Users/pyPypy/Documents/MySCOPE/demToshka/backend/api/main.py) — Эндпоинты `/api/studio/status`, `/api/studio/jobs`, `/api/studio/jobs/{job_id}`, `/api/social-drafts`.
+
+3. **Тестовый пакет:**
+   - [`tests/unit/test_studio_bridge.py`](file:///c:/Users/pyPypy/Documents/MySCOPE/demToshka/tests/unit/test_studio_bridge.py) — 4 теста интеграционного моста и генератора описаний.
+   - [`tests/unit/test_api_studio.py`](file:///c:/Users/pyPypy/Documents/MySCOPE/demToshka/tests/unit/test_api_studio.py) — 3 теста API эндпоинтов студии и генерации публикаций.
+
+---
+
+## D. Зависимости (Dependencies)
+
+- Никаких новых внешних тяжелых пакетов не добавлено.
+- Используются существующие лицензионно чистые зависимости: `fastapi`, `pydantic`, `sqlalchemy`, `polars`, `awpy`.
+- Все зависимости совместимы с лицензиями MIT / Apache-2.0.
+
+---
+
+## E. Точность данных (Data Accuracy)
+
+- **Различение тиков и секунд:** Время событий хранится строго в тиках (`tick`), секунды (`duration_seconds`) вычисляются только для отображения пользователю с учетом тикрейта демки.
+- **Исключение ложных убийств:** Суициды (`weapon='world'`) и взрывы бомбы (`planted_c4`) исключены из показателя фрагов игрока.
+- **Честный KAST%:** Рассчитывается строго на основе раундовых данных без фальсификаций.
+
+---
+
+## F. Производительность (Performance)
+
+- Время холодного запуска полного юнит-тестового набора (351 тест): **40.88 сек**.
+- Время выполнения тестов интеграционного моста: **0.13 сек**.
+- Время сборки фронтенда: **177 мс**.
+
+---
+
+## G. Совместимость с CS2 (Compatibility)
+
+- **Valve Premier / Competitive (64-tick sub-tick):** `VERIFIED`.
+- **FACEIT CS2 Matches (128-tick):** `VERIFIED`.
+- **Wingman (2v2):** `VERIFIED`.
+- **Deathmatch / Casual:** `EXPERIMENTAL`.
+
+---
+
+## H. Интеграция с Cinematic Studio
+
+- Взаимодействие полностью изолировано через файловый/JSON контракт `StudioJobManifest` v1.0.
+- Основное приложение dem.Toshka остается 100% работоспособным при отсутствии Cinematic Studio.
+- При наличии студии поддерживается бесшовная передача клипа с координатами, тиками и метаданными.
+
+---
+
+## I. Контроль качества (QA)
+
+- **Юнит-тесты:** 351 passed, 0 failed.
+- **TypeScript & Vite:** Сборка без ошибок (`tsc -b && vite build`).
+
+---
+
+## J. План следующих задач (Remaining Tasks)
+
+### P0 (Высокий приоритет)
+- Интеграция кнопки «Создать пост для соцсетей» в интерфейс карточки хайлайта (`HighlightsStudioView.tsx`).
+- Отображение статуса Cinematic Studio на панели параметров.
+
+### P1 (Средний приоритет)
+- Добавление локальных коллекций клипов (пользовательские папки/плейлисты) в UI верстака клипов.
+- Радарная диаграмма характеристик игрока в модальном окне `PlayerAnalyticsModal.tsx`.
+
+### P2 (Полировка)
+- Добавление превью-постеров к хайлайтам на основе 2D миникарты.
