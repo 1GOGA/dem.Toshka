@@ -10,6 +10,11 @@ import time
 import json
 import pathlib
 
+# Ensure repository root is on sys.path
+REPO_ROOT = pathlib.Path(__file__).resolve().parent.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from backend.parser.ingestion import ingest
 from backend.analytics.match_stats import compute_match_stats
 from backend.analytics.player_analytics import compute_player_analytics
