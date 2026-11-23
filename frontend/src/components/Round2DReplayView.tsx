@@ -1,8 +1,17 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { api } from '../api'
-import type { DemoSummary, HighlightItem, RoundDTO, RoundReplayData } from '../types'
+import type {
+  AnalysisProjectDTO,
+  BookmarkDTO,
+  DemoSummary,
+  HighlightItem,
+  RoundDTO,
+  RoundReplayData,
+  TacticalDrawingDTO,
+} from '../types'
 import { PlayIcon, PauseIcon, CrosshairIcon } from './Icons'
 import { TacticalReplayRadar } from './TacticalReplayRadar'
+import { VoiceTimelinePanel } from './VoiceTimelinePanel'
 import { useTranslation } from '../i18n'
 
 interface Round2DReplayViewProps {
@@ -32,6 +41,11 @@ export function Round2DReplayView({
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1)
   const [currentLevel, setCurrentLevel] = useState<'upper' | 'lower'>('upper')
 
+  // Analysis Projects, Drawings & Bookmarks State (Phase 2)
+  const [activeProject, setActiveProject] = useState<AnalysisProjectDTO | null>(null)
+  const [projectDrawings, setProjectDrawings] = useState<TacticalDrawingDTO[]>([])
+  const [projectBookmarks, setProjectBookmarks] = useState<BookmarkDTO[]>([])
+
   const animationTimerRef = useRef<number | null>(null)
 
   // Synchronize selected round if rounds change or load asynchronously
@@ -40,6 +54,102 @@ export function Round2DReplayView({
       setSelectedRoundNum(rounds[0].round_num)
     }
   }, [rounds, selectedRoundNum])
+
+  // Load or auto-create AnalysisProject for current demo
+  useEffect(() => {
+    if (!demo?.id) return
+    let isSubscribed = true
+    api
+      .getProjects(demo.id)
+      .then(async (projects) => {
+        if (!isSubscribed) return
+        if (projects.length > 0) {
+          setActiveProject(projects[0])
+        } else {
+          try {
+            const title =
+              lang === 'ru'
+                ? `Разбор матча: ${demo.map_name || 'CS2'}`
+                : `Match Breakdown: ${demo.map_name || 'CS2'}`
+            const created = await api.createProject(demo.id, title, 'Primary Tactical Analysis Project')
+            if (isSubscribed) setActiveProject(created)
+          } catch (createErr) {
+            console.error('Failed to auto-create analysis project:', createErr)
+          }
+        }
+      })
+      .catch((err) => console.error('Failed to load projects:', err))
+
+    return () => {
+      isSubscribed = false
+    }
+  }, [demo?.id, demo?.map_name, lang])
+
+  // Load drawings and bookmarks when project or round changes
+  useEffect(() => {
+    if (!activeProject?.id) return
+    let isSubscribed = true
+
+    // Fetch drawings for this round
+    api
+      .getDrawings(activeProject.id, selectedRoundNum)
+      .then((drawings) => {
+        if (isSubscribed) setProjectDrawings(drawings)
+      })
+      .catch((err) => console.error('Failed to load drawings:', err))
+
+    // Fetch bookmarks for the project
+    api
+      .getBookmarks(activeProject.id)
+      .then((bookmarks) => {
+        if (isSubscribed) setProjectBookmarks(bookmarks)
+      })
+      .catch((err) => console.error('Failed to load bookmarks:', err))
+
+    return () => {
+      isSubscribed = false
+    }
+  }, [activeProject?.id, selectedRoundNum])
+
+  const handleSaveDrawing = async (drawing: any) => {
+    if (!activeProject?.id) return
+    try {
+      const saved = await api.addDrawing(activeProject.id, drawing)
+      setProjectDrawings((prev) => [...prev.filter((d) => d.id !== saved.id), saved])
+    } catch (err) {
+      console.error('Failed to save drawing:', err)
+    }
+  }
+
+  const handleDeleteDrawing = async (drawingId: string) => {
+    if (!activeProject?.id) return
+    try {
+      await api.deleteDrawing(activeProject.id, drawingId)
+      setProjectDrawings((prev) => prev.filter((d) => d.id !== drawingId))
+    } catch (err) {
+      console.error('Failed to delete drawing:', err)
+    }
+  }
+
+  const handleSaveBookmark = async (bookmark: any) => {
+    if (!activeProject?.id) return
+    try {
+      const saved = await api.addBookmark(activeProject.id, bookmark)
+      setProjectBookmarks((prev) => [...prev.filter((b) => b.id !== saved.id), saved])
+    } catch (err) {
+      console.error('Failed to save bookmark:', err)
+    }
+  }
+
+  const handleDeleteBookmark = async (bookmarkId: string) => {
+    if (!activeProject?.id) return
+    try {
+      await api.deleteBookmark(activeProject.id, bookmarkId)
+      setProjectBookmarks((prev) => prev.filter((b) => b.id !== bookmarkId))
+    } catch (err) {
+      console.error('Failed to delete bookmark:', err)
+    }
+  }
 
   // Load round data on round change
   useEffect(() => {
@@ -50,7 +160,7 @@ export function Round2DReplayView({
     setCurrentFrameIndex(0)
 
     api
-      .getRoundReplay(demo.id, selectedRoundNum, 32)
+      .getRoundReplay(demo.id, selectedRoundNum, 16)
       .then((data) => {
         setReplayData(data)
         setIsLoading(false)
@@ -388,6 +498,13 @@ export function Round2DReplayView({
               showGrenades={showGrenades}
               onJumpToTick={handleJumpToTick}
               maxContainerHeight="640px"
+              roundNum={selectedRoundNum}
+              savedDrawings={projectDrawings}
+              savedBookmarks={projectBookmarks}
+              onSaveDrawing={handleSaveDrawing}
+              onDeleteDrawing={handleDeleteDrawing}
+              onSaveBookmark={handleSaveBookmark}
+              onDeleteBookmark={handleDeleteBookmark}
             />
 
             {/* Timeline Scrubber & Controls */}
@@ -504,6 +621,20 @@ export function Round2DReplayView({
                 </div>
               </div>
             </div>
+
+            {/* Phase 3: Synchronized In-Demo Player Voice Timeline */}
+            {demo?.id && replayData && (
+              <VoiceTimelinePanel
+                demoId={demo.id}
+                roundNum={selectedRoundNum}
+                currentTick={currentFrame?.tick || replayData.start_tick}
+                startTick={replayData.start_tick}
+                endTick={replayData.end_tick}
+                tickrate={replayData.tickrate || 128}
+                isPlaying={isPlaying}
+                onJumpToTick={handleJumpToTick}
+              />
+            )}
           </div>
 
           {/* Right Sidebar: Round Highlights & Event Feed */}

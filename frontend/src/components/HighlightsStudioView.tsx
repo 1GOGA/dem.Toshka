@@ -2368,6 +2368,57 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                     <div style={{ fontSize: '10px', color: '#94a3b8', lineHeight: '1.3' }}>
                       {lang === 'ru' ? 'Смерти всех жертв ➔ Откат ➔ Триумф ГГ (ровно 2 запуска CS2)' : 'Victim deaths ➔ Rollback ➔ Hero Triumph (Exactly 2 launches)'}
                     </div>
+                    {clipSettings?.perspective === 'dynamic_killcam' && (
+                      <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }} onClick={(e) => e.stopPropagation()}>
+                        <button
+                          type="button"
+                          className="btn card-interactive"
+                          onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({
+                            ...clipSettings,
+                            perspective: 'dynamic_killcam',
+                            killfeedOnly: true,
+                            hudMode: 'killfeed_only',
+                            radarMode: 'hidden',
+                            overheadMode: false,
+                          })}
+                          style={{
+                            padding: '3px 8px',
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            borderRadius: '4px',
+                            backgroundColor: clipSettings.killfeedOnly ? '#8b5cf6' : '#1e1b2e',
+                            color: clipSettings.killfeedOnly ? '#fff' : '#c4b5fd',
+                            border: '1px solid #8b5cf6',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {lang === 'ru' ? '✨ Чистый (без худа)' : '✨ Clean (no HUD)'}
+                        </button>
+                        <button
+                          type="button"
+                          className="btn card-interactive"
+                          onClick={() => onUpdateSettings && clipSettings && onUpdateSettings({
+                            ...clipSettings,
+                            perspective: 'dynamic_killcam',
+                            killfeedOnly: false,
+                            hudMode: 'full',
+                            radarMode: 'player_focus',
+                          })}
+                          style={{
+                            padding: '3px 8px',
+                            fontSize: '10px',
+                            fontWeight: 700,
+                            borderRadius: '4px',
+                            backgroundColor: !clipSettings.killfeedOnly ? '#38bdf8' : '#1e2433',
+                            color: !clipSettings.killfeedOnly ? '#040711' : '#94a3b8',
+                            border: '1px solid #38bdf8',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {lang === 'ru' ? '🎮 Турнирный HUD' : '🎮 Esports HUD'}
+                        </button>
+                      </div>
+                    )}
                   </button>
                 </div>
               </div>
@@ -2688,7 +2739,7 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                               ...clipSettings,
                               hudMode: isReal ? 'real' : 'full',
                               hudScale: isReal ? 1.0 : (clipSettings.hudScale || 0.95),
-                              ...(isReal ? { xray: false, radarMode: 'player_focus' } : {}),
+                              ...(isReal ? { xray: false, radarMode: 'player_focus', killfeedOnly: false } : {}),
                             })
                           }
                         }}
@@ -2769,7 +2820,18 @@ export const HighlightsStudioView: React.FC<HighlightsStudioViewProps> = ({
                       <input
                         type="checkbox"
                         checked={Boolean(clipSettings?.killfeedOnly)}
-                        onChange={(e) => onUpdateSettings && clipSettings && onUpdateSettings({ ...clipSettings, killfeedOnly: e.target.checked })}
+                        onChange={(e) => {
+                          if (onUpdateSettings && clipSettings) {
+                            const isClean = e.target.checked
+                            onUpdateSettings({
+                              ...clipSettings,
+                              killfeedOnly: isClean,
+                              hudMode: isClean ? 'killfeed_only' : 'full',
+                              radarMode: isClean ? 'hidden' : 'player_focus',
+                              overheadMode: isClean ? false : clipSettings.overheadMode,
+                            })
+                          }
+                        }}
                       />
                       <span className="toggle-slider" />
                     </label>

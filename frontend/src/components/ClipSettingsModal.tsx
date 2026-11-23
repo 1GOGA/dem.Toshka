@@ -127,6 +127,57 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
                 <span style={{ fontSize: '9px', color: '#94a3b8', lineHeight: '1.2' }}>
                   {lang === 'ru' ? 'Смерти жертв ➔ Откат ➔ Триумф ГГ (2 запуска)' : 'Victim POVs ➔ Rollback ➔ Hero Triumph (2 runs)'}
                 </span>
+                {settings.perspective === 'dynamic_killcam' && (
+                  <div style={{ display: 'flex', gap: '6px', marginTop: '6px' }} onClick={(e) => e.stopPropagation()}>
+                    <button
+                      type="button"
+                      className="btn card-interactive"
+                      onClick={() => onUpdateSettings({
+                        ...settings,
+                        perspective: 'dynamic_killcam',
+                        killfeedOnly: true,
+                        hudMode: 'killfeed_only',
+                        radarMode: 'hidden',
+                        overheadMode: false,
+                      })}
+                      style={{
+                        padding: '3px 8px',
+                        fontSize: '9px',
+                        fontWeight: 700,
+                        borderRadius: '4px',
+                        backgroundColor: settings.killfeedOnly ? '#8b5cf6' : '#1e1b2e',
+                        color: settings.killfeedOnly ? '#fff' : '#c4b5fd',
+                        border: '1px solid #8b5cf6',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {lang === 'ru' ? '✨ Чистый (без худа)' : '✨ Clean (no HUD)'}
+                    </button>
+                    <button
+                      type="button"
+                      className="btn card-interactive"
+                      onClick={() => onUpdateSettings({
+                        ...settings,
+                        perspective: 'dynamic_killcam',
+                        killfeedOnly: false,
+                        hudMode: 'full',
+                        radarMode: 'player_focus',
+                      })}
+                      style={{
+                        padding: '3px 8px',
+                        fontSize: '9px',
+                        fontWeight: 700,
+                        borderRadius: '4px',
+                        backgroundColor: !settings.killfeedOnly ? '#38bdf8' : '#1e2433',
+                        color: !settings.killfeedOnly ? '#040711' : '#94a3b8',
+                        border: '1px solid #38bdf8',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {lang === 'ru' ? '🎮 Турнирный HUD' : '🎮 Esports HUD'}
+                    </button>
+                  </div>
+                )}
               </button>
             </div>
           </div>
@@ -430,7 +481,7 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
                         ...settings,
                         hudMode: isReal ? 'real' : 'full',
                         hudScale: isReal ? 1.0 : (settings.hudScale || 0.95),
-                        ...(isReal ? { xray: false, radarMode: 'player_focus' } : {}),
+                        ...(isReal ? { xray: false, radarMode: 'player_focus', killfeedOnly: false } : {}),
                       })
                     }}
                   />
@@ -510,7 +561,16 @@ export const ClipSettingsModal: React.FC<ClipSettingsModalProps> = ({
                   <input
                     type="checkbox"
                     checked={Boolean(settings.killfeedOnly)}
-                    onChange={(e) => onUpdateSettings({ ...settings, killfeedOnly: e.target.checked })}
+                    onChange={(e) => {
+                      const isClean = e.target.checked
+                      onUpdateSettings({
+                        ...settings,
+                        killfeedOnly: isClean,
+                        hudMode: isClean ? 'killfeed_only' : 'full',
+                        radarMode: isClean ? 'hidden' : 'player_focus',
+                        overheadMode: isClean ? false : settings.overheadMode,
+                      })
+                    }}
                   />
                   <span className="toggle-slider" />
                 </label>

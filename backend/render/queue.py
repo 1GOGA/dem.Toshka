@@ -402,8 +402,8 @@ class RenderQueueManager:
                         r_start = round_info.start_tick if round_info else 0
                         r_end = (round_info.official_end_tick or round_info.end_tick) if round_info else None
 
-                        vic_lead_ticks = int(1.3 * tickrate)
-                        vic_post_ticks = int(0.7 * tickrate)
+                        vic_lead_ticks = int(2.2 * tickrate)
+                        vic_post_ticks = int(1.2 * tickrate)
 
                         victim_segments: list[KillcamVictimSegment] = []
                         for k in valid_kills:

@@ -291,6 +291,48 @@ def extract_round_replay_data(
     if unique_ticks and unique_ticks[-1] not in selected_ticks:
         selected_ticks.append(unique_ticks[-1])
 
+    # 2b. Extract high-precision telemetry (view angles, equipment, flash status) via demoparser2
+    telemetry_lookup: dict[tuple[int, str], dict[str, Any]] = {}
+    if selected_ticks:
+        try:
+            import demoparser2
+
+            dparser = demoparser2.DemoParser(demo_key)
+            wanted_props = [
+                "pitch",
+                "yaw",
+                "armor_value",
+                "has_helmet",
+                "has_defuser",
+                "active_weapon_name",
+                "flash_duration",
+            ]
+            t_df = dparser.parse_ticks(wanted_props, ticks=selected_ticks)
+            for row in t_df.itertuples(index=False):
+                tick_val = int(getattr(row, "tick", 0))
+                sid_val = str(getattr(row, "steamid", "") or "")
+                if sid_val:
+                    pitch_val = float(getattr(row, "pitch", 0.0) or 0.0)
+                    yaw_val = float(getattr(row, "yaw", 0.0) or 0.0)
+                    armor_val = int(getattr(row, "armor_value", 0) or 0)
+                    helmet_val = bool(getattr(row, "has_helmet", False))
+                    defuser_val = bool(getattr(row, "has_defuser", False))
+                    weapon_val = str(getattr(row, "active_weapon_name", "") or "")
+                    flash_val = float(getattr(row, "flash_duration", 0.0) or 0.0)
+
+                    telemetry_lookup[(tick_val, sid_val)] = {
+                        "pitch": round(pitch_val, 1),
+                        "yaw": round(yaw_val, 1),
+                        "armor": armor_val,
+                        "has_helmet": helmet_val,
+                        "has_defuser": defuser_val,
+                        "weapon": weapon_val,
+                        "flash_duration": round(flash_val, 2),
+                        "is_flashed": flash_val > 0.1,
+                    }
+        except Exception as e:
+            logger.debug("Could not parse extended telemetry ticks: %s", e)
+
     frames_list: list[dict[str, Any]] = []
 
     cal = get_map_calibration(map_name)
@@ -315,6 +357,7 @@ def extract_round_replay_data(
         if not frames_list or frames_list[-1]["tick"] != t:
             frames_list.append({"tick": t, "players": []})
 
+        telem = telemetry_lookup.get((t, sid), {})
         frames_list[-1]["players"].append({
             "steam_id": sid,
             "name": row.get("name") or players_dict.get(sid, {}).get("name", "Player"),
@@ -326,6 +369,14 @@ def extract_round_replay_data(
             "level": level,
             "place": place,
             "is_alive": hp > 0,
+            "yaw": telem.get("yaw", 0.0),
+            "pitch": telem.get("pitch", 0.0),
+            "armor": telem.get("armor", 0),
+            "has_helmet": telem.get("has_helmet", False),
+            "has_defuser": telem.get("has_defuser", False),
+            "weapon": telem.get("weapon", ""),
+            "flash_duration": telem.get("flash_duration", 0.0),
+            "is_flashed": telem.get("is_flashed", False),
         })
 
     # 3. Extract kills in this round

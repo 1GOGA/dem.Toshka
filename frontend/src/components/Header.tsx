@@ -10,9 +10,21 @@ import {
   ClapperboardIcon,
   FilmIcon,
   SettingsIcon,
+  BookOpenIcon,
+  CrosshairIcon,
 } from './Icons'
 
-export type TabType = 'showcase' | 'studio' | 'cinematic' | 'library' | 'overview' | 'replay' | 'clips' | 'settings'
+export type TabType =
+  | 'showcase'
+  | 'studio'
+  | 'cinematic'
+  | 'library'
+  | 'overview'
+  | 'replay'
+  | 'analytics'
+  | 'strategy'
+  | 'clips'
+  | 'settings'
 
 interface HeaderProps {
   activeTab: TabType
@@ -122,6 +134,30 @@ export const Header: React.FC<HeaderProps> = ({
         >
           <ChartIcon size={15} color={activeTab === 'overview' ? '#38bdf8' : 'currentColor'} />
           <span>{t('nav.match')}</span>
+        </button>
+
+        {/* 4.5. Multi-Match Player Analytics & Evidence Insights */}
+        <button
+          className={`nav-tab ${activeTab === 'analytics' ? 'active' : ''}`}
+          onClick={() => onTabChange('analytics')}
+          title={lang === 'ru' ? 'Аналитика игроков — 6-осевой радар компетенций, CT/T сплит и доказательные рекомендации' : 'Player Analytics — 6-pillar competency radar, CT/T split & evidence recommendations'}
+        >
+          <CrosshairIcon size={15} color={activeTab === 'analytics' ? '#00f2fe' : 'currentColor'} />
+          <span style={{ color: activeTab === 'analytics' ? '#00f2fe' : 'inherit' }}>
+            {lang === 'ru' ? 'Игроки' : 'Players'}
+          </span>
+        </button>
+
+        {/* 4.6. Strategy Book Playbooks & Setups */}
+        <button
+          className={`nav-tab ${activeTab === 'strategy' ? 'active' : ''}`}
+          onClick={() => onTabChange('strategy')}
+          title={lang === 'ru' ? 'Стратегический плейбук — тактические схемы, сетапы и экспорт в PDF' : 'Strategy Book — tactical playbooks, setups & PDF export'}
+        >
+          <BookOpenIcon size={15} color={activeTab === 'strategy' ? '#facc15' : 'currentColor'} />
+          <span style={{ color: activeTab === 'strategy' ? '#facc15' : 'inherit' }}>
+            {lang === 'ru' ? 'Плейбук' : 'Playbook'}
+          </span>
         </button>
 
         {/* 5. Clips & Montage */}

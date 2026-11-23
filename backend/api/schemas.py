@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import datetime
 from typing import Any, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PlayerDTO(BaseModel):
@@ -264,6 +264,237 @@ class SocialDraftRequest(BaseModel):
 class SocialDraftResponse(BaseModel):
     platform: str
     text: str
+
+
+# =============================================================================
+# Phase 2: Analysis Projects, Tactical Drawings & Bookmarks Schemas
+# =============================================================================
+
+class CreateAnalysisProjectRequest(BaseModel):
+    demo_id: int
+    title: str = "Tactical Analysis"
+    description: Optional[str] = None
+
+
+class TacticalDrawingDTO(BaseModel):
+    id: str
+    project_id: str
+    round_num: int
+    tick: Optional[int] = None
+    layer_type: str
+    color: str
+    stroke_width: float
+    geometry_json: str
+    text_label: Optional[str] = None
+    created_at: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CreateTacticalDrawingRequest(BaseModel):
+    round_num: int
+    layer_type: str  # 'pen', 'arrow', 'line', 'circle', 'box', 'text'
+    color: str = "#00f2fe"
+    stroke_width: float = 3.0
+    geometry_json: str
+    tick: Optional[int] = None
+    text_label: Optional[str] = None
+
+
+class BookmarkDTO(BaseModel):
+    id: str
+    project_id: str
+    round_num: int
+    tick: int
+    player_steamid: Optional[str] = None
+    category: str
+    title: str
+    notes: Optional[str] = None
+    created_at: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CreateBookmarkRequest(BaseModel):
+    round_num: int
+    tick: int
+    title: str
+    category: str = "TACTICAL_MISTAKE"
+    notes: Optional[str] = None
+    player_steamid: Optional[str] = None
+
+
+class AnalysisProjectDTO(BaseModel):
+    id: str
+    demo_id: int
+    title: str
+    description: Optional[str] = None
+    created_at: str
+    updated_at: str
+    drawings: list[TacticalDrawingDTO] = Field(default_factory=list)
+    bookmarks: list[BookmarkDTO] = Field(default_factory=list)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class VoiceStatusDTO(BaseModel):
+    has_voice: bool
+    total_packets: int
+    unique_speakers: int
+
+
+class VoiceSpeechSegmentDTO(BaseModel):
+    start_tick: int
+    end_tick: int
+    start_sec: float
+    end_sec: float
+    packet_count: int
+
+
+class PlayerVoiceTrackDTO(BaseModel):
+    steamid: str
+    player_name: Optional[str] = None
+    team: Optional[str] = None
+    packet_count: int
+    duration_sec: float
+    stream_url: str
+    download_wav_url: str
+    segments: list[VoiceSpeechSegmentDTO] = Field(default_factory=list)
+
+
+class RoundVoiceTimelineDTO(BaseModel):
+    round_num: int
+    has_voice: bool
+    tracks: list[PlayerVoiceTrackDTO] = Field(default_factory=list)
+
+
+# =============================================================================
+# Phase 4: Multi-Match Analytics & Evidence Insights Schemas
+# =============================================================================
+
+
+class PlayerProfileDTO(BaseModel):
+    id: str
+    steam_id: str
+    nickname: str
+    avatar_url: Optional[str] = None
+    primary_role: Optional[str] = None
+    created_at: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SkillRadarSchema(BaseModel):
+    aim_duels: float
+    positioning: float
+    decision_making: float
+    utility: float
+    trading: float
+    clutch: float
+
+
+class PlayerInsightDTO(BaseModel):
+    id: str
+    player_profile_id: str
+    category: str
+    severity: str
+    title: str
+    pattern_description: str
+    sample_size_str: str
+    objective_metric_str: str
+    context_conditions_str: str
+    alternative_strategy_str: str
+    impact_estimate_str: str
+    jump_demo_id: Optional[int] = None
+    jump_round_num: Optional[int] = None
+    jump_tick: Optional[int] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class MultiMatchAnalyticsDTO(BaseModel):
+    profile_id: str
+    steam_id: str
+    nickname: str
+    avatar_url: Optional[str] = None
+    primary_role: str
+    matches_count: int
+    total_rounds: int
+    radar: SkillRadarSchema
+    overview: dict
+    maps: list[dict] = Field(default_factory=list)
+    side_split: dict = Field(default_factory=dict)
+    insights: list[PlayerInsightDTO] = Field(default_factory=list)
+
+
+# =============================================================================
+# Phase 5: Strategy Book & Playbook DTOs
+# =============================================================================
+
+
+class TacticalSetupDTO(BaseModel):
+    id: str
+    strategy_book_id: str
+    title: str
+    side: str
+    phase: str
+    description: Optional[str] = None
+    tokens_json: str
+    drawings_json: str
+    created_at: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UtilityLineupDTO(BaseModel):
+    id: str
+    strategy_book_id: Optional[str] = None
+    map_name: str
+    side: str
+    utility_type: str
+    title: str
+    throw_type: str
+    pos_x: float
+    pos_y: float
+    target_x: float
+    target_y: float
+    crosshair_desc: Optional[str] = None
+    created_at: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class StrategyBookDTO(BaseModel):
+    id: str
+    title: str
+    map_name: str
+    team_name: Optional[str] = None
+    description: Optional[str] = None
+    created_at: str
+    updated_at: str
+    setups: list[TacticalSetupDTO] = Field(default_factory=list)
+    lineups: list[UtilityLineupDTO] = Field(default_factory=list)
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CreateStrategyBookRequest(BaseModel):
+    title: str
+    map_name: str
+    team_name: Optional[str] = None
+    description: Optional[str] = None
+
+
+class CreateTacticalSetupRequest(BaseModel):
+    title: str
+    side: str
+    phase: str = "default"
+    description: Optional[str] = None
+    tokens_json: str = "[]"
+    drawings_json: str = "[]"
+
+
+
 
 
 

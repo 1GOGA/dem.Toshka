@@ -13,6 +13,8 @@ import { LibraryView } from './components/LibraryView'
 import { MatchOverviewView } from './components/MatchOverviewView'
 import { RenderQueueModal } from './components/RenderQueueModal'
 import { Round2DReplayView } from './components/Round2DReplayView'
+import { MultiMatchPlayerAnalyticsView } from './components/MultiMatchPlayerAnalyticsView'
+import { StrategyBookView } from './components/StrategyBookView'
 import { SettingsView } from './components/SettingsView'
 import { ChartIcon, RadarIcon } from './components/Icons'
 import { useTranslation } from './i18n'
@@ -242,6 +244,20 @@ export function App() {
     })
   }
 
+  const handleJumpFromAnalytics = ({
+    demoId,
+  }: {
+    demoId?: number
+    roundNum: number
+    tick: number
+  }) => {
+    if (demoId && (!activeDemo || activeDemo.id !== demoId)) {
+      const target = demos.find((d) => d.id === demoId)
+      if (target) selectDemo(target)
+    }
+    setActiveTab('replay')
+  }
+
   // Map selected IDs to highlight items
   const selectedHighlights = highlights.filter((h) => selectedHighlightIds.has(h.id))
 
@@ -357,7 +373,7 @@ export function App() {
           )
         )}
 
-        {/* 5. 2D Tactical Replay */}
+        {/* 5. 2D Tactical Replay (Demo Vision) */}
         {activeTab === 'replay' && (
           activeDemo ? (
             <Round2DReplayView
@@ -386,6 +402,22 @@ export function App() {
               </div>
             </div>
           )
+        )}
+
+        {/* 5.5. Multi-Match Player Analytics & Evidence Insights */}
+        {activeTab === 'analytics' && (
+          <MultiMatchPlayerAnalyticsView
+            initialSteamId={players[0]?.steam_id || undefined}
+            onJumpToDemoVision={handleJumpFromAnalytics}
+          />
+        )}
+
+        {/* 5.6. Strategy Book Playbooks & Setups */}
+        {activeTab === 'strategy' && (
+          <StrategyBookView
+            currentMapName={activeDemo?.map_name || 'de_mirage'}
+            onJumpToDemoVision={handleJumpFromAnalytics}
+          />
         )}
 
         {/* 6. Clips & Montage */}
