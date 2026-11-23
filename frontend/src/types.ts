@@ -168,6 +168,14 @@ export interface ReplayPlayerState {
   level: 'upper' | 'lower'
   place: string
   is_alive: boolean
+  yaw?: number
+  pitch?: number
+  armor?: number
+  has_helmet?: boolean
+  has_defuser?: boolean
+  weapon?: string
+  is_flashed?: boolean
+  flash_duration?: number
 }
 
 export interface ReplayFrame {
@@ -297,6 +305,201 @@ export interface PlayerAnalyticsDTO {
   map_impact_score?: number
   fun_badges?: Array<{ badge: string; desc: string; rarity?: string }>
 }
+
+export interface TacticalDrawingDTO {
+  id: string
+  project_id: string
+  round_num: number
+  tick?: number | null
+  layer_type: 'pen' | 'arrow' | 'line' | 'circle' | 'box' | 'text'
+  color: string
+  stroke_width: number
+  geometry_json: string
+  text_label?: string | null
+  created_at: string
+}
+
+export interface BookmarkDTO {
+  id: string
+  project_id: string
+  round_num: number
+  tick: number
+  player_steamid?: string | null
+  category: string
+  title: string
+  notes?: string | null
+  created_at: string
+}
+
+export interface AnalysisProjectDTO {
+  id: string
+  demo_id: number
+  title: string
+  description?: string | null
+  created_at: string
+  updated_at: string
+  drawings: TacticalDrawingDTO[]
+  bookmarks: BookmarkDTO[]
+}
+
+export interface VoiceStatusDTO {
+  has_voice: boolean
+  total_packets: number
+  unique_speakers: number
+}
+
+export interface VoiceSpeechSegmentDTO {
+  start_tick: number
+  end_tick: number
+  start_sec: number
+  end_sec: number
+  packet_count: number
+}
+
+export interface PlayerVoiceTrackDTO {
+  steamid: string
+  player_name?: string
+  team?: string
+  packet_count: number
+  duration_sec: number
+  stream_url: string
+  download_wav_url: string
+  segments: VoiceSpeechSegmentDTO[]
+}
+
+export interface RoundVoiceTimelineDTO {
+  round_num: number
+  has_voice: boolean
+  tracks: PlayerVoiceTrackDTO[]
+}
+
+export interface SkillRadarSchema {
+  aim_duels: number
+  positioning: number
+  decision_making: number
+  utility: number
+  trading: number
+  clutch: number
+}
+
+export interface PlayerProfileDTO {
+  id: string
+  steam_id: string
+  nickname: string
+  avatar_url?: string | null
+  primary_role?: string | null
+  created_at: string
+}
+
+export interface PlayerInsightDTO {
+  id: string
+  player_profile_id: string
+  category: string
+  severity: string
+  title: string
+  pattern_description: string
+  sample_size_str: string
+  objective_metric_str: string
+  context_conditions_str: string
+  alternative_strategy_str: string
+  impact_estimate_str: string
+  jump_demo_id?: number | null
+  jump_round_num?: number | null
+  jump_tick?: number | null
+}
+
+export interface MultiMatchAnalyticsDTO {
+  profile_id: string
+  steam_id: string
+  nickname: string
+  avatar_url?: string | null
+  primary_role: string
+  matches_count: number
+  total_rounds: number
+  radar: SkillRadarSchema
+  overview: {
+    kd_ratio: number
+    rating: number
+    adr: number
+    headshot_pct: number
+    kast_pct: number
+    kills: number
+    deaths: number
+    assists: number
+  }
+  maps: Array<{
+    map_name: string
+    matches: number
+    rating: number
+    adr: number
+    kd_ratio: number
+    win_rate_pct: number
+  }>
+  side_split: {
+    ct_rating: number
+    t_rating: number
+  }
+  insights: PlayerInsightDTO[]
+}
+
+export interface TacticalSetupDTO {
+  id: string
+  strategy_book_id: string
+  title: string
+  side: string
+  phase: string
+  description?: string | null
+  tokens_json: string
+  drawings_json: string
+  created_at: string
+}
+
+export interface UtilityLineupDTO {
+  id: string
+  strategy_book_id?: string | null
+  map_name: string
+  side: string
+  utility_type: string
+  title: string
+  throw_type: string
+  pos_x: number
+  pos_y: number
+  target_x: number
+  target_y: number
+  crosshair_desc?: string | null
+  created_at: string
+}
+
+export interface StrategyBookDTO {
+  id: string
+  title: string
+  map_name: string
+  team_name?: string | null
+  description?: string | null
+  created_at: string
+  updated_at: string
+  setups: TacticalSetupDTO[]
+  lineups: UtilityLineupDTO[]
+}
+
+export interface CreateStrategyBookRequest {
+  title: string
+  map_name: string
+  team_name?: string
+  description?: string
+}
+
+export interface CreateTacticalSetupRequest {
+  title: string
+  side: string
+  phase?: string
+  description?: string
+  tokens_json?: string
+  drawings_json?: string
+}
+
+
+
 
 
 

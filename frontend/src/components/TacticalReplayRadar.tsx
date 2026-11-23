@@ -1,5 +1,12 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react'
-import type { ReplayPlayerState, ReplayKillItem, ReplayGrenadeItem, ReplayBombData } from '../types'
+import type {
+  ReplayPlayerState,
+  ReplayKillItem,
+  ReplayGrenadeItem,
+  ReplayBombData,
+  TacticalDrawingDTO,
+  BookmarkDTO,
+} from '../types'
 import { SkullIcon, SmokeIcon, FlameIcon, FlashIcon, GrenadeIcon } from './Icons'
 import { useTranslation } from '../i18n'
 
@@ -21,6 +28,28 @@ export interface TacticalReplayRadarProps {
   showGrenades: boolean
   onJumpToTick?: (tick: number) => void
   maxContainerHeight?: string
+  roundNum?: number
+  savedDrawings?: TacticalDrawingDTO[]
+  savedBookmarks?: BookmarkDTO[]
+  onSaveDrawing?: (drawing: {
+    round_num: number
+    layer_type: 'pen' | 'arrow' | 'line' | 'circle' | 'box' | 'text'
+    color: string
+    stroke_width: number
+    geometry_json: string
+    tick?: number
+    text_label?: string
+  }) => void
+  onDeleteDrawing?: (drawingId: string) => void
+  onSaveBookmark?: (bookmark: {
+    round_num: number
+    tick: number
+    title: string
+    category: string
+    notes?: string
+    player_steamid?: string
+  }) => void
+  onDeleteBookmark?: (bookmarkId: string) => void
 }
 
 export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
@@ -41,6 +70,13 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
   showGrenades,
   onJumpToTick,
   maxContainerHeight = '560px',
+  roundNum = 1,
+  savedDrawings = [],
+  savedBookmarks = [],
+  onSaveDrawing,
+  onDeleteDrawing,
+  onSaveBookmark,
+  onDeleteBookmark,
 }) => {
   const { lang } = useTranslation()
   // Zoom & Pan state
@@ -51,6 +87,39 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
   const [hoveredKill, setHoveredKill] = useState<ReplayKillItem | null>(null)
   const [hoveredGrenade, setHoveredGrenade] = useState<ReplayGrenadeItem | null>(null)
   const [nameDensity, setNameDensity] = useState<'auto' | 'compact' | 'minimal'>('auto')
+  const [showFovCones, setShowFovCones] = useState<boolean>(true)
+  const [showEquipment, setShowEquipment] = useState<boolean>(true)
+  const [focusedSteamId, setFocusedSteamId] = useState<string | null>(null)
+
+  // Tactical Drawing State (Phase 2)
+  const [isDrawingMode, setIsDrawingMode] = useState<boolean>(false)
+  const [activeDrawTool, setActiveDrawTool] = useState<'pen' | 'arrow' | 'line' | 'circle' | 'box' | 'text'>('arrow')
+  const [drawColor, setDrawColor] = useState<string>('#00f2fe')
+  const [strokeWidth, setStrokeWidth] = useState<number>(3)
+  const [drawings, setDrawings] = useState<TacticalDrawingDTO[]>(savedDrawings)
+  const [isDrawingActive, setIsDrawingActive] = useState<boolean>(false)
+  const [activeDragStart, setActiveDragStart] = useState<{ x: number; y: number } | null>(null)
+  const [activeDragCurrent, setActiveDragCurrent] = useState<{ x: number; y: number } | null>(null)
+  const [penPoints, setPenPoints] = useState<Array<[number, number]>>([])
+  const [textPromptOpen, setTextPromptOpen] = useState<boolean>(false)
+  const [textPromptCoord, setTextPromptCoord] = useState<{ x: number; y: number } | null>(null)
+  const [textInputValue, setTextInputValue] = useState<string>('')
+
+  // Bookmarks State (Phase 2)
+  const [bookmarks, setBookmarks] = useState<BookmarkDTO[]>(savedBookmarks)
+  const [bookmarkModalOpen, setBookmarkModalOpen] = useState<boolean>(false)
+  const [bookmarksDrawerOpen, setBookmarksDrawerOpen] = useState<boolean>(false)
+  const [bmTitle, setBmTitle] = useState<string>('')
+  const [bmCategory, setBmCategory] = useState<string>('TACTICAL_MISTAKE')
+  const [bmNotes, setBmNotes] = useState<string>('')
+
+  useEffect(() => {
+    setDrawings(savedDrawings)
+  }, [savedDrawings])
+
+  useEffect(() => {
+    setBookmarks(savedBookmarks)
+  }, [savedBookmarks])
 
   // Dynamic scaling for nicknames so they shrink and remain unobtrusive when zooming in
   const nameScale = useMemo(() => {
@@ -111,8 +180,40 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
     }
   }, [])
 
-  // Drag pan handlers
+  // Coordinate inversion: transforms screen click coordinates into 0..1000 SVG coordinates
+  const getSvgCoords = (clientX: number, clientY: number) => {
+    const el = containerRef.current
+    if (!el) return { x: 500, y: 500 }
+    const rect = el.getBoundingClientRect()
+    const xRel = clientX - rect.left
+    const yRel = clientY - rect.top
+    const cx = rect.width / 2
+    const cy = rect.height / 2
+    const xInner = cx + (xRel - cx - pan.x) / zoom
+    const yInner = cy + (yRel - cy - pan.y) / zoom
+    const svgX = Math.max(0, Math.min(1000, (xInner / rect.width) * 1000))
+    const svgY = Math.max(0, Math.min(1000, (yInner / rect.height) * 1000))
+    return { x: Number(svgX.toFixed(1)), y: Number(svgY.toFixed(1)) }
+  }
+
+  // Mouse handlers: handles either Tactical Drawing OR Zoom/Pan dragging
   const handleMouseDown = (e: React.MouseEvent) => {
+    if (isDrawingMode) {
+      const coords = getSvgCoords(e.clientX, e.clientY)
+      if (activeDrawTool === 'text') {
+        setTextPromptCoord(coords)
+        setTextPromptOpen(true)
+        return
+      }
+      setIsDrawingActive(true)
+      setActiveDragStart(coords)
+      setActiveDragCurrent(coords)
+      if (activeDrawTool === 'pen') {
+        setPenPoints([[coords.x, coords.y]])
+      }
+      return
+    }
+
     if (zoom > 1) {
       setIsDragging(true)
       setDragStart({ x: e.clientX - pan.x, y: e.clientY - pan.y })
@@ -120,6 +221,15 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
   }
 
   const handleMouseMove = (e: React.MouseEvent) => {
+    if (isDrawingMode && isDrawingActive) {
+      const coords = getSvgCoords(e.clientX, e.clientY)
+      setActiveDragCurrent(coords)
+      if (activeDrawTool === 'pen') {
+        setPenPoints((prev) => [...prev, [coords.x, coords.y]])
+      }
+      return
+    }
+
     if (isDragging && zoom > 1) {
       const maxPan = (zoom - 1) * 220
       const nextX = Math.max(-maxPan, Math.min(maxPan, e.clientX - dragStart.x))
@@ -129,7 +239,153 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
   }
 
   const handleMouseUp = () => {
+    if (isDrawingMode && isDrawingActive) {
+      setIsDrawingActive(false)
+      if (activeDragStart && activeDragCurrent) {
+        let geomJson = ''
+        if (activeDrawTool === 'pen') {
+          if (penPoints.length >= 2) {
+            geomJson = JSON.stringify({ points: penPoints })
+          }
+        } else if (activeDrawTool === 'arrow' || activeDrawTool === 'line') {
+          const dist = Math.hypot(activeDragCurrent.x - activeDragStart.x, activeDragCurrent.y - activeDragStart.y)
+          if (dist >= 6) {
+            geomJson = JSON.stringify({
+              x1: activeDragStart.x,
+              y1: activeDragStart.y,
+              x2: activeDragCurrent.x,
+              y2: activeDragCurrent.y,
+            })
+          }
+        } else if (activeDrawTool === 'circle') {
+          const rx = Math.abs(activeDragCurrent.x - activeDragStart.x)
+          const ry = Math.abs(activeDragCurrent.y - activeDragStart.y)
+          if (rx >= 6 || ry >= 6) {
+            geomJson = JSON.stringify({
+              cx: activeDragStart.x,
+              cy: activeDragStart.y,
+              rx: Math.max(8, rx),
+              ry: Math.max(8, ry),
+            })
+          }
+        } else if (activeDrawTool === 'box') {
+          const x = Math.min(activeDragStart.x, activeDragCurrent.x)
+          const y = Math.min(activeDragStart.y, activeDragCurrent.y)
+          const w = Math.abs(activeDragCurrent.x - activeDragStart.x)
+          const h = Math.abs(activeDragCurrent.y - activeDragStart.y)
+          if (w >= 6 && h >= 6) {
+            geomJson = JSON.stringify({ x, y, w, h })
+          }
+        }
+
+        if (geomJson) {
+          const newDrawing: TacticalDrawingDTO = {
+            id: 'draw_' + Date.now(),
+            project_id: 'proj',
+            round_num: roundNum,
+            tick: currentTick,
+            layer_type: activeDrawTool,
+            color: drawColor,
+            stroke_width: strokeWidth,
+            geometry_json: geomJson,
+            created_at: new Date().toISOString(),
+          }
+          setDrawings((prev) => [...prev, newDrawing])
+          onSaveDrawing?.({
+            round_num: roundNum,
+            layer_type: activeDrawTool,
+            color: drawColor,
+            stroke_width: strokeWidth,
+            geometry_json: geomJson,
+            tick: currentTick,
+          })
+        }
+      }
+      setActiveDragStart(null)
+      setActiveDragCurrent(null)
+      setPenPoints([])
+      return
+    }
+
     setIsDragging(false)
+  }
+
+  const handleSaveTextLabel = () => {
+    if (!textInputValue.trim() || !textPromptCoord) {
+      setTextPromptOpen(false)
+      setTextInputValue('')
+      return
+    }
+    const geomJson = JSON.stringify({ x: textPromptCoord.x, y: textPromptCoord.y })
+    const newDrawing: TacticalDrawingDTO = {
+      id: 'draw_' + Date.now(),
+      project_id: 'proj',
+      round_num: roundNum,
+      tick: currentTick,
+      layer_type: 'text',
+      color: drawColor,
+      stroke_width: strokeWidth,
+      geometry_json: geomJson,
+      text_label: textInputValue.trim(),
+      created_at: new Date().toISOString(),
+    }
+    setDrawings((prev) => [...prev, newDrawing])
+    onSaveDrawing?.({
+      round_num: roundNum,
+      layer_type: 'text',
+      color: drawColor,
+      stroke_width: strokeWidth,
+      geometry_json: geomJson,
+      tick: currentTick,
+      text_label: textInputValue.trim(),
+    })
+    setTextPromptOpen(false)
+    setTextInputValue('')
+  }
+
+  const handleUndoDrawing = () => {
+    if (drawings.length === 0) return
+    const last = drawings[drawings.length - 1]
+    setDrawings((prev) => prev.slice(0, -1))
+    if (last.id && !last.id.startsWith('draw_')) {
+      onDeleteDrawing?.(last.id)
+    }
+  }
+
+  const handleClearDrawings = () => {
+    drawings.forEach((d) => {
+      if (d.id && !d.id.startsWith('draw_')) {
+        onDeleteDrawing?.(d.id)
+      }
+    })
+    setDrawings([])
+  }
+
+  const handleSaveBookmark = () => {
+    if (!bmTitle.trim()) return
+    const newBm: BookmarkDTO = {
+      id: 'bm_' + Date.now(),
+      project_id: 'proj',
+      round_num: roundNum,
+      tick: currentTick,
+      title: bmTitle.trim(),
+      category: bmCategory,
+      notes: bmNotes.trim() || undefined,
+      player_steamid: focusedSteamId || undefined,
+      created_at: new Date().toISOString(),
+    }
+    setBookmarks((prev) => [...prev, newBm])
+    onSaveBookmark?.({
+      round_num: roundNum,
+      tick: currentTick,
+      title: bmTitle.trim(),
+      category: bmCategory,
+      notes: bmNotes.trim() || undefined,
+      player_steamid: focusedSteamId || undefined,
+    })
+    setBookmarkModalOpen(false)
+    setBmTitle('')
+    setBmNotes('')
   }
 
   // Kills that occurred up to current tick
@@ -179,7 +435,7 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
         border: '1px solid #1e2433',
         overflow: 'hidden',
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.55)',
-        cursor: zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default',
+        cursor: isDrawingMode ? 'crosshair' : zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default',
         userSelect: 'none',
         overscrollBehavior: 'contain',
         touchAction: 'none',
@@ -209,6 +465,14 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
         @keyframes timerUrgentPulse {
           0%, 100% { transform: scale(1); filter: brightness(1); }
           50% { transform: scale(1.06); filter: brightness(1.35); }
+        }
+        @keyframes blindPulse {
+          0%, 100% { transform: scale(1); opacity: 0.95; filter: drop-shadow(0 0 6px #facc15); }
+          50% { transform: scale(1.4); opacity: 0.4; filter: drop-shadow(0 0 14px #ffffff); }
+        }
+        @keyframes focusPulse {
+          0%, 100% { transform: scale(1); opacity: 0.9; }
+          50% { transform: scale(1.15); opacity: 0.5; }
         }
       `}</style>
 
@@ -307,6 +571,137 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
           gap: '6px',
         }}
       >
+        {/* Toggle FOV Vision Cones */}
+        <button
+          type="button"
+          onClick={() => setShowFovCones((prev) => !prev)}
+          title={lang === 'ru' ? 'Взгляд / Конусы видимости (FOV 90°)' : 'Player FOV vision cones (90°)'}
+          style={{
+            backgroundColor: showFovCones ? 'rgba(56, 189, 248, 0.22)' : 'rgba(11, 15, 23, 0.92)',
+            backdropFilter: 'blur(8px)',
+            padding: '3px 8px',
+            borderRadius: '6px',
+            border: `1px solid ${showFovCones ? '#38bdf8' : 'rgba(56, 189, 248, 0.3)'}`,
+            color: showFovCones ? '#38bdf8' : '#64748b',
+            fontSize: '11px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.6)',
+          }}
+        >
+          <span>👁️</span>
+          <span>{lang === 'ru' ? 'Взгляд' : 'FOV'}</span>
+        </button>
+
+        {/* Toggle Equipment Badges */}
+        <button
+          type="button"
+          onClick={() => setShowEquipment((prev) => !prev)}
+          title={lang === 'ru' ? 'Отображение оружия, брони и дефьюзов' : 'Toggle equipment & weapons'}
+          style={{
+            backgroundColor: showEquipment ? 'rgba(56, 189, 248, 0.22)' : 'rgba(11, 15, 23, 0.92)',
+            backdropFilter: 'blur(8px)',
+            padding: '3px 8px',
+            borderRadius: '6px',
+            border: `1px solid ${showEquipment ? '#38bdf8' : 'rgba(56, 189, 248, 0.3)'}`,
+            color: showEquipment ? '#38bdf8' : '#64748b',
+            fontSize: '11px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.6)',
+          }}
+        >
+          <span>🛡️</span>
+          <span>{lang === 'ru' ? 'Экип' : 'Gear'}</span>
+        </button>
+
+        {/* Toggle Tactical Drawing Mode */}
+        <button
+          type="button"
+          onClick={() => setIsDrawingMode((prev) => !prev)}
+          title={lang === 'ru' ? 'Тактическое рисование (стрелки, зоны, текст)' : 'Tactical Drawing Canvas (arrows, zones, text)'}
+          style={{
+            backgroundColor: isDrawingMode ? 'rgba(0, 242, 254, 0.25)' : 'rgba(11, 15, 23, 0.92)',
+            backdropFilter: 'blur(8px)',
+            padding: '3px 8px',
+            borderRadius: '6px',
+            border: `1.5px solid ${isDrawingMode ? '#00f2fe' : 'rgba(56, 189, 248, 0.3)'}`,
+            color: isDrawingMode ? '#00f2fe' : '#94a3b8',
+            fontSize: '11px',
+            fontWeight: 800,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            boxShadow: isDrawingMode ? '0 0 12px rgba(0, 242, 254, 0.4)' : '0 4px 14px rgba(0, 0, 0, 0.6)',
+          }}
+        >
+          <span>🎨</span>
+          <span>{lang === 'ru' ? 'Рисовать' : 'Draw'}</span>
+        </button>
+
+        {/* Add Bookmark Button */}
+        <button
+          type="button"
+          onClick={() => {
+            const sec = Math.floor((currentTick - _startTick) / (tickrate || 128))
+            const mins = Math.floor(sec / 60)
+            const remSec = sec % 60
+            setBmTitle(`R${roundNum} [${mins}:${remSec.toString().padStart(2, '0')}]`)
+            setBookmarkModalOpen(true)
+          }}
+          title={lang === 'ru' ? 'Добавить закладку к текущему тику' : 'Add bookmark at current tick'}
+          style={{
+            backgroundColor: 'rgba(11, 15, 23, 0.92)',
+            backdropFilter: 'blur(8px)',
+            padding: '3px 8px',
+            borderRadius: '6px',
+            border: '1px solid rgba(250, 204, 21, 0.4)',
+            color: '#facc15',
+            fontSize: '11px',
+            fontWeight: 800,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '3px',
+            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.6)',
+          }}
+        >
+          <span>🔖</span>
+          <span>+</span>
+        </button>
+
+        {/* Toggle Bookmarks Drawer */}
+        <button
+          type="button"
+          onClick={() => setBookmarksDrawerOpen((prev) => !prev)}
+          title={lang === 'ru' ? 'Список тактических закладок' : 'View tactical bookmarks list'}
+          style={{
+            backgroundColor: bookmarksDrawerOpen ? 'rgba(250, 204, 21, 0.25)' : 'rgba(11, 15, 23, 0.92)',
+            backdropFilter: 'blur(8px)',
+            padding: '3px 8px',
+            borderRadius: '6px',
+            border: `1.5px solid ${bookmarksDrawerOpen ? '#facc15' : 'rgba(250, 204, 21, 0.4)'}`,
+            color: '#facc15',
+            fontSize: '11px',
+            fontWeight: 800,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            boxShadow: '0 4px 14px rgba(0, 0, 0, 0.6)',
+          }}
+        >
+          <span>📑</span>
+          <span>{bookmarks.length}</span>
+        </button>
+
         {/* Nickname Density Selector */}
         <button
           type="button"
@@ -414,6 +809,135 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
         </button>
         </div>
       </div>
+
+      {/* Tactical Drawing Floating Toolbar (Phase 2) */}
+      {isDrawingMode && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '44px',
+            right: '10px',
+            zIndex: 36,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '5px',
+            backgroundColor: 'rgba(9, 13, 20, 0.96)',
+            backdropFilter: 'blur(10px)',
+            padding: '4px 8px',
+            borderRadius: '8px',
+            border: '1px solid #00f2fe',
+            boxShadow: '0 6px 20px rgba(0, 242, 254, 0.3)',
+          }}
+        >
+          {/* Tool selectors */}
+          {[
+            { id: 'arrow', label: '➔', title: lang === 'ru' ? 'Стрелка захода' : 'Directional Arrow' },
+            { id: 'pen', label: '✏️', title: lang === 'ru' ? 'Свободный карандаш' : 'Freehand Pen' },
+            { id: 'line', label: '📏', title: lang === 'ru' ? 'Прямая линия' : 'Straight Line' },
+            { id: 'circle', label: '⭕', title: lang === 'ru' ? 'Зона контроля' : 'Zone Ellipse' },
+            { id: 'box', label: '⬛', title: lang === 'ru' ? 'Прямоугольник укрытия' : 'Tactical Box' },
+            { id: 'text', label: '🔤', title: lang === 'ru' ? 'Текстовая подпись' : 'Text Label' },
+          ].map((tool) => (
+            <button
+              key={tool.id}
+              type="button"
+              onClick={() => setActiveDrawTool(tool.id as any)}
+              title={tool.title}
+              style={{
+                background: activeDrawTool === tool.id ? 'rgba(0, 242, 254, 0.3)' : 'transparent',
+                border: activeDrawTool === tool.id ? '1px solid #00f2fe' : '1px solid transparent',
+                borderRadius: '4px',
+                color: activeDrawTool === tool.id ? '#00f2fe' : '#94a3b8',
+                fontSize: '13px',
+                padding: '2px 5px',
+                cursor: 'pointer',
+              }}
+            >
+              {tool.label}
+            </button>
+          ))}
+
+          <div style={{ width: '1px', height: '16px', backgroundColor: 'rgba(255,255,255,0.15)', margin: '0 2px' }} />
+
+          {/* Color Palettes */}
+          {['#00f2fe', '#facc15', '#f43f5e', '#4ade80', '#c084fc', '#ffffff'].map((c) => (
+            <div
+              key={c}
+              onClick={() => setDrawColor(c)}
+              title={c}
+              style={{
+                width: '14px',
+                height: '14px',
+                borderRadius: '50%',
+                backgroundColor: c,
+                border: drawColor === c ? '2px solid #ffffff' : '1px solid rgba(0,0,0,0.5)',
+                boxShadow: drawColor === c ? `0 0 8px ${c}` : 'none',
+                cursor: 'pointer',
+                transform: drawColor === c ? 'scale(1.15)' : 'scale(1)',
+                transition: 'transform 0.1s ease',
+              }}
+            />
+          ))}
+
+          <div style={{ width: '1px', height: '16px', backgroundColor: 'rgba(255,255,255,0.15)', margin: '0 2px' }} />
+
+          {/* Stroke Widths */}
+          {[2, 4, 8].map((w) => (
+            <button
+              key={w}
+              type="button"
+              onClick={() => setStrokeWidth(w)}
+              title={`${w}px`}
+              style={{
+                background: strokeWidth === w ? 'rgba(255,255,255,0.2)' : 'transparent',
+                border: strokeWidth === w ? '1px solid #ffffff' : '1px solid transparent',
+                borderRadius: '4px',
+                color: '#f1f5f9',
+                fontSize: '10px',
+                fontWeight: 700,
+                padding: '1px 4px',
+                cursor: 'pointer',
+              }}
+            >
+              {w}p
+            </button>
+          ))}
+
+          <div style={{ width: '1px', height: '16px', backgroundColor: 'rgba(255,255,255,0.15)', margin: '0 2px' }} />
+
+          {/* Undo and Clear */}
+          <button
+            type="button"
+            onClick={handleUndoDrawing}
+            title={lang === 'ru' ? 'Отменить последнюю фигуру' : 'Undo last shape'}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#94a3b8',
+              fontSize: '12px',
+              cursor: 'pointer',
+              padding: '2px 4px',
+            }}
+          >
+            ↩️
+          </button>
+          <button
+            type="button"
+            onClick={handleClearDrawings}
+            title={lang === 'ru' ? 'Очистить все рисунки' : 'Clear all drawings'}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#ef4444',
+              fontSize: '12px',
+              cursor: 'pointer',
+              padding: '2px 4px',
+            }}
+          >
+            🧹
+          </button>
+        </div>
+      )}
 
       {/* Tooltip Overlay for Hovered Kill or Grenade */}
       {(hoveredKill || hoveredGrenade) && (
@@ -551,6 +1075,18 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
               <stop offset="0%" stopColor="#f97316" stopOpacity="0.8" />
               <stop offset="50%" stopColor="#ef4444" stopOpacity="0.4" />
               <stop offset="100%" stopColor="#b91c1c" stopOpacity="0" />
+            </radialGradient>
+
+            {/* FOV Vision Cone Gradients */}
+            <radialGradient id="tactical-fov-ct" cx="0%" cy="0%" r="100%">
+              <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.45" />
+              <stop offset="65%" stopColor="#0284c7" stopOpacity="0.18" />
+              <stop offset="100%" stopColor="#0369a1" stopOpacity="0" />
+            </radialGradient>
+            <radialGradient id="tactical-fov-t" cx="0%" cy="0%" r="100%">
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.45" />
+              <stop offset="65%" stopColor="#d97706" stopOpacity="0.18" />
+              <stop offset="100%" stopColor="#b45309" stopOpacity="0" />
             </radialGradient>
           </defs>
 
@@ -851,20 +1387,250 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
                 />
               )
             })}
+
+          {/* ================================================================= */}
+          {/* PLAYER FOV CONES & VISION DIRECTION (SOURCE 2 YAW TELEMETRY)      */}
+          {/* ================================================================= */}
+          {showFovCones &&
+            livingPlayers.map((p) => {
+              const isCurrentLevel = hasMultipleLevels ? p.level === currentLevel : true
+              if (!isCurrentLevel) return null
+              const isCT = p.side === 'ct'
+              const yaw = p.yaw ?? 0
+              const isFocused = focusedSteamId === p.steam_id
+              const coneRadius = isFocused ? 76 : 52
+              const gradId = isCT ? 'tactical-fov-ct' : 'tactical-fov-t'
+              const strokeColor = isCT ? '#38bdf8' : '#fbbf24'
+              // 90 degree FOV cone (-45 to +45 deg)
+              const rCos = coneRadius * 0.7071
+              const rSin = coneRadius * 0.7071
+
+              return (
+                <g
+                  key={`fov-${p.steam_id}`}
+                  transform={`translate(${p.x * 10}, ${p.y * 10}) rotate(${-yaw})`}
+                  opacity={isFocused ? 1.0 : focusedSteamId ? 0.35 : 0.85}
+                  style={{ pointerEvents: 'none', transition: 'transform 0.12s linear' }}
+                >
+                  {/* FOV Cone Sector */}
+                  <path
+                    d={`M 0 0 L ${rCos.toFixed(1)} ${(-rSin).toFixed(1)} A ${coneRadius} ${coneRadius} 0 0 1 ${rCos.toFixed(1)} ${rSin.toFixed(1)} Z`}
+                    fill={`url(#${gradId})`}
+                    stroke={strokeColor}
+                    strokeWidth="0.8"
+                    strokeOpacity="0.4"
+                  />
+                  {/* Center Line of Sight Pointer */}
+                  <line
+                    x1="0"
+                    y1="0"
+                    x2={coneRadius}
+                    y2="0"
+                    stroke={strokeColor}
+                    strokeWidth={isFocused ? '2' : '1.2'}
+                    strokeOpacity="0.85"
+                  />
+                  <circle cx={coneRadius} cy="0" r="1.5" fill={strokeColor} opacity="0.9" />
+                </g>
+              )
+            })}
+
+          {/* ================================================================= */}
+          {/* TACTICAL DRAWING LAYER (PHASE 2 PERSISTENT VECTOR OVERLAY)        */}
+          {/* ================================================================= */}
+          {drawings.map((d) => {
+            try {
+              const geom = JSON.parse(d.geometry_json)
+              if (d.layer_type === 'pen' && geom.points && geom.points.length > 1) {
+                const poly = geom.points.map((pt: [number, number]) => `${pt[0]},${pt[1]}`).join(' ')
+                return (
+                  <polyline
+                    key={d.id}
+                    points={poly}
+                    fill="none"
+                    stroke={d.color}
+                    strokeWidth={d.stroke_width}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    opacity={0.92}
+                  />
+                )
+              }
+              if (d.layer_type === 'arrow' && geom.x1 !== undefined) {
+                const { x1, y1, x2, y2 } = geom
+                const angle = Math.atan2(y2 - y1, x2 - x1)
+                const arrowLen = 14
+                const arrowWidth = 7
+                const pLeftX = x2 - arrowLen * Math.cos(angle) + arrowWidth * Math.sin(angle)
+                const pLeftY = y2 - arrowLen * Math.sin(angle) - arrowWidth * Math.cos(angle)
+                const pRightX = x2 - arrowLen * Math.cos(angle) - arrowWidth * Math.sin(angle)
+                const pRightY = y2 - arrowLen * Math.sin(angle) + arrowWidth * Math.cos(angle)
+                return (
+                  <g key={d.id} opacity={0.92}>
+                    <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={d.color} strokeWidth={d.stroke_width} strokeLinecap="round" />
+                    <polygon points={`${x2},${y2} ${pLeftX},${pLeftY} ${pRightX},${pRightY}`} fill={d.color} />
+                    {d.text_label && (
+                      <text x={(x1 + x2) / 2} y={(y1 + y2) / 2 - 8} fill={d.color} fontSize="12" fontWeight="800" textAnchor="middle">
+                        {d.text_label}
+                      </text>
+                    )}
+                  </g>
+                )
+              }
+              if (d.layer_type === 'line' && geom.x1 !== undefined) {
+                return (
+                  <line
+                    key={d.id}
+                    x1={geom.x1}
+                    y1={geom.y1}
+                    x2={geom.x2}
+                    y2={geom.y2}
+                    stroke={d.color}
+                    strokeWidth={d.stroke_width}
+                    strokeLinecap="round"
+                    opacity={0.9}
+                  />
+                )
+              }
+              if (d.layer_type === 'circle' && geom.cx !== undefined) {
+                return (
+                  <ellipse
+                    key={d.id}
+                    cx={geom.cx}
+                    cy={geom.cy}
+                    rx={geom.rx}
+                    ry={geom.ry}
+                    fill={`${d.color}22`}
+                    stroke={d.color}
+                    strokeWidth={d.stroke_width}
+                    opacity={0.88}
+                  />
+                )
+              }
+              if (d.layer_type === 'box' && geom.x !== undefined) {
+                return (
+                  <rect
+                    key={d.id}
+                    x={geom.x}
+                    y={geom.y}
+                    width={geom.w}
+                    height={geom.h}
+                    fill={`${d.color}22`}
+                    stroke={d.color}
+                    strokeWidth={d.stroke_width}
+                    opacity={0.88}
+                  />
+                )
+              }
+              if (d.layer_type === 'text' && geom.x !== undefined) {
+                return (
+                  <text
+                    key={d.id}
+                    x={geom.x}
+                    y={geom.y}
+                    fill={d.color}
+                    fontSize="13"
+                    fontWeight="800"
+                    fontFamily="monospace"
+                    filter="drop-shadow(0 2px 4px rgba(0,0,0,0.9))"
+                  >
+                    {d.text_label || 'Tactical Note'}
+                  </text>
+                )
+              }
+            } catch {
+              return null
+            }
+            return null
+          })}
+
+          {/* Active Live In-Progress Drawing Shape */}
+          {isDrawingMode && isDrawingActive && activeDragStart && activeDragCurrent && (
+            <g opacity={0.85}>
+              {activeDrawTool === 'pen' && penPoints.length > 1 && (
+                <polyline
+                  points={penPoints.map((pt) => `${pt[0]},${pt[1]}`).join(' ')}
+                  fill="none"
+                  stroke={drawColor}
+                  strokeWidth={strokeWidth}
+                  strokeLinecap="round"
+                />
+              )}
+              {activeDrawTool === 'arrow' && (
+                <>
+                  <line
+                    x1={activeDragStart.x}
+                    y1={activeDragStart.y}
+                    x2={activeDragCurrent.x}
+                    y2={activeDragCurrent.y}
+                    stroke={drawColor}
+                    strokeWidth={strokeWidth}
+                    strokeDasharray="4 2"
+                  />
+                  <circle cx={activeDragCurrent.x} cy={activeDragCurrent.y} r="4" fill={drawColor} />
+                </>
+              )}
+              {activeDrawTool === 'line' && (
+                <line
+                  x1={activeDragStart.x}
+                  y1={activeDragStart.y}
+                  x2={activeDragCurrent.x}
+                  y2={activeDragCurrent.y}
+                  stroke={drawColor}
+                  strokeWidth={strokeWidth}
+                  strokeDasharray="4 2"
+                />
+              )}
+              {activeDrawTool === 'circle' && (
+                <ellipse
+                  cx={activeDragStart.x}
+                  cy={activeDragStart.y}
+                  rx={Math.abs(activeDragCurrent.x - activeDragStart.x)}
+                  ry={Math.abs(activeDragCurrent.y - activeDragStart.y)}
+                  fill={`${drawColor}22`}
+                  stroke={drawColor}
+                  strokeWidth={strokeWidth}
+                  strokeDasharray="4 2"
+                />
+              )}
+              {activeDrawTool === 'box' && (
+                <rect
+                  x={Math.min(activeDragStart.x, activeDragCurrent.x)}
+                  y={Math.min(activeDragStart.y, activeDragCurrent.y)}
+                  width={Math.abs(activeDragCurrent.x - activeDragStart.x)}
+                  height={Math.abs(activeDragCurrent.y - activeDragStart.y)}
+                  fill={`${drawColor}22`}
+                  stroke={drawColor}
+                  strokeWidth={strokeWidth}
+                  strokeDasharray="4 2"
+                />
+              )}
+            </g>
+          )}
         </svg>
 
         {/* ================================================================= */}
-        {/* LIVING PLAYERS (HTML OVERLAYS) — DEAD PLAYERS OMITTED             */}
+        {/* LIVING PLAYERS (HTML OVERLAYS) — TOKENS, BADGES, WEAPONS & FOCUS  */}
         {/* ================================================================= */}
         {livingPlayers.map((p) => {
           const isCurrentLevel = hasMultipleLevels ? p.level === currentLevel : true
-          const opacity = isCurrentLevel ? 1 : 0.22
           const isCT = p.side === 'ct'
-          const color = isCT ? '#3b82f6' : '#f97316'
+          const teamColor = isCT ? '#38bdf8' : '#f97316'
+          const isFocused = focusedSteamId === p.steam_id
+          const isDimmed = Boolean(focusedSteamId && !isFocused)
+          const opacity = isCurrentLevel ? (isDimmed ? 0.38 : 1) : 0.18
+
+          const hpColor = p.health >= 50 ? '#22c55e' : p.health >= 20 ? '#f59e0b' : '#ef4444'
 
           return (
             <div
               key={p.steam_id}
+              onClick={() => setFocusedSteamId((prev) => (prev === p.steam_id ? null : p.steam_id))}
+              title={
+                lang === 'ru'
+                  ? `${p.name} (${p.side.toUpperCase()}) | HP: ${Math.round(p.health)} | Броня: ${p.armor ?? 0}%${p.has_helmet ? ' + Шлем' : ''}${p.has_defuser ? ' | Кит' : ''}${p.weapon ? ` | ${p.weapon}` : ''}\nКлик для фокуса на игроке`
+                  : `${p.name} (${p.side.toUpperCase()}) | HP: ${Math.round(p.health)} | Armor: ${p.armor ?? 0}%${p.has_helmet ? ' + Helmet' : ''}${p.has_defuser ? ' | Defuser' : ''}${p.weapon ? ` | ${p.weapon}` : ''}\nClick to focus player`
+              }
               style={{
                 position: 'absolute',
                 left: `${Math.max(2, Math.min(98, p.x))}%`,
@@ -873,66 +1639,150 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                pointerEvents: 'none',
+                pointerEvents: 'auto',
+                cursor: 'pointer',
                 opacity,
                 transition: 'left 0.12s linear, top 0.12s linear, opacity 0.2s ease',
-                zIndex: isCurrentLevel ? 15 : 2,
+                zIndex: isFocused ? 25 : isCurrentLevel ? 15 : 2,
               }}
             >
-              {/* Tactical Player Dot with Team Ring */}
+              {/* Focused Selection Ring */}
+              {isFocused && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '-6px',
+                    left: '-6px',
+                    right: '-6px',
+                    bottom: '-6px',
+                    borderRadius: '50%',
+                    border: '2px solid #00f2fe',
+                    animation: 'focusPulse 1.2s ease-in-out infinite',
+                    pointerEvents: 'none',
+                  }}
+                />
+              )}
+
+              {/* Flashed Blind Ring */}
+              {p.is_flashed && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '-7px',
+                    left: '-7px',
+                    right: '-7px',
+                    bottom: '-7px',
+                    borderRadius: '50%',
+                    border: '2.5px solid #facc15',
+                    backgroundColor: 'rgba(250, 204, 21, 0.3)',
+                    animation: 'blindPulse 0.8s ease-in-out infinite',
+                    pointerEvents: 'none',
+                  }}
+                />
+              )}
+
+              {/* Tactical Player Dot with Team Background & Dual Health Border */}
               <div
                 style={{
-                  width: '18px',
-                  height: '18px',
+                  width: '20px',
+                  height: '20px',
                   borderRadius: '50%',
-                  backgroundColor: color,
-                  border: '2px solid #ffffff',
-                  boxShadow: `0 0 10px ${color}`,
+                  backgroundColor: teamColor,
+                  border: `2px solid ${hpColor}`,
+                  boxShadow: isFocused
+                    ? '0 0 14px #00f2fe'
+                    : `0 0 8px ${teamColor}`,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  fontSize: '10px',
+                  fontSize: '9.5px',
                   fontWeight: 900,
                   color: '#ffffff',
                   transform: `scale(${dotScale})`,
                   transformOrigin: 'center center',
+                  position: 'relative',
                 }}
               >
                 {isCT ? 'CT' : 'T'}
+
+                {/* Defuser Badge for CT */}
+                {p.has_defuser && isCT && showEquipment && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: '-6px',
+                      right: '-6px',
+                      fontSize: '9px',
+                      filter: 'drop-shadow(0 0 3px #0284c7)',
+                      lineHeight: 1,
+                    }}
+                  >
+                    ✂️
+                  </span>
+                )}
               </div>
 
-              {/* Player Name & Health Pill */}
+              {/* Player Name, Health & Weapon Pill */}
               {isCurrentLevel && nameScale > 0 && (
                 <div
                   style={{
                     marginTop: '2px',
-                    backgroundColor: 'rgba(9, 12, 18, 0.92)',
+                    backgroundColor: 'rgba(9, 12, 18, 0.94)',
                     backdropFilter: 'blur(4px)',
-                    padding: nameDensity === 'compact' ? '1px 4px' : '2px 6px',
+                    padding: nameDensity === 'compact' ? '1px 4px' : '2px 5px',
                     borderRadius: '4px',
-                    border: `1px solid ${color}66`,
+                    border: isFocused ? '1px solid #00f2fe' : `1px solid ${teamColor}66`,
                     fontSize: '9px',
                     fontWeight: 700,
                     color: '#f1f5f9',
                     whiteSpace: 'nowrap',
                     display: 'flex',
+                    flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '3px',
+                    gap: '1px',
                     boxShadow: '0 2px 6px rgba(0,0,0,0.6)',
                     transform: `scale(${nameScale})`,
                     transformOrigin: 'top center',
                   }}
                 >
-                  <span>{nameDensity === 'compact' ? p.name.slice(0, 5) : p.name.slice(0, 11)}</span>
-                  <span
-                    style={{
-                      color: p.health >= 50 ? '#22c55e' : p.health >= 20 ? '#f59e0b' : '#ef4444',
-                      fontSize: '9.5px',
-                    fontWeight: 800,
-                    }}
-                  >
-                    {Math.round(p.health)}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                    <span>{nameDensity === 'compact' ? p.name.slice(0, 5) : p.name.slice(0, 11)}</span>
+                    <span
+                      style={{
+                        color: hpColor,
+                        fontSize: '9.5px',
+                        fontWeight: 800,
+                      }}
+                    >
+                      {Math.round(p.health)}
+                    </span>
+                  </div>
+
+                  {/* Weapon & Armor Badges Row */}
+                  {showEquipment && (p.weapon || (p.armor !== undefined && p.armor > 0)) && (
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '3px',
+                        fontSize: '7.5px',
+                        color: '#94a3b8',
+                        borderTop: '1px solid rgba(255,255,255,0.08)',
+                        paddingTop: '1px',
+                        width: '100%',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      {p.weapon && p.weapon !== 'knife' && (
+                        <span style={{ color: '#cbd5e1', fontWeight: 600 }}>{p.weapon}</span>
+                      )}
+                      {p.armor !== undefined && p.armor > 0 && (
+                        <span style={{ color: p.has_helmet ? '#38bdf8' : '#64748b' }}>
+                          🛡️{p.armor}{p.has_helmet ? 'H' : ''}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -1148,6 +1998,458 @@ export const TacticalReplayRadar: React.FC<TacticalReplayRadarProps> = ({
             </div>
           )
         })}
+
+        {/* Text Label Input Popover Modal */}
+        {textPromptOpen && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 60,
+              backgroundColor: 'rgba(0, 0, 0, 0.65)',
+              backdropFilter: 'blur(4px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setTextPromptOpen(false)
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: '#0b0f19',
+                border: '1px solid #00f2fe',
+                borderRadius: '10px',
+                padding: '16px',
+                width: '320px',
+                boxShadow: '0 8px 32px rgba(0, 242, 254, 0.25)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{ fontSize: '13px', fontWeight: 800, color: '#00f2fe', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  🔤 {lang === 'ru' ? 'Тактическая надпись' : 'Tactical Text Label'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setTextPromptOpen(false)}
+                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '14px' }}
+                >
+                  ✕
+                </button>
+              </div>
+              <input
+                type="text"
+                autoFocus
+                value={textInputValue}
+                onChange={(e) => setTextInputValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSaveTextLabel()
+                  if (e.key === 'Escape') setTextPromptOpen(false)
+                }}
+                placeholder={lang === 'ru' ? 'Напр: Сплит Б, Окно, Перетяжка...' : 'e.g. B Split, Window, Rotate...'}
+                style={{
+                  backgroundColor: '#131926',
+                  border: '1px solid rgba(0, 242, 254, 0.3)',
+                  borderRadius: '6px',
+                  padding: '8px 10px',
+                  color: '#ffffff',
+                  fontSize: '13px',
+                  outline: 'none',
+                }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => setTextPromptOpen(false)}
+                  style={{
+                    padding: '5px 12px',
+                    borderRadius: '6px',
+                    backgroundColor: 'transparent',
+                    border: '1px solid #334155',
+                    color: '#94a3b8',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {lang === 'ru' ? 'Отмена' : 'Cancel'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveTextLabel}
+                  style={{
+                    padding: '5px 14px',
+                    borderRadius: '6px',
+                    backgroundColor: '#00f2fe',
+                    border: 'none',
+                    color: '#000000',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    cursor: 'pointer',
+                  }}
+                >
+                  {lang === 'ru' ? 'Добавить' : 'Add'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Quick-Add Bookmark Modal */}
+        {bookmarkModalOpen && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              zIndex: 60,
+              backgroundColor: 'rgba(0, 0, 0, 0.72)',
+              backdropFilter: 'blur(5px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setBookmarkModalOpen(false)
+            }}
+          >
+            <div
+              style={{
+                backgroundColor: '#0b0f19',
+                border: '1.5px solid rgba(250, 204, 21, 0.6)',
+                borderRadius: '12px',
+                padding: '18px',
+                width: '360px',
+                maxWidth: '92%',
+                boxShadow: '0 12px 36px rgba(0, 0, 0, 0.8), 0 0 24px rgba(250, 204, 21, 0.2)',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span style={{ fontSize: '15px' }}>🔖</span>
+                  <span style={{ fontSize: '14px', fontWeight: 800, color: '#facc15' }}>
+                    {lang === 'ru' ? 'Новая тактическая закладка' : 'New Tactical Bookmark'}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setBookmarkModalOpen(false)}
+                  style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '16px' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div style={{ display: 'flex', gap: '8px', fontSize: '11px', color: '#94a3b8' }}>
+                <span style={{ backgroundColor: '#1e293b', padding: '2px 6px', borderRadius: '4px' }}>
+                  {lang === 'ru' ? `Раунд ${roundNum}` : `Round ${roundNum}`}
+                </span>
+                <span style={{ backgroundColor: '#1e293b', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace' }}>
+                  {lang === 'ru' ? `Тик ${currentTick}` : `Tick ${currentTick}`}
+                </span>
+                {focusedSteamId && (
+                  <span style={{ backgroundColor: '#1e293b', padding: '2px 6px', borderRadius: '4px', color: '#38bdf8' }}>
+                    👤 {players.find((p) => p.steam_id === focusedSteamId)?.name || 'Player'}
+                  </span>
+                )}
+              </div>
+
+              <div>
+                <label style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
+                  {lang === 'ru' ? 'Название события' : 'Bookmark Title'}
+                </label>
+                <input
+                  type="text"
+                  autoFocus
+                  value={bmTitle}
+                  onChange={(e) => setBmTitle(e.target.value)}
+                  placeholder="R1 [1:15] Вход на плент..."
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    backgroundColor: '#131926',
+                    border: '1px solid rgba(250, 204, 21, 0.3)',
+                    borderRadius: '6px',
+                    padding: '7px 10px',
+                    color: '#ffffff',
+                    fontSize: '12px',
+                    outline: 'none',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
+                  {lang === 'ru' ? 'Категория' : 'Category'}
+                </label>
+                <select
+                  value={bmCategory}
+                  onChange={(e) => setBmCategory(e.target.value)}
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    backgroundColor: '#131926',
+                    border: '1px solid #334155',
+                    borderRadius: '6px',
+                    padding: '7px 10px',
+                    color: '#f8fafc',
+                    fontSize: '12px',
+                    outline: 'none',
+                  }}
+                >
+                  <option value="TACTICAL_MISTAKE">❌ {lang === 'ru' ? 'Тактическая ошибка' : 'Tactical Mistake'}</option>
+                  <option value="CLUTCH">👑 {lang === 'ru' ? 'Клатч' : 'Clutch'}</option>
+                  <option value="UTILITY_SETUP">🎯 {lang === 'ru' ? 'Раскидка / Сетап' : 'Utility Setup'}</option>
+                  <option value="COMM_ERROR">🔇 {lang === 'ru' ? 'Ошибка коммуникации' : 'Comm Error'}</option>
+                  <option value="GREAT_PLAY">⭐ {lang === 'ru' ? 'Отличный мув' : 'Great Play'}</option>
+                </select>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '11px', color: '#cbd5e1', fontWeight: 600, display: 'block', marginBottom: '4px' }}>
+                  {lang === 'ru' ? 'Заметки / Разбор (опционально)' : 'Notes / Breakdown (optional)'}
+                </label>
+                <textarea
+                  value={bmNotes}
+                  onChange={(e) => setBmNotes(e.target.value)}
+                  rows={3}
+                  placeholder={lang === 'ru' ? 'Что пошло не так или что сработало идеально...' : 'What went wrong or what worked well...'}
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    backgroundColor: '#131926',
+                    border: '1px solid #334155',
+                    borderRadius: '6px',
+                    padding: '6px 10px',
+                    color: '#e2e8f0',
+                    fontSize: '12px',
+                    outline: 'none',
+                    resize: 'none',
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '4px' }}>
+                <button
+                  type="button"
+                  onClick={() => setBookmarkModalOpen(false)}
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: '6px',
+                    backgroundColor: 'transparent',
+                    border: '1px solid #334155',
+                    color: '#94a3b8',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {lang === 'ru' ? 'Отмена' : 'Cancel'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveBookmark}
+                  disabled={!bmTitle.trim()}
+                  style={{
+                    padding: '6px 16px',
+                    borderRadius: '6px',
+                    backgroundColor: bmTitle.trim() ? '#facc15' : '#475569',
+                    border: 'none',
+                    color: '#000000',
+                    fontSize: '12px',
+                    fontWeight: 800,
+                    cursor: bmTitle.trim() ? 'pointer' : 'not-allowed',
+                  }}
+                >
+                  {lang === 'ru' ? 'Сохранить' : 'Save'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bookmarks Drawer */}
+        {bookmarksDrawerOpen && (
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: 0,
+              bottom: 0,
+              width: '310px',
+              maxWidth: '85%',
+              zIndex: 55,
+              backgroundColor: 'rgba(9, 13, 20, 0.96)',
+              backdropFilter: 'blur(12px)',
+              borderLeft: '1px solid #1e293b',
+              boxShadow: '-8px 0 24px rgba(0, 0, 0, 0.7)',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            {/* Drawer Header */}
+            <div
+              style={{
+                padding: '12px 14px',
+                borderBottom: '1px solid #1e293b',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '15px' }}>📑</span>
+                <span style={{ fontSize: '13px', fontWeight: 800, color: '#facc15' }}>
+                  {lang === 'ru' ? 'Тактические закладки' : 'Bookmarks'}
+                </span>
+                <span
+                  style={{
+                    backgroundColor: 'rgba(250, 204, 21, 0.2)',
+                    color: '#facc15',
+                    padding: '1px 6px',
+                    borderRadius: '10px',
+                    fontSize: '11px',
+                    fontWeight: 800,
+                  }}
+                >
+                  {bookmarks.length}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setBookmarksDrawerOpen(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: '#94a3b8',
+                  cursor: 'pointer',
+                  fontSize: '16px',
+                  padding: '2px 6px',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Drawer List */}
+            <div
+              style={{
+                flex: 1,
+                overflowY: 'auto',
+                padding: '10px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '8px',
+              }}
+            >
+              {bookmarks.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '30px 10px', color: '#64748b', fontSize: '12px' }}>
+                  {lang === 'ru'
+                    ? 'Закладок пока нет. Нажмите 🔖 + на панели, чтобы сохранить ключевой момент.'
+                    : 'No bookmarks yet. Click 🔖 + on the toolbar to bookmark this moment.'}
+                </div>
+              ) : (
+                bookmarks.map((b) => {
+                  const categoryColor =
+                    b.category === 'TACTICAL_MISTAKE'
+                      ? '#ef4444'
+                      : b.category === 'CLUTCH'
+                      ? '#c084fc'
+                      : b.category === 'UTILITY_SETUP'
+                      ? '#38bdf8'
+                      : b.category === 'COMM_ERROR'
+                      ? '#fb923c'
+                      : '#4ade80'
+
+                  const categoryLabel =
+                    b.category === 'TACTICAL_MISTAKE'
+                      ? (lang === 'ru' ? 'Ошибка' : 'Mistake')
+                      : b.category === 'CLUTCH'
+                      ? (lang === 'ru' ? 'Клатч' : 'Clutch')
+                      : b.category === 'UTILITY_SETUP'
+                      ? (lang === 'ru' ? 'Сетап' : 'Setup')
+                      : b.category === 'COMM_ERROR'
+                      ? (lang === 'ru' ? 'Связь' : 'Comm')
+                      : (lang === 'ru' ? 'Мув' : 'Play')
+
+                  return (
+                    <div
+                      key={b.id}
+                      style={{
+                        backgroundColor: '#111726',
+                        border: '1px solid #1e293b',
+                        borderRadius: '8px',
+                        padding: '8px 10px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '4px',
+                        transition: 'border-color 0.15s ease',
+                        cursor: 'pointer',
+                      }}
+                      onClick={() => onJumpToTick?.(b.tick)}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <span
+                            style={{
+                              fontSize: '9px',
+                              fontWeight: 800,
+                              padding: '1px 5px',
+                              borderRadius: '4px',
+                              backgroundColor: `${categoryColor}25`,
+                              color: categoryColor,
+                              border: `1px solid ${categoryColor}60`,
+                            }}
+                          >
+                            {categoryLabel}
+                          </span>
+                          <span style={{ fontSize: '10px', color: '#64748b', fontFamily: 'monospace' }}>
+                            R{b.round_num} • #{b.tick}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setBookmarks((prev) => prev.filter((item) => item.id !== b.id))
+                            if (b.id && !b.id.startsWith('bm_')) {
+                              onDeleteBookmark?.(b.id)
+                            }
+                          }}
+                          title={lang === 'ru' ? 'Удалить закладку' : 'Delete bookmark'}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            color: '#64748b',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            padding: '0 4px',
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      <div style={{ fontSize: '12px', fontWeight: 700, color: '#f1f5f9' }}>
+                        {b.title}
+                      </div>
+
+                      {b.notes && (
+                        <div style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic', lineHeight: 1.3 }}>
+                          {b.notes}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )

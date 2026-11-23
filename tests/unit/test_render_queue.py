@@ -866,8 +866,8 @@ class TestRenderQueueManager:
         assert vic.victim_steam_id == "76561198000000002"
         assert vic.victim_name == "VictimTarget"
         assert vic.kill_tick == 5200
-        assert vic.start_tick == 5200 - int(1.3 * 64)
-        assert vic.end_tick == 5200 + int(0.7 * 64)
+        assert vic.start_tick == 5200 - int(2.2 * 64)
+        assert vic.end_tick == 5200 + int(1.2 * 64)
         assert task.killcam_hero_start_tick == 5200 - int(4.0 * 64)
 
     @pytest.mark.asyncio

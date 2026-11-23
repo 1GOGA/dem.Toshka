@@ -220,7 +220,7 @@ class TestCfgGenerator:
             pov_name="VictimPlayer",
         )
 
-        assert "demo_gototick 4780" in content
+        assert "demo_gototick 4752" in content
         assert "spec_player VictimPlayer" in content
         assert 'mirv_cmd addAtTick 4800 "spec_autodirector 0; spec_mode 4; spec_lock_to_accountid 12345; spec_player VictimPlayer; cl_trueview_show_status 0; demo_ui_mode 0; cl_spec_show_bindings 0; mirv_streams record start"' in content
         assert 'mirv_cmd addAtTick 5080 "mirv_streams record end; exec restore_user; cl_radar_rotate 1; cl_drawhud 1; quit"' in content
@@ -253,11 +253,11 @@ class TestCfgGenerator:
             output_cfg_path=cfg_path,
             fps=60,
         )
-        assert "demo_gototick 980" in content
+        assert "demo_gototick 952" in content
         assert "cl_trueview_show_status 0" in content
         assert "demo_ui_mode 0" in content
-        assert "demo_gototick 2980" in content
-        assert 'mirv_cmd addAtTick 1500 "mirv_streams record end; demo_gototick 2980; demo_resume"' in content
+        assert "demo_gototick 2952" in content
+        assert 'mirv_cmd addAtTick 1500 "mirv_streams record end; demo_gototick 2952; demo_resume"' in content
         assert 'mirv_cmd addAtTick 3500 "mirv_streams record end; exec restore_user; cl_radar_rotate 1; cl_drawhud 1; quit"' in content
         assert " 0 0" not in content
         # Ensure every single command line fits safely within Source 2 console buffer (< 200 chars)

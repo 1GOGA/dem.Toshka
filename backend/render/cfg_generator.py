@@ -263,7 +263,22 @@ def _build_hud_commands(
 ) -> list[str]:
     """Build HUD commands based on mode and optional explicit scaling and toggles."""
     cmds: list[str] = []
-    if hud_mode == "real":
+
+    # Clean killfeed-only mode takes absolute precedence over real/obs styles
+    if killfeed_only or hud_mode in ("killfeed_only", "huge_killfeed"):
+        scale = hud_scale if hud_scale is not None else (1.15 if hud_mode == "huge_killfeed" else 0.95)
+        cmds.extend([
+            "cl_drawhud 1",
+            "cl_draw_only_deathnotices 1",
+            f"hud_scaling {scale}",
+            "cl_hud_radar_scale 0",
+            "cl_radar_scale 0",
+            "cl_teamcounter_playercount_mode 0",
+            "cl_hud_telemetry_frametime_show 0",
+            "cl_hud_telemetry_net_misdelivery_show 0",
+            "cl_hud_telemetry_ping_show 0",
+        ])
+    elif hud_mode == "real":
         # REAL OBS POV: Native match recording appearance
         # Normal rotating radar, health/ammo/money/grenades visible, spectator target banner suppressed,
         # player count numbers instead of spectator cards, no X-Ray wallhacks.
@@ -289,20 +304,6 @@ def _build_hud_commands(
             f"hud_scaling {scale}",
             "cl_teamcounter_playercount_mode 0",
         ])
-    elif hud_mode == "huge_killfeed":
-        scale = hud_scale if hud_scale is not None else 1.15
-        cmds.extend([
-            "cl_drawhud 1",
-            "cl_draw_only_deathnotices 1",
-            f"hud_scaling {scale}",
-        ])
-    elif hud_mode == "killfeed_only":
-        scale = hud_scale if hud_scale is not None else 0.95
-        cmds.extend([
-            "cl_drawhud 1",
-            "cl_draw_only_deathnotices 1",
-            f"hud_scaling {scale}",
-        ])
     elif hud_mode == "none":
         cmds.append("cl_drawhud 0")
     else:  # "full"
@@ -317,7 +318,7 @@ def _build_hud_commands(
     # Apply explicit overrides from advanced HUD switches if defined
     if overhead_mode is not None:
         cmds.append(f"cl_teamid_overhead_mode {1 if overhead_mode else 0}")
-    if killfeed_only is not None:
+    if killfeed_only is not None and not (killfeed_only or hud_mode in ("killfeed_only", "huge_killfeed")):
         cmds.append(f"cl_draw_only_deathnotices {1 if killfeed_only else 0}")
     if teamcounter_mode is not None:
         cmds.append(f"cl_teamcounter_playercount_mode {1 if teamcounter_mode else 0}")
@@ -333,7 +334,15 @@ def _build_start_tick_hud_reinforcement(
 ) -> list[str]:
     """Reinforce critical HUD convars at clip start_tick so demo seeking does not reset them."""
     cmds: list[str] = []
-    if hud_mode == "real":
+    if killfeed_only or hud_mode in ("killfeed_only", "huge_killfeed"):
+        cmds.extend([
+            "cl_drawhud 1",
+            "cl_draw_only_deathnotices 1",
+            "cl_hud_radar_scale 0",
+            "cl_radar_scale 0",
+            "cl_teamcounter_playercount_mode 0",
+        ])
+    elif hud_mode == "real":
         cmds.extend([
             "hud_showtargetid 0",
             "cl_hide_avatar_images 1",
@@ -345,10 +354,6 @@ def _build_start_tick_hud_reinforcement(
 
     if overhead_mode is not None:
         cmds.append(f"cl_teamid_overhead_mode {1 if overhead_mode else 0}")
-    if killfeed_only is not None:
-        cmds.append(f"cl_draw_only_deathnotices {1 if killfeed_only else 0}")
-    elif hud_mode in ("killfeed_only", "huge_killfeed"):
-        cmds.append("cl_draw_only_deathnotices 1")
     if teamcounter_mode is not None:
         cmds.append(f"cl_teamcounter_playercount_mode {1 if teamcounter_mode else 0}")
     return cmds
@@ -362,7 +367,7 @@ def generate_render_cfg(
     end_tick: Optional[int] = None,
     output_dir: Optional[pathlib.Path] = None,
     fps: int = 60,
-    jump_lead_ticks: int = 20,
+    jump_lead_ticks: int = 48,
     xray: bool = True,
     hud_mode: str = "full",
     hud_scale: Optional[float] = None,
@@ -475,18 +480,21 @@ def generate_render_cfg(
         if start_tick > 60:
             jump_tick = max(10, start_tick - jump_lead_ticks)
             lines.append(f'mirv_cmd addAtTick 5 "demo_gototick {jump_tick}; demo_resume"')
-            lines.append(f'mirv_cmd addAtTick 5 "{radar_tick5}"')
-            if radar_rot_tick5:
-                lines.append(f'mirv_cmd addAtTick 5 "{radar_rot_tick5}"')
+            if radar_mode != "hidden" and not killfeed_only and hud_mode not in ("killfeed_only", "huge_killfeed"):
+                lines.append(f'mirv_cmd addAtTick 5 "{radar_tick5}"')
+                if radar_rot_tick5:
+                    lines.append(f'mirv_cmd addAtTick 5 "{radar_rot_tick5}"')
 
             if spec_cmds:
-                lines.append(f'mirv_cmd addAtTick {jump_tick + 20} "{"; ".join(spec_cmds)}; demo_resume"')
+                prep_tick = max(jump_tick + 10, start_tick - 15)
+                lines.append(f'mirv_cmd addAtTick {prep_tick} "{"; ".join(spec_cmds)}; demo_resume"')
         else:
             if spec_cmds:
                 lines.append(f'mirv_cmd addAtTick 5 "{"; ".join(spec_cmds)}"')
-            lines.append(f'mirv_cmd addAtTick 5 "{radar_tick5}"')
-            if radar_rot_tick5:
-                lines.append(f'mirv_cmd addAtTick 5 "{radar_rot_tick5}"')
+            if radar_mode != "hidden" and not killfeed_only and hud_mode not in ("killfeed_only", "huge_killfeed"):
+                lines.append(f'mirv_cmd addAtTick 5 "{radar_tick5}"')
+                if radar_rot_tick5:
+                    lines.append(f'mirv_cmd addAtTick 5 "{radar_rot_tick5}"')
 
         # Schedule highlight recording start and end with guaranteed TrueView & demo UI suppression
         hud_start_cmds = _build_start_tick_hud_reinforcement(
@@ -498,7 +506,7 @@ def generate_render_cfg(
         for h_cmd in hud_start_cmds:
             lines.append(f'mirv_cmd addAtTick {start_tick} "{h_cmd}"')
 
-        if radar_mode != "hidden":
+        if radar_mode != "hidden" and not killfeed_only and hud_mode not in ("killfeed_only", "huge_killfeed"):
             lines.append(f'mirv_cmd addAtTick {start_tick} "{radar_tick5}"')
             if radar_rot_tick5:
                 lines.append(f'mirv_cmd addAtTick {start_tick} "{radar_rot_tick5}"')
@@ -543,7 +551,7 @@ def generate_batch_render_cfg(
     output_dir: pathlib.Path,
     output_cfg_path: Optional[pathlib.Path] = None,
     fps: int = 60,
-    jump_lead_ticks: int = 20,
+    jump_lead_ticks: int = 48,
 ) -> str:
     """Generate a single CS2 .cfg file that records multiple highlight clips in ONE continuous game session.
 
@@ -644,19 +652,23 @@ def generate_batch_render_cfg(
 
         if idx == 0:
             # First clip: schedule initial seek at tick 5 with round radar enforced
+            is_clean_first = getattr(first_clip, "killfeed_only", False) or first_clip.hud_mode in ("killfeed_only", "huge_killfeed")
             if clip.start_tick > 60:
                 lines.append(f'mirv_cmd addAtTick 5 "demo_gototick {jump_tick}; demo_resume"')
-                lines.append(f'mirv_cmd addAtTick 5 "{radar_tick5}"')
-                if radar_rot_tick5:
-                    lines.append(f'mirv_cmd addAtTick 5 "{radar_rot_tick5}"')
+                if first_clip.radar_mode != "hidden" and not is_clean_first:
+                    lines.append(f'mirv_cmd addAtTick 5 "{radar_tick5}"')
+                    if radar_rot_tick5:
+                        lines.append(f'mirv_cmd addAtTick 5 "{radar_rot_tick5}"')
                 if spec_cmds:
-                    lines.append(f'mirv_cmd addAtTick {jump_tick + 20} "{"; ".join(spec_cmds)}; demo_resume"')
+                    prep_tick = max(jump_tick + 10, clip.start_tick - 15)
+                    lines.append(f'mirv_cmd addAtTick {prep_tick} "{"; ".join(spec_cmds)}; demo_resume"')
             else:
                 if spec_cmds:
                     lines.append(f'mirv_cmd addAtTick 5 "{"; ".join(spec_cmds)}"')
-                lines.append(f'mirv_cmd addAtTick 5 "{radar_tick5}"')
-                if radar_rot_tick5:
-                    lines.append(f'mirv_cmd addAtTick 5 "{radar_rot_tick5}"')
+                if first_clip.radar_mode != "hidden" and not is_clean_first:
+                    lines.append(f'mirv_cmd addAtTick 5 "{radar_tick5}"')
+                    if radar_rot_tick5:
+                        lines.append(f'mirv_cmd addAtTick 5 "{radar_rot_tick5}"')
 
         # Start recording this clip with clean HUD & camera lock
         hud_start_cmds = _build_start_tick_hud_reinforcement(
@@ -668,12 +680,14 @@ def generate_batch_render_cfg(
         for h_cmd in hud_start_cmds:
             lines.append(f'mirv_cmd addAtTick {clip.start_tick} "{h_cmd}"')
 
-        if clip.radar_mode != "hidden":
+        is_clean_clip = getattr(clip, "killfeed_only", False) or clip.hud_mode in ("killfeed_only", "huge_killfeed")
+        if clip.radar_mode != "hidden" and not is_clean_clip:
             clip_rot = "cl_radar_rotate 1; cl_radar_always_centered 1" if clip.radar_mode == "player_focus" else None
             lines.append(f'mirv_cmd addAtTick {clip.start_tick} "{radar_tick5}"')
             if clip_rot:
                 lines.append(f'mirv_cmd addAtTick {clip.start_tick} "{clip_rot}"')
 
+        lines.append(f'mirv_cmd addAtTick {clip.start_tick} "demo_ui_mode 0; cl_trueview_show_status 0"')
         start_parts = list(spec_cmds) + ["mirv_streams record start"]
         lines.append(f'mirv_cmd addAtTick {clip.start_tick} "{"; ".join(start_parts)}"')
 

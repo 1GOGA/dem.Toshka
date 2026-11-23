@@ -1,16 +1,27 @@
 import type {
+  AnalysisProjectDTO,
+  BookmarkDTO,
   CompletedClipDTO,
+  CreateStrategyBookRequest,
+  CreateTacticalSetupRequest,
   DemoSummary,
   HighlightItem,
   KillDTO,
   MatchScoreboard,
   MontageDTO,
+  MultiMatchAnalyticsDTO,
   PlayerAnalyticsDTO,
   PlayerDTO,
+  PlayerProfileDTO,
   RenderJobDTO,
   RoundDTO,
   RoundReplayData,
+  RoundVoiceTimelineDTO,
   StorageSettingsDTO,
+  StrategyBookDTO,
+  TacticalDrawingDTO,
+  TacticalSetupDTO,
+  VoiceStatusDTO,
 } from './types'
 
 const BASE_URL = '/api'
@@ -486,6 +497,229 @@ export const api = {
   async getVfxPluginResearch(): Promise<{ content: string; path: string }> {
     const res = await fetch(`${BASE_URL}/cinematic/vfx/plugin-research`)
     return handleResponse(res)
+  },
+
+  async getStudioStatus(): Promise<{
+    available: boolean
+    version?: string
+    engine?: string
+    supported_profiles: string[]
+    manifest_schema: string
+  }> {
+    const res = await fetch(`${BASE_URL}/studio/status`)
+    return handleResponse(res)
+  },
+
+  async createStudioJob(payload: {
+    demo_id: number
+    highlight_id: string
+    profile?: string
+    resolution?: string
+    fps?: number
+    hud_mode?: string
+    user_notes?: string
+  }): Promise<{
+    job_id: string
+    manifest_path: string
+    status: string
+    created_at: string
+  }> {
+    const res = await fetch(`${BASE_URL}/studio/jobs`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    return handleResponse(res)
+  },
+
+  async getStudioJobStatus(jobId: string): Promise<any> {
+    const res = await fetch(`${BASE_URL}/studio/jobs/${jobId}`)
+    return handleResponse(res)
+  },
+
+  async createSocialDraft(payload: {
+    player_name: string
+    map_name: string
+    highlight_type: string
+    primary_weapon?: string
+    round_num?: number
+    kill_count?: number
+    score?: number
+    duration_sec?: number
+    platform: 'telegram' | 'youtube_shorts' | 'tiktok'
+  }): Promise<{ platform: string; text: string }> {
+    const res = await fetch(`${BASE_URL}/social-drafts`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    return handleResponse(res)
+  },
+
+  // =========================================================================
+  // Phase 2: Analysis Projects, Tactical Drawings & Bookmarks API
+  // =========================================================================
+
+  async getProjects(demoId?: number): Promise<AnalysisProjectDTO[]> {
+    const query = demoId ? `?demo_id=${demoId}` : ''
+    const res = await fetch(`${BASE_URL}/projects${query}`)
+    return handleResponse(res)
+  },
+
+  async createProject(demoId: number, title: string, description?: string): Promise<AnalysisProjectDTO> {
+    const res = await fetch(`${BASE_URL}/projects`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ demo_id: demoId, title, description }),
+    })
+    return handleResponse(res)
+  },
+
+  async getProject(projectId: string): Promise<AnalysisProjectDTO> {
+    const res = await fetch(`${BASE_URL}/projects/${projectId}`)
+    return handleResponse(res)
+  },
+
+  async deleteProject(projectId: string): Promise<{ status: string; project_id: string }> {
+    const res = await fetch(`${BASE_URL}/projects/${projectId}`, {
+      method: 'DELETE',
+    })
+    return handleResponse(res)
+  },
+
+  async addDrawing(
+    projectId: string,
+    data: {
+      round_num: number
+      layer_type: 'pen' | 'arrow' | 'line' | 'circle' | 'box' | 'text'
+      color: string
+      stroke_width: number
+      geometry_json: string
+      tick?: number
+      text_label?: string
+    }
+  ): Promise<TacticalDrawingDTO> {
+    const res = await fetch(`${BASE_URL}/projects/${projectId}/drawings`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+    return handleResponse(res)
+  },
+
+  async getDrawings(projectId: string, roundNum?: number): Promise<TacticalDrawingDTO[]> {
+    const query = roundNum !== undefined ? `?round_num=${roundNum}` : ''
+    const res = await fetch(`${BASE_URL}/projects/${projectId}/drawings${query}`)
+    return handleResponse(res)
+  },
+
+  async deleteDrawing(projectId: string, drawingId: string): Promise<{ status: string; drawing_id: string }> {
+    const res = await fetch(`${BASE_URL}/projects/${projectId}/drawings/${drawingId}`, {
+      method: 'DELETE',
+    })
+    return handleResponse(res)
+  },
+
+  async addBookmark(
+    projectId: string,
+    data: {
+      round_num: number
+      tick: number
+      title: string
+      category?: string
+      notes?: string
+      player_steamid?: string
+    }
+  ): Promise<BookmarkDTO> {
+    const res = await fetch(`${BASE_URL}/projects/${projectId}/bookmarks`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+    return handleResponse(res)
+  },
+
+  async getBookmarks(projectId: string, roundNum?: number): Promise<BookmarkDTO[]> {
+    const query = roundNum !== undefined ? `?round_num=${roundNum}` : ''
+    const res = await fetch(`${BASE_URL}/projects/${projectId}/bookmarks${query}`)
+    return handleResponse(res)
+  },
+
+  async deleteBookmark(projectId: string, bookmarkId: string): Promise<{ status: string; bookmark_id: string }> {
+    const res = await fetch(`${BASE_URL}/projects/${projectId}/bookmarks/${bookmarkId}`, {
+      method: 'DELETE',
+    })
+    return handleResponse(res)
+  },
+
+  // Phase 3: Voice Timeline & Audio Stream API
+  async getVoiceStatus(demoId: number): Promise<VoiceStatusDTO> {
+    const res = await fetch(`${BASE_URL}/demos/${demoId}/voice/status`)
+    return handleResponse(res)
+  },
+
+  async getRoundVoice(demoId: number, roundNum: number): Promise<RoundVoiceTimelineDTO> {
+    const res = await fetch(`${BASE_URL}/demos/${demoId}/rounds/${roundNum}/voice`)
+    return handleResponse(res)
+  },
+
+  // Phase 4: Multi-Match Player Analytics & Evidence Insights API
+  async getPlayerProfiles(): Promise<PlayerProfileDTO[]> {
+    const res = await fetch(`${BASE_URL}/players/profiles`)
+    return handleResponse(res)
+  },
+
+  async getPlayerMultiMatchAnalytics(steamIdOrId: string): Promise<MultiMatchAnalyticsDTO> {
+    const res = await fetch(`${BASE_URL}/players/${steamIdOrId}/analytics`)
+    return handleResponse(res)
+  },
+
+  // Phase 5: Strategy Book & Offline HTML Export API
+  async getStrategyBooks(mapName?: string): Promise<StrategyBookDTO[]> {
+    const query = mapName ? `?map_name=${mapName}` : ''
+    const res = await fetch(`${BASE_URL}/strategy/books${query}`)
+    return handleResponse(res)
+  },
+
+  async createStrategyBook(book: CreateStrategyBookRequest): Promise<StrategyBookDTO> {
+    const res = await fetch(`${BASE_URL}/strategy/books`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(book),
+    })
+    return handleResponse(res)
+  },
+
+  async getStrategyBook(bookId: string): Promise<StrategyBookDTO> {
+    const res = await fetch(`${BASE_URL}/strategy/books/${bookId}`)
+    return handleResponse(res)
+  },
+
+  async deleteStrategyBook(bookId: string): Promise<{ status: string; book_id: string }> {
+    const res = await fetch(`${BASE_URL}/strategy/books/${bookId}`, {
+      method: 'DELETE',
+    })
+    return handleResponse(res)
+  },
+
+  async addTacticalSetup(bookId: string, setup: CreateTacticalSetupRequest): Promise<TacticalSetupDTO> {
+    const res = await fetch(`${BASE_URL}/strategy/books/${bookId}/setups`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(setup),
+    })
+    return handleResponse(res)
+  },
+
+  async deleteTacticalSetup(bookId: string, setupId: string): Promise<{ status: string; setup_id: string }> {
+    const res = await fetch(`${BASE_URL}/strategy/books/${bookId}/setups/${setupId}`, {
+      method: 'DELETE',
+    })
+    return handleResponse(res)
+  },
+
+  getStrategyBookExportUrl(bookId: string): string {
+    return `${BASE_URL}/strategy/books/${bookId}/export.html`
   },
 }
 
